@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { getDb, saveDatabase } from './pool.js';
 import pg from 'pg';
 
@@ -5,6 +8,12 @@ const { Pool } = pg;
 
 // Check if we should use PostgreSQL
 const usePostgres = !!process.env.DATABASE_URL;
+
+if (usePostgres) {
+  console.log('[DB] Using PostgreSQL');
+} else {
+  console.log('[DB] Using SQLite');
+}
 let pgPool = null;
 
 // Initialize PostgreSQL pool if needed
