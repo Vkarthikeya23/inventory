@@ -13,6 +13,11 @@ import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+
+function generateUUID() {
+  return crypto.randomUUID();
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { Pool } = pg;
@@ -136,11 +141,17 @@ async function migrateToPostgres(data) {
     console.log('\nMigrating users...');
     for (const user of data.users) {
       try {
+        // Generate UUID if id is null or invalid
+        const userId = user.id && user.id !== 'null' ? user.id : generateUUID();
+        const isActive = user.is_active === 1 || user.is_active === true ? true : false;
+        const createdAt = user.created_at ? new Date(user.created_at) : new Date();
+        
         await client.query(`
           INSERT INTO users (id, name, email, password_hash, role, is_active, created_at)
           VALUES ($1, $2, $3, $4, $5, $6, $7)
-          ON CONFLICT (id) DO NOTHING
-        `, [user.id, user.name, user.email, user.password_hash, user.role, user.is_active, user.created_at]);
+          ON CONFLICT (email) DO NOTHING
+        `, [userId, user.name, user.email, user.password_hash, user.role, isActive, createdAt]);
+        console.log('  ✓ Migrated user:', user.email);
       } catch (err) {
         console.error('Error migrating user:', user.email, err.message);
       }
@@ -150,11 +161,16 @@ async function migrateToPostgres(data) {
     console.log('Migrating categories...');
     for (const cat of data.categories) {
       try {
+        const catId = cat.id && cat.id !== 'null' ? cat.id : generateUUID();
+        const isActive = cat.is_active === 1 || cat.is_active === true ? true : false;
+        const createdAt = cat.created_at ? new Date(cat.created_at) : new Date();
+        
         await client.query(`
           INSERT INTO categories (id, name, description, is_active, created_at)
           VALUES ($1, $2, $3, $4, $5)
-          ON CONFLICT (id) DO NOTHING
-        `, [cat.id, cat.name, cat.description, cat.is_active, cat.created_at]);
+          ON CONFLICT (name) DO NOTHING
+        `, [catId, cat.name, cat.description, isActive, createdAt]);
+        console.log('  ✓ Migrated category:', cat.name);
       } catch (err) {
         console.error('Error migrating category:', cat.name, err.message);
       }
