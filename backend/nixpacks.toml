@@ -1,0 +1,11 @@
+# Nixpacks configuration for Railway
+# Specifies how to build the Node.js app
+
+[phases.build]
+cmds = ["npm install"]
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[start]
+cmd = "npm start"
