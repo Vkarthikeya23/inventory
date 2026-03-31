@@ -6,12 +6,12 @@ import { ROLES } from '../../../shared/constants.js';
 
 const router = express.Router();
 
-router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     const date = req.query.date ?? new Date().toISOString().slice(0, 10);
     
     // Main metrics query
-    const result = all(`
+    const result = await all(`
       SELECT
         COUNT(DISTINCT s.id) AS total_transactions,
         COALESCE(SUM(si.qty), 0) AS units_sold,
@@ -35,7 +35,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req,
     };
     
     // Get sales details
-    const salesDetails = all(`
+    const salesDetails = await all(`
       SELECT 
         s.id,
         s.invoice_number,
@@ -53,25 +53,25 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req,
       ORDER BY s.created_at DESC
     `, { date });
     
-    // Hourly breakdown
-    const hourlyData = all(`
+    // Hourly breakdown - PostgreSQL version
+    const hourlyData = await all(`
       SELECT
-        CAST(strftime('%H', s.sale_date) AS INTEGER) AS hour,
+        EXTRACT(HOUR FROM s.sale_date) AS hour,
         COALESCE(SUM(si.amount), 0) AS total
       FROM sales s
       JOIN sale_items si ON si.sale_id = s.id
       WHERE DATE(s.sale_date) = $date
-      GROUP BY hour
+      GROUP BY EXTRACT(HOUR FROM s.sale_date)
       ORDER BY hour
     `, { date });
     
     const hourly_sales = hourlyData.map(h => ({
-      hour: h.hour,
+      hour: parseInt(h.hour),
       total: parseFloat(h.total)
     })).filter(h => h.total > 0);
     
     // Top products
-    const topProductsData = all(`
+    const topProductsData = await all(`
       SELECT
         COALESCE(p.company_name, 'Unknown') || ' ' || COALESCE(p.size_spec, '') AS name,
         SUM(si.qty) AS units_sold,
@@ -116,9 +116,10 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req,
   }
 });
 
-router.get('/weekly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.get('/weekly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
-    const weeklyData = all(`
+    // PostgreSQL version: CURRENT_DATE - INTERVAL
+    const weeklyData = await all(`
       SELECT
         DATE(s.sale_date) AS date,
         COALESCE(SUM(si.amount), 0) AS revenue,
@@ -129,7 +130,7 @@ router.get('/weekly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req
       FROM sales s
       JOIN sale_items si ON si.sale_id = s.id
       JOIN products p ON p.id = si.product_id
-      WHERE s.sale_date >= DATE('now', '-6 days')
+      WHERE s.sale_date >= CURRENT_DATE - INTERVAL '6 days'
       GROUP BY DATE(s.sale_date)
       ORDER BY date ASC
     `);
