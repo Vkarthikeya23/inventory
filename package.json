@@ -1,0 +1,17 @@
+{
+  "name": "tyreshop-pro",
+  "version": "1.0.0",
+  "description": "TyreShop Pro - Inventory Management System (Monorepo)",
+  "private": true,
+  "scripts": {
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev",
+    "install:backend": "cd backend && npm install",
+    "install:web": "cd web && npm install",
+    "install:mobile": "cd mobile && npm install",
+    "postinstall": "npm run install:backend"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
