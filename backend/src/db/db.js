@@ -1,23 +1,40 @@
 import pg from 'pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const { Pool } = pg;
 
-// PostgreSQL pool
+// Get DATABASE_URL directly from process.env (Railway sets this)
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  console.error('ERROR: DATABASE_URL environment variable is not set!');
+  console.error('Please set DATABASE_URL in Railway dashboard');
+  process.exit(1);
+}
+
+console.log('Connecting to PostgreSQL...');
+
+// PostgreSQL pool with Railway settings
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  connectionString: databaseUrl,
+  ssl: {
+    rejectUnauthorized: false  // Required for Railway PostgreSQL
+  }
 });
 
-// Test connection on startup
+// Test connection
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error('ERROR: PostgreSQL connection failed:', err.message);
+    return;
+  }
+  console.log('✓ PostgreSQL connected successfully');
+  release();
+});
+
+// Handle pool errors
 pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
+  console.error('PostgreSQL pool error:', err.message);
 });
-
-console.log('Using PostgreSQL database');
 
 // Convert $namedParams to PostgreSQL $1, $2, etc.
 function convertParams(sql, params) {
@@ -39,22 +56,37 @@ function convertParams(sql, params) {
 
 // Query all rows
 export async function all(sql, params = {}) {
-  const { sql: newSql, values } = convertParams(sql, params);
-  const result = await pool.query(newSql, values);
-  return result.rows;
+  try {
+    const { sql: newSql, values } = convertParams(sql, params);
+    const result = await pool.query(newSql, values);
+    return result.rows;
+  } catch (err) {
+    console.error('DB all() error:', err.message);
+    throw err;
+  }
 }
 
 // Query single row
 export async function get(sql, params = {}) {
-  const { sql: newSql, values } = convertParams(sql, params);
-  const result = await pool.query(newSql, values);
-  return result.rows[0] || null;
+  try {
+    const { sql: newSql, values } = convertParams(sql, params);
+    const result = await pool.query(newSql, values);
+    return result.rows[0] || null;
+  } catch (err) {
+    console.error('DB get() error:', err.message);
+    throw err;
+  }
 }
 
 // Run query (INSERT, UPDATE, DELETE)
 export async function run(sql, params = {}) {
-  const { sql: newSql, values } = convertParams(sql, params);
-  await pool.query(newSql, values);
+  try {
+    const { sql: newSql, values } = convertParams(sql, params);
+    await pool.query(newSql, values);
+  } catch (err) {
+    console.error('DB run() error:', err.message);
+    throw err;
+  }
 }
 
 // Run without auto-save (same as run for PostgreSQL)
