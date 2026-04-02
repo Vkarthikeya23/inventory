@@ -42,7 +42,7 @@ router.get('/', verifyToken, async (req, res) => {
         created_at,
         COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '') as display_name
       FROM products
-      WHERE is_deleted = 0
+      WHERE is_deleted = false
     `;
     
     const params = {};
@@ -167,7 +167,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
     if ('stock_qty' in updates && parseInt(updates.stock_qty) === 0) {
       const result = await get(`
         UPDATE products 
-        SET is_deleted = 1, stock_qty = 0 
+        SET is_deleted = true, stock_qty = 0 
         WHERE id = $id 
         RETURNING 
           id,
@@ -207,7 +207,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
     const values = {};
     
     // Always set is_deleted = false when updating (restocking a deleted product)
-    fields.push('is_deleted = 0');
+    fields.push('is_deleted = false');
     
     for (const key of Object.keys(updates)) {
       if (allowedFields.includes(key)) {

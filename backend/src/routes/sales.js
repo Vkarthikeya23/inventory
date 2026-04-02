@@ -179,7 +179,7 @@ router.post('/', verifyToken, async (req, res) => {
         const product = await txGet(client, `
           SELECT id, stock_qty, company_name, size_spec, cost_price, hsn_code
           FROM products 
-          WHERE id = $id AND is_deleted = 0
+          WHERE id = $id AND is_deleted = false
         `, { id: item.product_id });
         
         if (!product) {
