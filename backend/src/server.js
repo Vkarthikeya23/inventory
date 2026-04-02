@@ -13,26 +13,37 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-async function startServer() {
+// Track database connection status
+let dbConnected = false;
+
+// Start server immediately (don't block on DB connection)
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✓ Server running on port ${PORT}`);
+  console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// Test PostgreSQL connection asynchronously
+async function connectDatabase() {
   try {
-    // Test PostgreSQL connection
     const client = await pool.connect();
     console.log('✓ PostgreSQL connected successfully');
     client.release();
-    
-    // Start server
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`✓ Server running on port ${PORT}`);
-      console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
-    
+    dbConnected = true;
   } catch (err) {
-    console.error('✗ Failed to start server:', err);
-    process.exit(1);
+    console.error('✗ PostgreSQL connection failed:', err.message);
+    console.error('Retrying in 5 seconds...');
+    setTimeout(connectDatabase, 5000);
   }
 }
 
-startServer();
+// Start connection attempt
+connectDatabase();
 
-// Export pool for use in other modules
-export { pool };
+// Handle pool errors
+pool.on('error', (err) => {
+  console.error('PostgreSQL pool error:', err);
+  dbConnected = false;
+});
+
+// Export for use in other modules
+export { pool, dbConnected };
