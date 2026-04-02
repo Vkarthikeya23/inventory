@@ -1,17 +1,10 @@
 import app from './app.js';
 import dotenv from 'dotenv';
-import pg from 'pg';
+import { pool } from './db/db.js';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 4000;
-const { Pool } = pg;
-
-// Initialize PostgreSQL pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
 
 // Track database connection status
 let dbConnected = false;
