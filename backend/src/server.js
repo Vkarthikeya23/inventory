@@ -17,6 +17,13 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 
 // Test PostgreSQL connection asynchronously
 async function connectDatabase() {
+  if (!pool) {
+    console.error('✗ PostgreSQL pool not initialized - check DATABASE_URL');
+    console.error('Retrying in 5 seconds...');
+    setTimeout(connectDatabase, 5000);
+    return;
+  }
+  
   try {
     const client = await pool.connect();
     console.log('✓ PostgreSQL connected successfully');
@@ -32,11 +39,13 @@ async function connectDatabase() {
 // Start connection attempt
 connectDatabase();
 
-// Handle pool errors
-pool.on('error', (err) => {
-  console.error('PostgreSQL pool error:', err);
-  dbConnected = false;
-});
+// Handle pool errors (only if pool exists)
+if (pool) {
+  pool.on('error', (err) => {
+    console.error('PostgreSQL pool error:', err);
+    dbConnected = false;
+  });
+}
 
 // Export for use in other modules
 export { pool, dbConnected };
