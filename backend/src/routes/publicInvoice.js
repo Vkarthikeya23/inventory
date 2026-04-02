@@ -23,11 +23,11 @@ function formatIndianNumber(num) {
   return `₹${formatted}.${decimal}`;
 }
 
-router.get('/invoice/:invoice_number', (req, res) => {
+router.get('/invoice/:invoice_number', async (req, res) => {
   try {
     const { invoice_number } = req.params;
     
-    const result = get(`
+    const result = await get(`
       SELECT i.invoice_data
       FROM invoices i
       JOIN sales s ON s.id = i.sale_id

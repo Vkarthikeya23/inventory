@@ -6,11 +6,11 @@ import { ROLES } from '../../../shared/constants.js';
 
 const router = express.Router();
 
-router.post('/:sale_id/send', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.post('/:sale_id/send', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     const { sale_id } = req.params;
     
-    const invoice = get(`
+    const invoice = await get(`
       SELECT i.public_token, s.invoice_number
       FROM invoices i
       JOIN sales s ON s.id = i.sale_id

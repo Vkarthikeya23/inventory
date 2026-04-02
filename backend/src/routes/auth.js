@@ -14,7 +14,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password required' });
     }
     
-    const user = get('SELECT id, name, email, role, password_hash FROM users WHERE email = $email AND is_active = 1', { email });
+    const user = await get('SELECT id, name, email, role, password_hash FROM users WHERE email = $email AND is_active = 1', { email });
     
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -47,9 +47,9 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.get('/me', verifyToken, (req, res) => {
+router.get('/me', verifyToken, async (req, res) => {
   try {
-    const user = get('SELECT id, name, email, role FROM users WHERE id = $id', { id: req.user.id });
+    const user = await get('SELECT id, name, email, role FROM users WHERE id = $id', { id: req.user.id });
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });

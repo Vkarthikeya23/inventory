@@ -6,9 +6,9 @@ import { ROLES } from '../../../shared/constants.js';
 
 const router = express.Router();
 
-router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
-    const result = all(`
+    const result = await all(`
       SELECT po.id, po.supplier_id, s.name as supplier_name, po.status, po.notes,
              po.created_by, u.name as created_by_name, po.created_at,
              COUNT(poi.id) as item_count
@@ -26,11 +26,11 @@ router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res)
   }
 });
 
-router.get('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.get('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     const { id } = req.params;
     
-    const po = get(`
+    const po = await get(`
       SELECT po.id, po.supplier_id, s.name as supplier_name, po.status, po.notes,
              po.created_by, u.name as created_by_name, po.created_at
       FROM purchase_orders po
@@ -43,7 +43,7 @@ router.get('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, r
       return res.status(404).json({ error: 'Purchase order not found' });
     }
     
-    const items = all(`
+    const items = await all(`
       SELECT poi.id, poi.product_id, p.name as product_name, poi.qty_ordered,
              poi.qty_received, poi.unit_cost
       FROM purchase_order_items poi
@@ -58,7 +58,7 @@ router.get('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, r
   }
 });
 
-router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     const { supplier_id, items, notes } = req.body;
     
@@ -66,8 +66,8 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res
       return res.status(400).json({ error: 'Supplier and items required' });
     }
     
-    const insertPO = transaction(() => {
-      const po = get(`
+    const insertPO = await transaction(async (client) => {
+      const po = await get(`
         INSERT INTO purchase_orders (supplier_id, status, notes, created_by)
         VALUES ($supplier_id, 'draft', $notes, $created_by)
         RETURNING id
@@ -75,15 +75,11 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res
       
       const poId = po.id;
       
-      const insertItem = (params) => {
-        run(`
+      for (const item of items) {
+        await run(`
           INSERT INTO purchase_order_items (po_id, product_id, qty_ordered, unit_cost)
           VALUES ($po_id, $product_id, $qty_ordered, $unit_cost)
-        `, params);
-      };
-      
-      for (const item of items) {
-        insertItem({
+        `, {
           po_id: poId,
           product_id: item.product_id,
           qty_ordered: item.qty_ordered,
@@ -101,7 +97,7 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res
   }
 });
 
-router.put('/:id/receive', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.put('/:id/receive', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     const { id } = req.params;
     const { items } = req.body;
@@ -110,15 +106,15 @@ router.put('/:id/receive', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER),
       return res.status(400).json({ error: 'Items required' });
     }
     
-    transaction(() => {
+    await transaction(async (client) => {
       for (const item of items) {
-        run('UPDATE purchase_order_items SET qty_received = $qty_received WHERE id = $id', { qty_received: item.qty_received, id: item.po_item_id });
+        await run('UPDATE purchase_order_items SET qty_received = $qty_received WHERE id = $id', { qty_received: item.qty_received, id: item.po_item_id });
         
-        const poItem = get('SELECT product_id, qty_received FROM purchase_order_items WHERE id = $id', { id: item.po_item_id });
-        run('UPDATE products SET stock_qty = stock_qty + $qty WHERE id = $id', { qty: poItem.qty_received, id: poItem.product_id });
+        const poItem = await get('SELECT product_id, qty_received FROM purchase_order_items WHERE id = $id', { id: item.po_item_id });
+        await run('UPDATE products SET stock_qty = stock_qty + $qty WHERE id = $id', { qty: poItem.qty_received, id: poItem.product_id });
       }
       
-      run("UPDATE purchase_orders SET status = 'received' WHERE id = $id", { id });
+      await run("UPDATE purchase_orders SET status = 'received' WHERE id = $id", { id });
     });
     
     res.json({ status: 'received' });

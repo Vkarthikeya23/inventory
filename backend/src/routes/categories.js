@@ -6,9 +6,9 @@ import { ROLES } from '../../../shared/constants.js';
 
 const router = express.Router();
 
-router.get('/', verifyToken, (req, res) => {
+router.get('/', verifyToken, async (req, res) => {
   try {
-    const result = all('SELECT id, name, description, created_at FROM categories ORDER BY name');
+    const result = await all('SELECT id, name, description, created_at FROM categories ORDER BY name');
     res.json(result);
   } catch (err) {
     console.error('Get categories error:', err);
@@ -16,7 +16,7 @@ router.get('/', verifyToken, (req, res) => {
   }
 });
 
-router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     const { name, description } = req.body;
     
@@ -24,7 +24,7 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res
       return res.status(400).json({ error: 'Category name required' });
     }
     
-    const result = get('INSERT INTO categories (name, description) VALUES ($name, $description) RETURNING id, name, description, created_at', { name, description: description || null });
+    const result = await get('INSERT INTO categories (name, description) VALUES ($name, $description) RETURNING id, name, description, created_at', { name, description: description || null });
     
     res.status(201).json(result);
   } catch (err) {

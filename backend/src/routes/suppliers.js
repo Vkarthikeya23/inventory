@@ -6,9 +6,9 @@ import { ROLES } from '../../../shared/constants.js';
 
 const router = express.Router();
 
-router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
-    const result = all('SELECT id, name, contact_person, phone, email, gstin, created_at FROM suppliers ORDER BY name');
+    const result = await all('SELECT id, name, contact_person, phone, email, gstin, created_at FROM suppliers ORDER BY name');
     res.json(result);
   } catch (err) {
     console.error('Get suppliers error:', err);
@@ -16,7 +16,7 @@ router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res)
   }
 });
 
-router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     const { name, contact_person, phone, email, gstin } = req.body;
     
@@ -24,7 +24,7 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res
       return res.status(400).json({ error: 'Supplier name required' });
     }
     
-    const result = get(`
+    const result = await get(`
       INSERT INTO suppliers (name, contact_person, phone, email, gstin)
       VALUES ($name, $contact_person, $phone, $email, $gstin)
       RETURNING id, name, contact_person, phone, email, gstin, created_at

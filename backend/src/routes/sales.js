@@ -317,9 +317,9 @@ router.post('/', verifyToken, async (req, res) => {
 });
 
 // Get all sales
-router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
-    const sales = all(`
+    const sales = await all(`
       SELECT s.*, c.name as customer_name, c.phone as customer_phone
       FROM sales s
       LEFT JOIN customers c ON c.id = s.customer_id
@@ -335,9 +335,9 @@ router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res)
 });
 
 // Get single sale with items
-router.get('/:id', verifyToken, (req, res) => {
+router.get('/:id', verifyToken, async (req, res) => {
   try {
-    const sale = get(`
+    const sale = await get(`
       SELECT s.*, c.name as customer_name, c.phone as customer_phone, c.vehicle_reg
       FROM sales s
       LEFT JOIN customers c ON c.id = s.customer_id
@@ -348,7 +348,7 @@ router.get('/:id', verifyToken, (req, res) => {
       return res.status(404).json({ error: 'Sale not found' });
     }
     
-    const items = all(`
+    const items = await all(`
       SELECT si.*, p.display_name, p.company_name, p.size_spec
       FROM sale_items si
       JOIN products p ON p.id = si.product_id
@@ -363,11 +363,11 @@ router.get('/:id', verifyToken, (req, res) => {
 });
 
 // Get sale statistics
-router.get('/stats/overview', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.get('/stats/overview', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     const today = new Date().toISOString().slice(0, 10);
     
-    const todayStats = get(`
+    const todayStats = await get(`
       SELECT 
         COUNT(*) as transaction_count,
         COALESCE(SUM(total), 0) as total_sales
@@ -375,7 +375,7 @@ router.get('/stats/overview', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGE
       WHERE date(sale_date) = $today
     `, { today });
     
-    const monthStats = get(`
+    const monthStats = await get(`
       SELECT 
         COUNT(*) as transaction_count,
         COALESCE(SUM(total), 0) as total_sales

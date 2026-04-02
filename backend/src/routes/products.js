@@ -23,7 +23,7 @@ function calculatePrices(price, gstRate, mode) {
   }
 }
 
-router.get('/', verifyToken, (req, res) => {
+router.get('/', verifyToken, async (req, res) => {
   try {
     const { search } = req.query;
     
@@ -54,7 +54,7 @@ router.get('/', verifyToken, (req, res) => {
     
     query += ' ORDER BY company_name, size_spec';
     
-    const result = all(query, params);
+    const result = await all(query, params);
     res.json(result);
   } catch (err) {
     console.error('Get products error:', err);
@@ -62,7 +62,7 @@ router.get('/', verifyToken, (req, res) => {
   }
 });
 
-router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     console.log('POST /products - Request body:', req.body);
     
@@ -106,7 +106,7 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res
     // Generate UUID for new product
     const productId = randomUUID();
     
-    const result = get(`
+    const result = await get(`
       INSERT INTO products (
         id,
         company_name, 
@@ -155,7 +155,7 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res
   }
 });
 
-router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -165,7 +165,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, r
     
     // Check if stock_qty is being set to 0 (soft delete)
     if ('stock_qty' in updates && parseInt(updates.stock_qty) === 0) {
-      const result = get(`
+      const result = await get(`
         UPDATE products 
         SET is_deleted = 1, stock_qty = 0 
         WHERE id = $id 
@@ -189,7 +189,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, r
     
     // Get current product to know the GST rate if not provided
     // Check without is_deleted filter so we can update soft-deleted products
-    const currentProduct = get('SELECT gst_rate FROM products WHERE id = $id', { id });
+    const currentProduct = await get('SELECT gst_rate FROM products WHERE id = $id', { id });
     if (!currentProduct) {
       return res.status(404).json({ error: 'Product not found' });
     }
@@ -222,7 +222,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, r
     
     values.id = id;
     
-    const result = get(`
+    const result = await get(`
       UPDATE products SET ${fields.join(', ')}, created_at = created_at WHERE id = $id
       RETURNING 
         id, 
