@@ -1,14 +1,13 @@
 import express from 'express';
-import { get, all, run, transaction } from '../db/db.js';
+import { get, all, transaction } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
 import { requireRole } from '../middleware/requireRole.js';
 import { ROLES, CGST_RATE, SGST_RATE } from '../../../shared/constants.js';
 import { toWords } from '../../../shared/toWords.js';
-import { randomUUID } from 'crypto';
 
 const router = express.Router();
 
-// Helper functions for transaction queries
+// Helper functions for transaction-based queries
 async function txGet(client, sql, params = {}) {
   const keys = [];
   const values = [];
@@ -104,8 +103,8 @@ router.post('/', verifyToken, async (req, res) => {
   const saleDate = sale_date ? new Date(sale_date) : new Date();
   const amountInWords = toWords(total);
 
+  // Step 3 — run transaction using PostgreSQL
   try {
-    // Run everything in a transaction
     const result = await transaction(async (client) => {
       console.log('SALE: Starting transaction');
       
@@ -160,17 +159,16 @@ router.post('/', verifyToken, async (req, res) => {
         });
         customerId = existingCustomer.id;
       } else {
-        const newCustomerId = randomUUID();
-        await txRun(client, `
+        const newCustomer = await txGet(client, `
           INSERT INTO customers (id, name, phone, vehicle_reg)
-          VALUES ($id, $name, $phone, $vehicle_reg)
+          VALUES (gen_random_uuid(), $name, $phone, $vehicle_reg)
+          RETURNING id, name, phone
         `, {
-          id: newCustomerId,
           name: customer_name,
           phone: customer_phone,
           vehicle_reg: vehicle_reg || null
         });
-        customerId = newCustomerId;
+        customerId = newCustomer.id;
       }
 
       const customer = await txGet(client, 'SELECT id, name, phone FROM customers WHERE id = $id', { id: customerId });
@@ -198,12 +196,11 @@ router.post('/', verifyToken, async (req, res) => {
       }
 
       // 3d. insert sale
-      const saleId = randomUUID();
-      await txRun(client, `
+      const sale = await txGet(client, `
         INSERT INTO sales (id, customer_id, user_id, invoice_number, subtotal, cgst, sgst, total, received_amount, balance, sale_date, notes)
-        VALUES ($id, $customer_id, $user_id, $invoice_number, $subtotal, $cgst, $sgst, $total, $received_amount, $balance, $sale_date, $notes)
+        VALUES (gen_random_uuid(), $customer_id, $user_id, $invoice_number, $subtotal, $cgst, $sgst, $total, $received_amount, $balance, $sale_date, $notes)
+        RETURNING id
       `, {
-        id: saleId,
         customer_id: customer.id,
         user_id: req.user.id,
         invoice_number: invoiceNumber,
@@ -216,14 +213,14 @@ router.post('/', verifyToken, async (req, res) => {
         sale_date: saleDate.toISOString(),
         notes: notes || ''
       });
+      const saleId = sale.id;
 
       // 3e. insert sale items with unit_cost and deduct stock
       for (const item of parsedItems) {
         await txRun(client, `
           INSERT INTO sale_items (id, sale_id, product_id, qty, unit_price, unit_cost, gst_rate, gst_amount, amount)
-          VALUES ($id, $sale_id, $product_id, $qty, $unit_price, $unit_cost, $gst_rate, $gst_amount, $amount)
+          VALUES (gen_random_uuid(), $sale_id, $product_id, $qty, $unit_price, $unit_cost, $gst_rate, $gst_amount, $amount)
         `, {
-          id: randomUUID(),
           sale_id: saleId,
           product_id: item.product_id,
           qty: item.qty,
@@ -281,15 +278,16 @@ router.post('/', verifyToken, async (req, res) => {
 
       await txRun(client, `
         INSERT INTO invoices (id, sale_id, invoice_data, public_token)
-        VALUES ($id, $sale_id, $invoice_data, $public_token)
+        VALUES (gen_random_uuid(), $sale_id, $invoice_data, $public_token)
       `, {
-        id: randomUUID(),
         sale_id: saleId,
         invoice_data: JSON.stringify(invoiceData),
         public_token: publicToken
       });
 
-      // Return data for response
+      console.log('SALE: Transaction completed successfully');
+      
+      // Return data needed for response
       return {
         sale_id: saleId,
         invoice_number: invoiceNumber,
@@ -310,84 +308,88 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
   } catch (err) {
-    console.error('POST /sales failed:', err.message);
-    console.error('Error stack:', err.stack);
-    
-    // Check if it's a stock/product error (400) or server error (500)
-    if (err.message.includes('not found') || err.message.includes('Insufficient stock')) {
+    console.error('SALE: Error during sale creation:', err);
+    if (err.message.includes('Product not found') || err.message.includes('Insufficient stock')) {
       return res.status(400).json({ error: err.message });
     }
-    
-    return res.status(500).json({ error: 'Failed to process sale. Please try again.' });
+    return res.status(500).json({ error: 'Failed to create sale. Please try again.' });
   }
 });
 
+// Get all sales
 router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
   try {
-    const { from, to } = req.query;
-    
-    let query = `
-      SELECT s.id, s.invoice_number, s.total, s.received_amount, s.balance, s.created_at,
-             c.name as customer_name, c.phone as customer_phone, u.name as user_name
+    const sales = all(`
+      SELECT s.*, c.name as customer_name, c.phone as customer_phone
       FROM sales s
-      LEFT JOIN customers c ON s.customer_id = c.id
-      LEFT JOIN users u ON s.user_id = u.id
-      WHERE 1=1
-    `;
+      LEFT JOIN customers c ON c.id = s.customer_id
+      ORDER BY s.sale_date DESC
+      LIMIT 100
+    `);
     
-    const params = {};
-    
-    if (from) {
-      query += ` AND s.created_at >= $from`;
-      params.from = from;
-    }
-    
-    if (to) {
-      query += ` AND s.created_at <= $to`;
-      params.to = to;
-    }
-    
-    query += ' ORDER BY s.created_at DESC';
-    
-    const result = all(query, params);
-    res.json(result);
+    res.json(sales);
   } catch (err) {
-    console.error('Get sales error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error fetching sales:', err);
+    res.status(500).json({ error: 'Failed to fetch sales' });
   }
 });
 
-router.get('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+// Get single sale with items
+router.get('/:id', verifyToken, (req, res) => {
   try {
-    const { id } = req.params;
-    
     const sale = get(`
-      SELECT s.id, s.invoice_number, s.subtotal, s.cgst, s.sgst, s.total, 
-             s.received_amount, s.balance, s.notes, s.created_at,
-             c.name as customer_name, c.phone as customer_phone,
-             u.name as user_name
+      SELECT s.*, c.name as customer_name, c.phone as customer_phone, c.vehicle_reg
       FROM sales s
-      LEFT JOIN customers c ON s.customer_id = c.id
-      LEFT JOIN users u ON s.user_id = u.id
+      LEFT JOIN customers c ON c.id = s.customer_id
       WHERE s.id = $id
-    `, { id });
+    `, { id: req.params.id });
     
     if (!sale) {
       return res.status(404).json({ error: 'Sale not found' });
     }
     
     const items = all(`
-      SELECT si.qty, si.unit_price, si.unit_cost, si.gst_rate, si.gst_amount, si.amount,
-             p.company_name, p.size_spec
+      SELECT si.*, p.display_name, p.company_name, p.size_spec
       FROM sale_items si
-      LEFT JOIN products p ON si.product_id = p.id
+      JOIN products p ON p.id = si.product_id
       WHERE si.sale_id = $sale_id
-    `, { sale_id: id });
+    `, { sale_id: sale.id });
     
     res.json({ ...sale, items });
   } catch (err) {
-    console.error('Get sale error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error fetching sale:', err);
+    res.status(500).json({ error: 'Failed to fetch sale' });
+  }
+});
+
+// Get sale statistics
+router.get('/stats/overview', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), (req, res) => {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    
+    const todayStats = get(`
+      SELECT 
+        COUNT(*) as transaction_count,
+        COALESCE(SUM(total), 0) as total_sales
+      FROM sales
+      WHERE date(sale_date) = $today
+    `, { today });
+    
+    const monthStats = get(`
+      SELECT 
+        COUNT(*) as transaction_count,
+        COALESCE(SUM(total), 0) as total_sales
+      FROM sales
+      WHERE strftime('%Y-%m', sale_date) = strftime('%Y-%m', 'now')
+    `);
+    
+    res.json({
+      today: todayStats,
+      month: monthStats
+    });
+  } catch (err) {
+    console.error('Error fetching sale stats:', err);
+    res.status(500).json({ error: 'Failed to fetch statistics' });
   }
 });
 
