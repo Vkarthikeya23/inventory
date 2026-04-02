@@ -2,8 +2,11 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
-// Get DATABASE_URL directly from process.env (Railway sets this)
+// Get DATABASE_URL from environment
 const databaseUrl = process.env.DATABASE_URL;
+
+console.log('Initializing PostgreSQL connection...');
+console.log('DATABASE_URL exists:', !!databaseUrl);
 
 if (!databaseUrl) {
   console.error('ERROR: DATABASE_URL environment variable is not set!');
@@ -11,25 +14,45 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-console.log('Connecting to PostgreSQL...');
+// Parse connection string for debugging (hide password)
+try {
+  const url = new URL(databaseUrl);
+  console.log('Database host:', url.hostname);
+  console.log('Database port:', url.port);
+  console.log('Database name:', url.pathname?.substring(1));
+  console.log('Database user:', url.username);
+} catch (e) {
+  console.log('Could not parse DATABASE_URL for debugging');
+}
 
-// PostgreSQL pool with Railway settings
+// PostgreSQL pool configuration
 const pool = new Pool({
   connectionString: databaseUrl,
   ssl: {
-    rejectUnauthorized: false  // Required for Railway PostgreSQL
-  }
+    rejectUnauthorized: false
+  },
+  connectionTimeoutMillis: 10000, // 10 second timeout
+  idleTimeoutMillis: 30000
 });
 
-// Test connection
-pool.connect((err, client, release) => {
-  if (err) {
-    console.error('ERROR: PostgreSQL connection failed:', err.message);
-    return;
+// Test connection immediately
+async function testConnection() {
+  try {
+    const client = await pool.connect();
+    console.log('✓ PostgreSQL connected successfully');
+    const result = await client.query('SELECT NOW()');
+    console.log('✓ Database time:', result.rows[0].now);
+    client.release();
+    return true;
+  } catch (err) {
+    console.error('✗ PostgreSQL connection failed:', err.message);
+    console.error('Error code:', err.code);
+    return false;
   }
-  console.log('✓ PostgreSQL connected successfully');
-  release();
-});
+}
+
+// Run initial connection test
+testConnection();
 
 // Handle pool errors
 pool.on('error', (err) => {
@@ -56,37 +79,22 @@ function convertParams(sql, params) {
 
 // Query all rows
 export async function all(sql, params = {}) {
-  try {
-    const { sql: newSql, values } = convertParams(sql, params);
-    const result = await pool.query(newSql, values);
-    return result.rows;
-  } catch (err) {
-    console.error('DB all() error:', err.message);
-    throw err;
-  }
+  const { sql: newSql, values } = convertParams(sql, params);
+  const result = await pool.query(newSql, values);
+  return result.rows;
 }
 
 // Query single row
 export async function get(sql, params = {}) {
-  try {
-    const { sql: newSql, values } = convertParams(sql, params);
-    const result = await pool.query(newSql, values);
-    return result.rows[0] || null;
-  } catch (err) {
-    console.error('DB get() error:', err.message);
-    throw err;
-  }
+  const { sql: newSql, values } = convertParams(sql, params);
+  const result = await pool.query(newSql, values);
+  return result.rows[0] || null;
 }
 
 // Run query (INSERT, UPDATE, DELETE)
 export async function run(sql, params = {}) {
-  try {
-    const { sql: newSql, values } = convertParams(sql, params);
-    await pool.query(newSql, values);
-  } catch (err) {
-    console.error('DB run() error:', err.message);
-    throw err;
-  }
+  const { sql: newSql, values } = convertParams(sql, params);
+  await pool.query(newSql, values);
 }
 
 // Run without auto-save (same as run for PostgreSQL)
