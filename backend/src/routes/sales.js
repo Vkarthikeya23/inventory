@@ -136,15 +136,7 @@ router.post('/', verifyToken, async (req, res) => {
       const invoiceNumber = `TYR-${period}-${String(nextSeq).padStart(5, '0')}`;
       console.log('SALE: Generated invoice number:', invoiceNumber);
       
-      // Also update the sequence table for consistency (but don't rely on it)
-      try {
-        await txRun(client, 'UPDATE invoice_sequences SET last_sequence = $seq WHERE yymm = $period', { 
-          seq: nextSeq, 
-          period 
-        });
-      } catch (e) {
-        console.log('SALE: Warning - could not update sequence table:', e.message);
-      }
+      // Note: invoice_sequences table update removed - we query actual sales table instead
 
       console.log('SALE: Checking/updating customer');
       // 3b. upsert customer
