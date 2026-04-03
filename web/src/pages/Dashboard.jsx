@@ -40,8 +40,38 @@ export default function Dashboard() {
     <div>
       <Navbar />
       <div style={{ padding: '20px' }}>
-        <h1>Dashboard</h1>
-        <p>Welcome, {user?.name}</p>
+        {/* Enhanced Header Section */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          borderRadius: '12px',
+          padding: '30px',
+          marginBottom: '30px',
+          color: '#fff',
+          boxShadow: '0 4px 20px rgba(33, 150, 243, 0.3)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px' }}>
+            <div>
+              <h1 style={{ margin: '0 0 8px 0', fontSize: '32px', fontWeight: '700' }}>Dashboard</h1>
+              <p style={{ margin: 0, fontSize: '16px', opacity: 0.9 }}>Welcome back, {user?.name}</p>
+              <span style={{ 
+                display: 'inline-block', 
+                marginTop: '10px', 
+                padding: '4px 12px', 
+                backgroundColor: 'rgba(255,255,255,0.2)', 
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: '600',
+                textTransform: 'uppercase'
+              }}>
+                {user?.role}
+              </span>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ margin: '0 0 5px 0', fontSize: '14px', opacity: 0.8 }}>SRI MAHALAKSHMI TYRES</p>
+              <p style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>📞 9000909817</p>
+            </div>
+          </div>
+        </div>
         
         <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
           <div style={{ padding: '20px', backgroundColor: '#e8f5e9', borderRadius: '8px', flex: 1 }}>
