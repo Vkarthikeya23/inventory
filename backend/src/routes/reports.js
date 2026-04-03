@@ -37,17 +37,16 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
       SELECT 
         s.id,
         s.invoice_number,
-        s.total,
+        s.total_amount,
         s.created_at,
-        c.name AS customer_name,
-        c.phone AS customer_phone,
+        s.customer_name,
+        s.customer_phone,
         COUNT(si.id) AS item_count,
         SUM(si.qty) AS total_qty
       FROM sales s
-      JOIN customers c ON c.id = s.customer_id
       JOIN sale_items si ON si.sale_id = s.id
       WHERE DATE(s.sale_date) = $date
-      GROUP BY s.id, s.invoice_number, s.total, s.created_at, c.name, c.phone
+      GROUP BY s.id, s.invoice_number, s.total_amount, s.created_at, s.customer_name, s.customer_phone
       ORDER BY s.created_at DESC
     `, { date });
     
@@ -100,7 +99,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
       sales_details: salesDetails.map(s => ({
         id: s.id,
         invoice_number: s.invoice_number,
-        total: parseFloat(s.total),
+        total: parseFloat(s.total_amount),
         created_at: s.created_at,
         customer_name: s.customer_name,
         customer_phone: s.customer_phone,
