@@ -15,11 +15,9 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
       SELECT
         COUNT(DISTINCT s.id) AS total_transactions,
         COALESCE(SUM(si.qty), 0) AS units_sold,
-        COALESCE(SUM(si.amount), 0) AS total_revenue,
+        COALESCE(SUM(si.total_amount), 0) AS total_revenue,
         COALESCE(SUM(
-          si.amount - (
-            COALESCE(si.unit_cost, p.cost_price, si.unit_price * 0.70) * si.qty
-          )
+          si.total_amount - (COALESCE(si.unit_cost, p.cost_price, 0) * si.qty)
         ), 0) AS total_profit
       FROM sales s
       JOIN sale_items si ON si.sale_id = s.id
@@ -57,7 +55,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
     const hourlyData = await all(`
       SELECT
         EXTRACT(HOUR FROM s.sale_date) AS hour,
-        COALESCE(SUM(si.amount), 0) AS total
+        COALESCE(SUM(si.total_amount), 0) AS total
       FROM sales s
       JOIN sale_items si ON si.sale_id = s.id
       WHERE DATE(s.sale_date) = $date
@@ -75,7 +73,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
       SELECT
         COALESCE(p.company_name, 'Unknown') || ' ' || COALESCE(p.size_spec, '') AS name,
         SUM(si.qty) AS units_sold,
-        SUM(si.amount) AS revenue
+        SUM(si.total_amount) AS revenue
       FROM sale_items si
       JOIN sales s ON s.id = si.sale_id
       JOIN products p ON p.id = si.product_id
@@ -122,9 +120,9 @@ router.get('/weekly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), asyn
     const weeklyData = await all(`
       SELECT
         DATE(s.sale_date) AS date,
-        COALESCE(SUM(si.amount), 0) AS revenue,
+        COALESCE(SUM(si.total_amount), 0) AS revenue,
         COALESCE(SUM(
-          si.amount - (COALESCE(si.unit_cost, p.cost_price, si.unit_price * 0.70) * si.qty)
+          si.total_amount - (COALESCE(si.unit_cost, p.cost_price, 0) * si.qty)
         ), 0) AS profit,
         COUNT(DISTINCT s.id) AS transactions
       FROM sales s
