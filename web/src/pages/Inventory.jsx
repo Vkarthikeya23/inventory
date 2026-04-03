@@ -184,11 +184,11 @@ export default function Inventory() {
                 <td style={{ padding: '10px' }}>
                   <div style={{ fontWeight: '500' }}>{p.display_name}</div>
                 </td>
-                <td style={{ textAlign: 'right' }}>₹{p.selling_price_excl_gst?.toFixed(2)}</td>
-                <td style={{ textAlign: 'right' }}>₹{p.selling_price_incl_gst?.toFixed(2)}</td>
+                <td style={{ textAlign: 'right' }}>₹{parseFloat(p.selling_price_excl_gst || 0).toFixed(2)}</td>
+                <td style={{ textAlign: 'right' }}>₹{parseFloat(p.selling_price_incl_gst || 0).toFixed(2)}</td>
                 <td style={{ textAlign: 'center' }}>{p.gst_rate}%</td>
                 <td style={{ textAlign: 'right' }}>{p.stock_qty}</td>
-                <td style={{ textAlign: 'right' }}>₹{p.cost_price?.toFixed(2) || '-'}</td>
+                <td style={{ textAlign: 'right' }}>₹{p.cost_price ? parseFloat(p.cost_price).toFixed(2) : '-'}</td>
                 {canEdit && (
                   <td style={{ textAlign: 'center' }}>
                     <button
