@@ -19,8 +19,8 @@ export default function Login() {
   }
 
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '30px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', borderRadius: '8px' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>TyreShop Pro</h1>
+    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '30px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', borderRadius: '8px', marginTop: 'clamp(20px, 10vh, 100px)' }}>
+      <h1 style={{ textAlign: 'center', marginBottom: '30px', fontSize: 'clamp(18px, 5vw, 28px)' }}>SRI MAHALAKSHMI TYRES</h1>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '20px' }}>
           <label style={{ display: 'block', marginBottom: '5px' }}>Email</label>

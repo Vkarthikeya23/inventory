@@ -17,30 +17,30 @@ export default function Navbar() {
   // Cashier sees only New Sale
   if (isCashier) {
     return (
-      <nav style={{ backgroundColor: '#2196F3', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '18px' }}>TyreShop Pro</span>
-          <Link to="/new-sale" style={{ color: '#fff', textDecoration: 'none', backgroundColor: '#4CAF50', padding: '5px 10px', borderRadius: '4px' }}>+ New Sale</Link>
+      <nav style={{ backgroundColor: '#2196F3', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 'clamp(14px, 3vw, 18px)' }}>SRI MAHALAKSHMI TYRES</span>
+          <Link to="/new-sale" style={{ color: '#fff', textDecoration: 'none', backgroundColor: '#4CAF50', padding: '8px 12px', borderRadius: '4px', fontWeight: '600' }}>+ New Sale</Link>
         </div>
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <span style={{ color: '#fff' }}>{user?.name} ({user?.role})</span>
-          <button onClick={handleLogout} style={{ backgroundColor: '#fff', color: '#2196F3', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer' }}>Logout</button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <span style={{ color: '#fff', fontSize: '14px' }}>{user?.name}</span>
+          <button onClick={handleLogout} style={{ backgroundColor: '#fff', color: '#2196F3', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}>Logout</button>
         </div>
       </nav>
     );
   }
 
   return (
-    <nav style={{ backgroundColor: '#2196F3', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-        <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '18px' }}>TyreShop Pro</span>
-        <Link to="/dashboard" style={{ color: '#fff', textDecoration: 'none' }}>Dashboard</Link>
-        <Link to="/inventory" style={{ color: '#fff', textDecoration: 'none' }}>Inventory</Link>
-        <Link to="/new-sale" style={{ color: '#fff', textDecoration: 'none', backgroundColor: '#4CAF50', padding: '5px 10px', borderRadius: '4px' }}>+ New Sale</Link>
-        {(isManager || isOwner) && <Link to="/daily-report" style={{ color: '#fff', textDecoration: 'none' }}>Daily Report</Link>}
+    <nav style={{ backgroundColor: '#2196F3', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+      <div style={{ display: 'flex', gap: 'clamp(8px, 2vw, 20px)', alignItems: 'center', flexWrap: 'wrap', flex: '1 1 auto' }}>
+        <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 'clamp(14px, 3vw, 20px)' }}>SRI MAHALAKSHMI TYRES</span>
+        <Link to="/dashboard" style={{ color: '#fff', textDecoration: 'none', padding: '8px 12px', borderRadius: '4px', fontSize: '14px' }}>Dashboard</Link>
+        <Link to="/inventory" style={{ color: '#fff', textDecoration: 'none', padding: '8px 12px', borderRadius: '4px', fontSize: '14px' }}>Inventory</Link>
+        <Link to="/new-sale" style={{ color: '#fff', textDecoration: 'none', backgroundColor: '#4CAF50', padding: '8px 12px', borderRadius: '4px', fontWeight: '600' }}>+ New Sale</Link>
+        {(isManager || isOwner) && <Link to="/daily-report" style={{ color: '#fff', textDecoration: 'none', padding: '8px 12px', borderRadius: '4px', fontSize: '14px' }}>Daily Report</Link>}
       </div>
       
-      <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 'clamp(8px, 2vw, 15px)', alignItems: 'center', flexWrap: 'wrap' }}>
         {(isManager || isOwner) && (
           <button 
             onClick={() => navigate('/products/new')}
@@ -58,8 +58,8 @@ export default function Navbar() {
             + Add Product
           </button>
         )}
-        <span style={{ color: '#fff' }}>{user?.name} ({user?.role})</span>
-        <button onClick={handleLogout} style={{ backgroundColor: '#fff', color: '#2196F3', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer' }}>Logout</button>
+        <span style={{ color: '#fff', fontSize: '14px' }}>{user?.name}</span>
+        <button onClick={handleLogout} style={{ backgroundColor: '#fff', color: '#2196F3', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}>Logout</button>
       </div>
     </nav>
   );
