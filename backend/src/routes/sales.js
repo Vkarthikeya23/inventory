@@ -189,8 +189,8 @@ router.post('/', verifyToken, async (req, res) => {
 
       // 3d. insert sale
       const sale = await txGet(client, `
-        INSERT INTO sales (id, customer_name, customer_phone, vehicle_reg, user_id, invoice_number, subtotal, cgst, sgst, total, received_amount, balance, sale_date, notes)
-        VALUES (gen_random_uuid(), $customer_name, $customer_phone, $vehicle_reg, $user_id, $invoice_number, $subtotal, $cgst, $sgst, $total, $received_amount, $balance, $sale_date, $notes)
+        INSERT INTO sales (id, customer_name, customer_phone, vehicle_reg, user_id, invoice_number, subtotal, cgst_amount, sgst_amount, total_amount, received_amount, balance_amount, sale_date, notes)
+        VALUES (gen_random_uuid(), $customer_name, $customer_phone, $vehicle_reg, $user_id, $invoice_number, $subtotal, $cgst_amount, $sgst_amount, $total_amount, $received_amount, $balance_amount, $sale_date, $notes)
         RETURNING id
       `, {
         customer_name: customer.name,
@@ -199,11 +199,11 @@ router.post('/', verifyToken, async (req, res) => {
         user_id: req.user.id,
         invoice_number: invoiceNumber,
         subtotal,
-        cgst,
-        sgst,
-        total,
+        cgst_amount: cgst,
+        sgst_amount: sgst,
+        total_amount: total,
         received_amount: receivedAmount,
-        balance,
+        balance_amount: balance,
         sale_date: saleDate.toISOString(),
         notes: notes || ''
       });
@@ -212,8 +212,8 @@ router.post('/', verifyToken, async (req, res) => {
       // 3e. insert sale items with unit_cost and deduct stock
       for (const item of parsedItems) {
         await txRun(client, `
-          INSERT INTO sale_items (id, sale_id, product_id, qty, unit_price, unit_cost, gst_rate, gst_amount, amount)
-          VALUES (gen_random_uuid(), $sale_id, $product_id, $qty, $unit_price, $unit_cost, $gst_rate, $gst_amount, $amount)
+          INSERT INTO sale_items (id, sale_id, product_id, qty, unit_price, unit_cost, gst_rate, subtotal, gst_amount, total_amount)
+          VALUES (gen_random_uuid(), $sale_id, $product_id, $qty, $unit_price, $unit_cost, $gst_rate, $subtotal, $gst_amount, $total_amount)
         `, {
           sale_id: saleId,
           product_id: item.product_id,
@@ -221,8 +221,9 @@ router.post('/', verifyToken, async (req, res) => {
           unit_price: item.unitPrice,
           unit_cost: item.unitCost,
           gst_rate: item.gstRate,
+          subtotal: item.unitPrice * item.qty,
           gst_amount: item.gstAmount,
-          amount: item.amount
+          total_amount: item.amount
         });
         
         await txRun(client, `
