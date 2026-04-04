@@ -299,7 +299,13 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
     // Step 4 — send response
-    const baseUrl = (process.env.APP_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
+    let baseUrl = process.env.APP_BASE_URL || 'http://localhost:4000';
+    // Remove any trailing slashes
+    baseUrl = baseUrl.replace(/\/+$/g, '');
+    
+    console.log('APP_BASE_URL:', process.env.APP_BASE_URL);
+    console.log('Generated invoice URL:', `${baseUrl}/invoice/${result.invoice_number}`);
+    
     return res.status(201).json({
       ...result,
       invoice_url: `${baseUrl}/invoice/${result.invoice_number}`
