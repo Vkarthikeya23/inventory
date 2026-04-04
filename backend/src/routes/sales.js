@@ -273,12 +273,15 @@ router.post('/', verifyToken, async (req, res) => {
 
       const publicToken = Math.random().toString(36).slice(2, 14);
 
+      const invoiceDataString = JSON.stringify(invoiceData);
+      console.log('SALE: Invoice data to insert:', invoiceDataString.substring(0, 100) + '...');
+      
       await txRun(client, `
         INSERT INTO invoices (id, sale_id, invoice_data, public_token)
         VALUES (gen_random_uuid(), $sale_id, $invoice_data, $public_token)
       `, {
         sale_id: saleId,
-        invoice_data: JSON.stringify(invoiceData),
+        invoice_data: invoiceDataString,
         public_token: publicToken
       });
 
