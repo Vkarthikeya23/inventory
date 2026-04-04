@@ -251,6 +251,8 @@ router.post('/', verifyToken, async (req, res) => {
         },
         items: parsedItems.map(i => ({
           name: `${productMap[i.product_id]?.company_name ?? ''} ${productMap[i.product_id]?.size_spec ?? ''}`.trim(),
+          company_name: productMap[i.product_id]?.company_name ?? '',
+          size_spec: productMap[i.product_id]?.size_spec ?? '',
           hsn_code: productMap[i.product_id]?.hsn_code ?? '',
           qty: i.qty,
           unit_price: i.unitPrice,

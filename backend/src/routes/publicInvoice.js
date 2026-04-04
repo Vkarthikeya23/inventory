@@ -317,7 +317,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               ${data.items.map((item, idx) => `
                 <tr>
                   <td class="text-center">${idx + 1}</td>
-                  <td class="item-name">${item.company_name} ${item.size_spec}</td>
+                  <td class="item-name">${item.name}</td>
                   <td class="text-center">${item.qty}</td>
                   <td class="text-right">${formatIndianNumber(item.unit_price)}</td>
                   <td class="text-right">${formatIndianNumber(item.gst_amount)} (${item.gst_rate}%)</td>
