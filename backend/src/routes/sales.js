@@ -297,9 +297,10 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
     // Step 4 — send response
+    const baseUrl = (process.env.APP_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
     return res.status(201).json({
       ...result,
-      invoice_url: `${process.env.APP_BASE_URL || 'http://localhost:4000'}/invoice/${result.invoice_number}`
+      invoice_url: `${baseUrl}/invoice/${result.invoice_number}`
     });
 
   } catch (err) {
