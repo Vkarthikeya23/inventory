@@ -191,12 +191,8 @@ export default function NewSale() {
     setReceivedAmount(0);
   }
 
-  const getBaseUrl = () => {
-    return import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
-  };
-
   const copyInvoiceLink = async () => {
-    const link = `${getBaseUrl()}/invoice/${success.invoice_number}`;
+    const link = success.invoice_url;
     try {
       await navigator.clipboard.writeText(link);
       alert('Invoice link copied!');
@@ -210,7 +206,7 @@ export default function NewSale() {
     const phone = success.customer_phone?.replace(/\D/g, '');
     const phoneWithCountry = phone?.startsWith('91') ? phone : `91${phone}`;
     const message = encodeURIComponent(
-      `Hi ${success.customer_name}, your invoice ${success.invoice_number} is ready.\nView & download: ${getBaseUrl()}/invoice/${success.invoice_number}`
+      `Hi ${success.customer_name}, your invoice ${success.invoice_number} is ready.\nView & download: ${success.invoice_url}`
     );
     window.open(`https://wa.me/${phoneWithCountry}?text=${message}`, '_blank');
   };
