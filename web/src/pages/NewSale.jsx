@@ -168,7 +168,8 @@ export default function NewSale() {
         total: res.data.total,
         amount_in_words: res.data.amount_in_words,
         customer_name: res.data.customer_name,
-        customer_phone: res.data.customer_phone
+        customer_phone: res.data.customer_phone,
+        invoice_url: res.data.invoice_url
       });
     } catch (err) {
       console.error('Sale submission error:', err);
