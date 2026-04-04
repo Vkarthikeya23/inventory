@@ -52,12 +52,20 @@ function AppRoutes() {
         } 
       />
       
-      {/* Cashier gets only New Sale */}
+      {/* Cashier gets New Sale and Daily Report */}
       <Route 
         path="/new-sale" 
         element={
           <PrivateRoute>
             <NewSale />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/daily-report" 
+        element={
+          <PrivateRoute>
+            <DailyReport />
           </PrivateRoute>
         } 
       />
