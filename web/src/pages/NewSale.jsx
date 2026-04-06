@@ -66,9 +66,9 @@ export default function NewSale() {
       totalGst += gstAmount;
     });
     
-    // Split GST equally into CGST and SGST (6% each)
-    const cgst = subtotal * 0.06;
-    const sgst = subtotal * 0.06;
+    // Split total GST equally into CGST and SGST
+    const cgst = totalGst / 2;
+    const sgst = totalGst / 2;
     const total = subtotal + cgst + sgst;
     const balance = total - receivedAmount;
     
@@ -519,11 +519,11 @@ export default function NewSale() {
               <span style={{ fontWeight: '500' }}>₹{subtotal.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span>SGST @6%</span>
+              <span>SGST @{cgst > 0 && subtotal > 0 ? ((cgst / subtotal) * 100).toFixed(1) : 0}%</span>
               <span>₹{sgst.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span>CGST @6%</span>
+              <span>CGST @{cgst > 0 && subtotal > 0 ? ((cgst / subtotal) * 100).toFixed(1) : 0}%</span>
               <span>₹{cgst.toFixed(2)}</span>
             </div>
             <div style={{ 

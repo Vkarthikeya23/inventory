@@ -95,8 +95,13 @@ router.post('/', verifyToken, async (req, res) => {
   });
 
   const subtotal = parseFloat(parsedItems.reduce((s, i) => s + i.unitPrice * i.qty, 0).toFixed(2));
-  const cgst = parseFloat((subtotal * CGST_RATE).toFixed(2));
-  const sgst = parseFloat((subtotal * SGST_RATE).toFixed(2));
+  
+  // Calculate total GST from all items
+  const totalGstAmount = parseFloat(parsedItems.reduce((s, i) => s + i.gstAmount, 0).toFixed(2));
+  
+  // Split total GST equally into CGST and SGST
+  const cgst = parseFloat((totalGstAmount / 2).toFixed(2));
+  const sgst = parseFloat((totalGstAmount / 2).toFixed(2));
   const total = parseFloat((subtotal + cgst + sgst).toFixed(2));
   const receivedAmount = received_amount != null ? parseFloat(received_amount) : total;
   const balance = parseFloat((total - receivedAmount).toFixed(2));
