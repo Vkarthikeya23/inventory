@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { BarChart, XAxis, YAxis, Bar, Tooltip } from 'recharts';
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
+const API_BASE_URL = (import.meta.env.VITE_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
 
 export default function DailyReport() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -95,7 +95,13 @@ export default function DailyReport() {
                 <td>₹{s.total}</td>
                 <td>{new Date(s.created_at).toLocaleString()}</td>
                 <td>
-                  <a href={`/invoice/${s.invoice_number}`} onClick={(e) => { e.preventDefault(); window.open(`${API_BASE_URL}/invoice/${s.invoice_number}`, '_blank'); }} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>View Invoice</a>
+                  <a href={`/invoice/${s.invoice_number}`} onClick={(e) => { 
+                    e.preventDefault(); 
+                    const url = `${API_BASE_URL}/invoice/${s.invoice_number}`;
+                    console.log('Opening invoice URL:', url);
+                    console.log('API_BASE_URL:', API_BASE_URL);
+                    window.open(url, '_blank'); 
+                  }} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>View Invoice</a>
                 </td>
               </tr>
             ))}

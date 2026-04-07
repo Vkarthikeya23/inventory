@@ -19,7 +19,7 @@ export default function AddProduct() {
   // Calculate prices based on mode
   const calculatePrices = () => {
     const price = parseFloat(formData.selling_price) || 0;
-    const gstRate = parseFloat(formData.gst_rate) || 12;
+    const gstRate = isNaN(parseFloat(formData.gst_rate)) ? 12 : parseFloat(formData.gst_rate);
     
     if (formData.price_entry_mode === 'excl') {
       const excl = price;
