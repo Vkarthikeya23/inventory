@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import DailyReport from './pages/DailyReport';
 import AddProduct from './pages/AddProduct';
+import AddService from './pages/AddService';
 import NewSale from './pages/NewSale';
 
 // Cashier-only wrapper component
@@ -92,6 +93,14 @@ function AppRoutes() {
         element={
           <PrivateRoute>
             <FullAccess><AddProduct /></FullAccess>
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/services/new" 
+        element={
+          <PrivateRoute>
+            <FullAccess><AddService /></FullAccess>
           </PrivateRoute>
         } 
       />

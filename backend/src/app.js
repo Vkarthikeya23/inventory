@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import publicInvoiceRoutes from './routes/publicInvoice.js';
 import authRoutes from './routes/auth.js';
 import productsRoutes from './routes/products.js';
+import servicesRoutes from './routes/services.js';
 import salesRoutes from './routes/sales.js';
 import reportsRoutes from './routes/reports.js';
 import invoicesRoutes from './routes/invoices.js';
@@ -38,6 +39,7 @@ app.use('/', publicInvoiceRoutes);
 
 app.use('/auth', authRoutes);
 app.use('/products', productsRoutes);
+app.use('/services', servicesRoutes);
 app.use('/sales', salesRoutes);
 app.use('/reports', reportsRoutes);
 app.use('/invoices', invoicesRoutes);

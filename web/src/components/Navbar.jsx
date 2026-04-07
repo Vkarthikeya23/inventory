@@ -43,21 +43,38 @@ export default function Navbar() {
       
       <div style={{ display: 'flex', gap: 'clamp(8px, 2vw, 15px)', alignItems: 'center', flexWrap: 'wrap' }}>
         {(isManager || isOwner) && (
-          <button 
-            onClick={() => navigate('/products/new')}
-            style={{
-              backgroundColor: '#e53e3e',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '8px 16px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            + Add Product
-          </button>
+          <>
+            <button 
+              onClick={() => navigate('/services/new')}
+              style={{
+                backgroundColor: '#e53e3e',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '8px 16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              + Add Service
+            </button>
+            <button 
+              onClick={() => navigate('/products/new')}
+              style={{
+                backgroundColor: '#e53e3e',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '8px 16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              + Add Product
+            </button>
+          </>
         )}
         <span style={{ color: '#fff', fontSize: '14px' }}>{user?.name}</span>
         <button onClick={handleLogout} style={{ backgroundColor: '#fff', color: '#2196F3', border: 'none', padding: '8px 15px', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}>Logout</button>
