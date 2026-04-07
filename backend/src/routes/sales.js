@@ -65,8 +65,8 @@ router.post('/', verifyToken, async (req, res) => {
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    if (!item.product_id) {
-      return res.status(400).json({ error: `Item ${i + 1}: Please select a product` });
+    if (!item.product_id && !item.service_name) {
+      return res.status(400).json({ error: `Item ${i + 1}: Please select a product or service` });
     }
     if (!item.qty || Number(item.qty) <= 0) {
       return res.status(400).json({ error: `Item ${i + 1}: Quantity must be greater than 0` });
@@ -85,6 +85,7 @@ router.post('/', verifyToken, async (req, res) => {
     const amount = parseFloat((unitPrice * qty + gstAmount).toFixed(2));
     return { 
       product_id: item.product_id, 
+      service_name: item.service_name,
       qty, 
       unitPrice, 
       gstRate, 
@@ -173,6 +174,12 @@ router.post('/', verifyToken, async (req, res) => {
       // 3c. check stock availability AND get cost prices in one query
       const productDetails = [];
       for (const item of parsedItems) {
+        // Skip stock check for services
+        if (!item.product_id) {
+          item.unitCost = 0;
+          continue;
+        }
+        
         const product = await txGet(client, `
           SELECT id, stock_qty, company_name, size_spec, cost_price, hsn_code
           FROM products 
@@ -221,7 +228,7 @@ router.post('/', verifyToken, async (req, res) => {
           VALUES (gen_random_uuid(), $sale_id, $product_id, $qty, $unit_price, $unit_cost, $gst_rate, $subtotal, $gst_amount, $total_amount)
         `, {
           sale_id: saleId,
-          product_id: item.product_id,
+          product_id: item.product_id || null, // Allow null for services
           qty: item.qty,
           unit_price: item.unitPrice,
           unit_cost: item.unitCost,
@@ -231,9 +238,12 @@ router.post('/', verifyToken, async (req, res) => {
           total_amount: item.amount
         });
         
-        await txRun(client, `
-          UPDATE products SET stock_qty = stock_qty - $qty WHERE id = $id
-        `, { qty: item.qty, id: item.product_id });
+        // Only deduct stock for products (not services)
+        if (item.product_id) {
+          await txRun(client, `
+            UPDATE products SET stock_qty = stock_qty - $qty WHERE id = $id
+          `, { qty: item.qty, id: item.product_id });
+        }
       }
 
       // 3f. build invoice snapshot and insert
@@ -255,10 +265,11 @@ router.post('/', verifyToken, async (req, res) => {
           vehicle_reg: vehicle_reg ?? ''
         },
         items: parsedItems.map(i => ({
-          name: `${productMap[i.product_id]?.company_name ?? ''} ${productMap[i.product_id]?.size_spec ?? ''}`.trim(),
-          company_name: productMap[i.product_id]?.company_name ?? '',
-          size_spec: productMap[i.product_id]?.size_spec ?? '',
-          hsn_code: productMap[i.product_id]?.hsn_code ?? '',
+          name: i.service_name ? i.service_name : `${productMap[i.product_id]?.company_name ?? ''} ${productMap[i.product_id]?.size_spec ?? ''}`.trim(),
+          company_name: i.service_name ? 'Service' : (productMap[i.product_id]?.company_name ?? ''),
+          size_spec: i.service_name ? '' : (productMap[i.product_id]?.size_spec ?? ''),
+          hsn_code: i.service_name ? '' : (productMap[i.product_id]?.hsn_code ?? ''),
+          is_service: !!i.service_name,
           qty: i.qty,
           unit_price: i.unitPrice,
           unit_cost: i.unitCost,

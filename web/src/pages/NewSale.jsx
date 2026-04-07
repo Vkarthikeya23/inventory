@@ -178,9 +178,9 @@ export default function NewSale() {
       return;
     }
     
-    const validItems = items.filter(item => item.product_id);
+    const validItems = items.filter(item => item.product_id || item.service_name);
     if (validItems.length === 0) {
-      setError('Please add at least one product');
+      setError('Please add at least one product or service');
       return;
     }
 
