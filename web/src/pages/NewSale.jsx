@@ -413,19 +413,35 @@ export default function NewSale() {
                         <div style={{ fontWeight: '500' }}>{item.product.display_name}</div>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => openProductSelector(index)}
-                        style={{
-                          padding: '8px 12px',
-                          backgroundColor: '#6c63ff',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Select Product
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={() => openProductSelector(index)}
+                          style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#6c63ff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Select Product
+                        </button>
+                        <button
+                          onClick={() => window.location.href = '/services/new'}
+                          style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#e53e3e',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '600'
+                          }}
+                        >
+                          Select Service
+                        </button>
+                      </div>
                     )}
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #ddd' }}>
@@ -493,21 +509,6 @@ export default function NewSale() {
             }}
           >
             + Add Item
-          </button>
-
-          <button
-            onClick={() => window.location.href = '/services/new'}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#e53e3e',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontWeight: '600'
-            }}
-          >
-            + Add Service
           </button>
         </div>
 
