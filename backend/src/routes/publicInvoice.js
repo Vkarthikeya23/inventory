@@ -280,7 +280,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
           <!-- Header -->
           <div class="header">
             <div class="shop-name">${data.shop.name}</div>
-            <div class="shop-phone">Phone no.: ${data.shop.phone || 'N/A'}</div>
+            <div class="shop-phone">9000909817</div>
           </div>
           
           <!-- Tax Invoice Title -->
@@ -358,14 +358,6 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               <div class="amount-row total-row">
                 <span>Total</span>
                 <span>${formatIndianNumber(data.total)}</span>
-              </div>
-              <div class="amount-row" style="margin-top: 10px;">
-                <span>Received</span>
-                <span>${formatIndianNumber(data.received_amount)}</span>
-              </div>
-              <div class="amount-row">
-                <span>Balance</span>
-                <span>${formatIndianNumber(data.balance)}</span>
               </div>
             </div>
           </div>
