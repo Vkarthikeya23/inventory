@@ -280,7 +280,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
           <!-- Header -->
           <div class="header">
             <div class="shop-name">${data.shop.name}</div>
-            <div class="shop-phone">9000909817</div>
+            <div class="shop-phone">Phone no.: 9000909817</div>
           </div>
           
           <!-- Tax Invoice Title -->
@@ -297,7 +297,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             <div class="column invoice-details">
               <div class="column-label">Invoice Details</div>
               <div class="detail-row">Invoice No.: ${data.invoice_number}</div>
-              <div class="detail-row">Date: ${new Date(data.created_at).toLocaleDateString('en-GB').replace(/\//g, '-')}</div>
+              <div class="detail-row">Date: ${data.sale_date ? new Date(data.sale_date).toLocaleDateString('en-GB').replace(/\//g, '-') : 'N/A'}</div>
             </div>
           </div>
           
