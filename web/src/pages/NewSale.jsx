@@ -137,7 +137,17 @@ export default function NewSale() {
 
   const selectProduct = (product) => {
     if (selectedItemIndex !== null) {
-      updateItem(items[selectedItemIndex].id, 'product_id', product.id);
+      const item = items[selectedItemIndex];
+      setItems(items.map(it => {
+        if (it.id === item.id) {
+          const updated = { ...it, product_id: product.id, service_name: null };
+          updated.product = product;
+          updated.unit_price = product.selling_price_excl_gst;
+          updated.gst_rate = product.gst_rate || 12;
+          return updated;
+        }
+        return it;
+      }));
     }
     setShowProductModal(false);
     setSelectedItemIndex(null);
@@ -150,9 +160,10 @@ export default function NewSale() {
         if (it.id === item.id) {
           return {
             ...it,
+            product_id: null,
             service_name: service.service_name,
             unit_price: service.price,
-            gst_rate: 0, // Services typically have no GST or use product GST
+            gst_rate: 0,
             product: null
           };
         }
@@ -451,6 +462,11 @@ export default function NewSale() {
                     {item.product ? (
                       <div>
                         <div style={{ fontWeight: '500' }}>{item.product.display_name}</div>
+                      </div>
+                    ) : item.service_name ? (
+                      <div>
+                        <div style={{ fontWeight: '500', color: '#e53e3e' }}>{item.service_name}</div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>Service</div>
                       </div>
                     ) : (
                       <div style={{ display: 'flex', gap: '8px' }}>
