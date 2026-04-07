@@ -150,6 +150,25 @@ export default function Inventory() {
           </div>
         )}
         
+        {/* Total Stock Summary */}
+        <div style={{ 
+          marginBottom: '20px', 
+          padding: '15px 20px', 
+          backgroundColor: '#e3f2fd', 
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <span style={{ fontSize: '24px' }}>📦</span>
+          <div>
+            <span style={{ fontSize: '16px', color: '#666' }}>Total Stock Available: </span>
+            <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#2196F3' }}>
+              {products.reduce((sum, p) => sum + (p.stock_qty || 0), 0)} units
+            </span>
+          </div>
+        </div>
+
         <div style={{ marginBottom: '20px' }}>
           <input
             type="text"
