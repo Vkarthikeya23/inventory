@@ -198,7 +198,8 @@ export default function NewSale() {
     setSubmitting(true);
     try {
       const saleItems = validItems.map(item => ({
-        product_id: item.product_id,
+        product_id: item.product_id || null,
+        service_name: item.service_name || null,
         qty: parseInt(item.qty) || 1,
         unit_price: parseFloat(item.unit_price) || 0,
         gst_rate: parseFloat(item.gst_rate) || 12
