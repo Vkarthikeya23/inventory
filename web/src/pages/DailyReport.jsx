@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { BarChart, XAxis, YAxis, Bar, Tooltip } from 'recharts';
 
 const API_BASE_URL = (import.meta.env.VITE_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
 
 export default function DailyReport() {
+  const { user } = useAuth();
+  const isOwner = user?.role === 'owner';
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [data, setData] = useState(null);
   const [sales, setSales] = useState([]);
@@ -24,6 +27,21 @@ export default function DailyReport() {
       console.error('Report fetch error:', err);
     }
     setLoading(false);
+  }
+
+  async function deleteSale(saleId) {
+    if (!confirm('Are you sure you want to delete this sale? This will restore the stock.')) {
+      return;
+    }
+    
+    try {
+      await api.delete(`/sales/${saleId}`);
+      alert('Sale deleted and stock restored');
+      fetchReport(); // Refresh the report
+    } catch (err) {
+      console.error('Delete sale error:', err);
+      alert('Failed to delete sale');
+    }
   }
 
   function exportCSV() {
@@ -85,6 +103,7 @@ export default function DailyReport() {
               <th>Total</th>
               <th>Time</th>
               <th>Action</th>
+              {isOwner && <th>Delete</th>}
             </tr>
           </thead>
           <tbody>
@@ -95,14 +114,26 @@ export default function DailyReport() {
                 <td>₹{s.total}</td>
                 <td>{new Date(s.created_at).toLocaleString()}</td>
                 <td>
-                  <a href={`/invoice/${s.invoice_number}`} onClick={(e) => { 
-                    e.preventDefault(); 
-                    const url = `${API_BASE_URL}/invoice/${s.invoice_number}`;
-                    console.log('Opening invoice URL:', url);
-                    console.log('API_BASE_URL:', API_BASE_URL);
-                    window.open(url, '_blank'); 
-                  }} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>View Invoice</a>
+                  <a href={`/invoice/${s.invoice_number}`} onClick={(e) => { e.preventDefault(); window.open(`${API_BASE_URL}/invoice/${s.invoice_number}`, '_blank'); }} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>View Invoice</a>
                 </td>
+                {isOwner && (
+                  <td>
+                    <button 
+                      onClick={() => deleteSale(s.id)}
+                      style={{
+                        backgroundColor: '#f44336',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '5px 10px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

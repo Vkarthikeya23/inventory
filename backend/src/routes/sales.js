@@ -405,4 +405,53 @@ router.get('/stats/overview', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGE
   }
 });
 
+// Delete sale - OWNER ONLY
+router.delete('/:id', verifyToken, requireRole(ROLES.OWNER), async (req, res) => {
+  const saleId = req.params.id;
+  
+  try {
+    await transaction(async (client) => {
+      // Get sale items to restore stock
+      const saleItems = await all(`
+        SELECT si.product_id, si.qty 
+        FROM sale_items si 
+        WHERE si.sale_id = $sale_id
+      `, { sale_id: saleId });
+      
+      if (saleItems.length === 0) {
+        throw new Error('Sale not found');
+      }
+      
+      // Restore stock for each product
+      for (const item of saleItems) {
+        await txRun(client, `
+          UPDATE products 
+          SET stock_qty = stock_qty + $qty 
+          WHERE id = $id
+        `, { qty: item.qty, id: item.product_id });
+      }
+      
+      // Delete sale items
+      await txRun(client, `
+        DELETE FROM sale_items WHERE sale_id = $sale_id
+      `, { sale_id: saleId });
+      
+      // Delete invoice
+      await txRun(client, `
+        DELETE FROM invoices WHERE sale_id = $sale_id
+      `, { sale_id: saleId });
+      
+      // Delete sale
+      await txRun(client, `
+        DELETE FROM sales WHERE id = $id
+      `, { id: saleId });
+    });
+    
+    res.json({ success: true, message: 'Sale deleted and stock restored' });
+  } catch (err) {
+    console.error('Delete sale error:', err);
+    res.status(500).json({ error: err.message || 'Failed to delete sale' });
+  }
+});
+
 export default router;
