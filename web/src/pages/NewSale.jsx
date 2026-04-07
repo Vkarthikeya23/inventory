@@ -480,20 +480,36 @@ export default function NewSale() {
           </tbody>
         </table>
 
-        <button
-          onClick={addItem}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#6c63ff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginBottom: '20px'
-          }}
-        >
-          + Add Item
-        </button>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+          <button
+            onClick={addItem}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#6c63ff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            + Add Item
+          </button>
+
+          <button
+            onClick={() => window.location.href = '/services/new'}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#e53e3e',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
+          >
+            + Add Service
+          </button>
+        </div>
 
         {/* Totals Section */}
         <div style={{ 
