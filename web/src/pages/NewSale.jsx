@@ -27,12 +27,26 @@ export default function NewSale() {
   
   // Product search modal
   const [showProductModal, setShowProductModal] = useState(false);
+  const [showServiceModal, setShowServiceModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+  
+  // Services
+  const [services, setServices] = useState([]);
 
   useEffect(() => {
     fetchProducts();
+    fetchServices();
   }, []);
+
+  async function fetchServices() {
+    try {
+      const res = await api.get('/services');
+      setServices(res.data);
+    } catch (err) {
+      console.error('Fetch services error:', err);
+    }
+  }
 
   async function fetchProducts() {
     try {
@@ -115,11 +129,37 @@ export default function NewSale() {
     setShowProductModal(true);
   };
 
+  const openServiceSelector = (index) => {
+    setSelectedItemIndex(index);
+    setSearchQuery('');
+    setShowServiceModal(true);
+  };
+
   const selectProduct = (product) => {
     if (selectedItemIndex !== null) {
       updateItem(items[selectedItemIndex].id, 'product_id', product.id);
     }
     setShowProductModal(false);
+    setSelectedItemIndex(null);
+  };
+
+  const selectService = (service) => {
+    if (selectedItemIndex !== null) {
+      const item = items[selectedItemIndex];
+      setItems(items.map(it => {
+        if (it.id === item.id) {
+          return {
+            ...it,
+            service_name: service.service_name,
+            unit_price: service.price,
+            gst_rate: 0, // Services typically have no GST or use product GST
+            product: null
+          };
+        }
+        return it;
+      }));
+    }
+    setShowServiceModal(false);
     setSelectedItemIndex(null);
   };
 
@@ -427,8 +467,8 @@ export default function NewSale() {
                         >
                           Select Product
                         </button>
-                        <button
-                          onClick={() => window.location.href = '/services/new'}
+                         <button
+                          onClick={() => openServiceSelector(index)}
                           style={{
                             padding: '8px 12px',
                             backgroundColor: '#e53e3e',
@@ -664,6 +704,81 @@ export default function NewSale() {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Service Selection Modal */}
+      {showServiceModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            width: '500px',
+            maxHeight: '70vh',
+            overflow: 'auto'
+          }}>
+            <h2>Select Service</h2>
+            <input
+              type="text"
+              placeholder="Search services..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginBottom: '20px',
+                border: '1px solid #ddd',
+                borderRadius: '4px'
+              }}
+            />
+            <div style={{ maxHeight: '300px', overflow: 'auto' }}>
+              {services
+                .filter(s => s.service_name.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map(service => (
+                  <div
+                    key={service.id}
+                    onClick={() => selectService(service)}
+                    style={{
+                      padding: '15px',
+                      borderBottom: '1px solid #eee',
+                      cursor: 'pointer',
+                      hover: { backgroundColor: '#f5f5f5' }
+                    }}
+                  >
+                    <div style={{ fontWeight: '500' }}>{service.service_name}</div>
+                    <div style={{ fontSize: '14px', color: '#666' }}>
+                      ₹{parseFloat(service.price).toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+            </div>
+            <button
+              onClick={() => setShowServiceModal(false)}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                backgroundColor: '#f44336',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
