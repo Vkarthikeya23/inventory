@@ -47,7 +47,7 @@ export default function NewSale() {
   const calculateItemAmount = (item) => {
     const qty = parseFloat(item.qty) || 0;
     const unitPrice = parseFloat(item.unit_price) || 0;
-    const gstRate = parseFloat(item.gst_rate) || 12;
+    const gstRate = isNaN(parseFloat(item.gst_rate)) ? 12 : parseFloat(item.gst_rate);
     
     const subtotal = qty * unitPrice;
     const gstAmount = subtotal * (gstRate / 100);

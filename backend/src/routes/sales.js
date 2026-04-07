@@ -80,7 +80,7 @@ router.post('/', verifyToken, async (req, res) => {
   const parsedItems = items.map(item => {
     const qty = Number(item.qty);
     const unitPrice = parseFloat(item.unit_price);
-    const gstRate = parseFloat(item.gst_rate ?? 12);
+    const gstRate = parseFloat(item.gst_rate) === 0 ? 0 : parseFloat(item.gst_rate ?? 12);
     const gstAmount = parseFloat((unitPrice * qty * gstRate / 100).toFixed(2));
     const amount = parseFloat((unitPrice * qty + gstAmount).toFixed(2));
     return { 
