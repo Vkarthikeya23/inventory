@@ -34,6 +34,9 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files (stamp, logos, etc.)
+app.use('/assets', express.static('public/assets'));
+
 // Public routes (no auth required)
 app.use('/', publicInvoiceRoutes);
 

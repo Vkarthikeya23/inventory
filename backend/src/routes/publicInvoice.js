@@ -340,6 +340,9 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             <div class="words-column">
               <div class="amount-in-words">Invoice Amount In Words</div>
               <div>${data.amount_in_words}</div>
+              <div style="margin-top: 20px; text-align: center;">
+                <img src="/assets/stamp.png" alt="Stamp" style="width: 100px; height: auto; opacity: 0.8;">
+              </div>
               <div class="thank-you" style="margin-top: 40px;">Thanks for doing business with us!</div>
             </div>
             <div class="amounts-column">
