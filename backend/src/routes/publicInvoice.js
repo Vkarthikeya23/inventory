@@ -295,6 +295,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               <div class="customer-name">${data.customer.name.toUpperCase()}</div>
               <div class="detail-row">Contact No.: ${data.customer.phone}</div>
               ${data.customer.vehicle_reg ? `<div class="detail-row">Car No.: ${data.customer.vehicle_reg}</div>` : ''}
+              ${data.customer.km_reading ? `<div class="detail-row">KM Reading: ${data.customer.km_reading}</div>` : ''}
             </div>
             <div class="column invoice-details">
               <div class="column-label">Invoice Details</div>

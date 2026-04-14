@@ -49,6 +49,7 @@ router.post('/', verifyToken, async (req, res) => {
     customer_name,
     customer_phone,
     vehicle_reg,
+    km_reading,
     sale_date,
     received_amount,
     items,
@@ -264,7 +265,8 @@ router.post('/', verifyToken, async (req, res) => {
         customer: {
           name: customer.name,
           phone: customer.phone,
-          vehicle_reg: vehicle_reg ?? ''
+          vehicle_reg: vehicle_reg ?? '',
+          km_reading: km_reading || ''
         },
         items: parsedItems.map(i => ({
           name: i.service_name ? i.service_name : `${productMap[i.product_id]?.company_name ?? ''} ${productMap[i.product_id]?.size_spec ?? ''}`.trim(),
