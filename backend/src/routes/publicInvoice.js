@@ -350,6 +350,9 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                 <img src="/assets/stamp.png" alt="Stamp" style="width: 100px; height: auto; opacity: 0.8;">
               </div>
               <div class="thank-you" style="margin-top: 40px;">Thanks for doing business with us!</div>
+              <div style="margin-top: 15px; padding: 10px; background-color: #fff3cd; border-radius: 4px; font-size: 12px; color: #856404;">
+                Free inspection/service is available for any issues related to the work performed, valid for 15 days from the date of installation.
+              </div>
             </div>
             <div class="amounts-column">
               <div class="amount-row">
