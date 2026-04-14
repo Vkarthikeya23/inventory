@@ -221,6 +221,10 @@ router.post('/', verifyToken, async (req, res) => {
       });
       const saleId = sale.id;
 
+      // Build product map before inserting sale items
+      const productMap = {};
+      productDetails.forEach(p => { productMap[p.id] = p; });
+
       // 3e. insert sale items with unit_cost and hsn_code
       for (const item of parsedItems) {
         await txRun(client, `
@@ -248,9 +252,6 @@ router.post('/', verifyToken, async (req, res) => {
       }
 
       // 3f. build invoice snapshot and insert
-      const productMap = {};
-      productDetails.forEach(p => { productMap[p.id] = p; });
-
       const invoiceData = {
         invoice_number: invoiceNumber,
         sale_date: saleDate.toISOString(),
