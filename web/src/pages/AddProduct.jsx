@@ -13,7 +13,8 @@ export default function AddProduct() {
     gst_rate: '12',
     price_entry_mode: 'excl',
     selling_price: '',
-    stock_qty: '0'
+    stock_qty: '0',
+    hsn_code: ''
   });
 
   // Calculate prices based on mode
@@ -129,6 +130,21 @@ export default function AddProduct() {
                 style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
               />
             </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>HSN Code</label>
+            <input
+              type="text"
+              name="hsn_code"
+              value={formData.hsn_code}
+              onChange={handleChange}
+              placeholder="e.g., 4011"
+              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+            />
+            <p style={{ fontSize: '13px', color: '#666', marginTop: '5px' }}>
+              GST HSN code for tyres (typically 4011 for tyres)
+            </p>
           </div>
 
           <div style={{ marginBottom: '20px' }}>

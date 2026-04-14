@@ -75,7 +75,8 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
       selling_price_incl_gst,
       gst_rate = 12,
       price_entry_mode = 'excl',
-      stock_qty = 0 
+      stock_qty = 0,
+      hsn_code = ''
     } = req.body;
     
     if (!company_name || !size_spec) {
@@ -117,9 +118,10 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
         selling_price_incl_gst, 
         gst_rate, 
         price_entry_mode, 
-        stock_qty
+        stock_qty,
+        hsn_code
       )
-      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $price_entry_mode, $stock_qty)
+      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $price_entry_mode, $stock_qty, $hsn_code)
       RETURNING 
         id, 
         company_name, 
@@ -130,6 +132,7 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
         gst_rate, 
         price_entry_mode, 
         stock_qty, 
+        hsn_code,
         is_deleted, 
         created_at,
         COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '') as display_name
@@ -142,7 +145,8 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
       selling_price_incl_gst: sellingPriceIncl,
       gst_rate,
       price_entry_mode,
-      stock_qty
+      stock_qty,
+      hsn_code: hsn_code || ''
     });
     
     res.status(201).json(result);
