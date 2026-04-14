@@ -45,15 +45,55 @@ export default function DailyReport() {
   }
 
   function exportCSV() {
-    const headers = ['Invoice', 'Customer', 'Items', 'Total', 'Date'];
-    const rows = sales.map(s => [s.invoice_number, s.customer_name, '-', s.total, s.created_at]);
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const headers = [
+      'Invoice No',
+      'Date',
+      'Time',
+      'Customer Name',
+      'Phone',
+      'Vehicle Reg',
+      'KM Reading',
+      'Subtotal',
+      'CGST',
+      'SGST',
+      'Total'
+    ];
+    
+    const rows = sales.map(s => [
+      s.invoice_number || '',
+      s.created_at ? new Date(s.created_at).toLocaleDateString('en-GB') : '',
+      s.created_at ? new Date(s.created_at).toLocaleTimeString('en-IN') : '',
+      s.customer_name || '',
+      s.customer_phone || '',
+      '-',
+      '-',
+      '-',
+      '-',
+      '-',
+      (s.total || 0).toFixed(2)
+    ]);
+    
+    const escapeCSV = (val) => {
+      const str = String(val);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+    
+    const csvContent = [
+      headers.map(escapeCSV).join(','),
+      ...rows.map(row => row.map(escapeCSV).join(','))
+    ].join('\n');
+    
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `daily-report-${date}.csv`;
+    a.download = `sales-report-${date}.csv`;
     a.click();
+    URL.revokeObjectURL(url);
   }
 
   if (loading) return <div>Loading...</div>;
