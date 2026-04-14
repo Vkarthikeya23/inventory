@@ -221,17 +221,18 @@ router.post('/', verifyToken, async (req, res) => {
       });
       const saleId = sale.id;
 
-      // 3e. insert sale items with unit_cost and deduct stock
+      // 3e. insert sale items with unit_cost and hsn_code
       for (const item of parsedItems) {
         await txRun(client, `
-          INSERT INTO sale_items (id, sale_id, product_id, qty, unit_price, unit_cost, gst_rate, subtotal, gst_amount, total_amount)
-          VALUES (gen_random_uuid(), $sale_id, $product_id, $qty, $unit_price, $unit_cost, $gst_rate, $subtotal, $gst_amount, $total_amount)
+          INSERT INTO sale_items (id, sale_id, product_id, qty, unit_price, unit_cost, hsn_code, gst_rate, subtotal, gst_amount, total_amount)
+          VALUES (gen_random_uuid(), $sale_id, $product_id, $qty, $unit_price, $unit_cost, $hsn_code, $gst_rate, $subtotal, $gst_amount, $total_amount)
         `, {
           sale_id: saleId,
-          product_id: item.product_id || null, // Allow null for services
+          product_id: item.product_id || null,
           qty: item.qty,
           unit_price: item.unitPrice,
           unit_cost: item.unitCost,
+          hsn_code: item.hsn_code || (item.product_id ? productMap[item.product_id]?.hsn_code || '' : ''),
           gst_rate: item.gstRate,
           subtotal: item.unitPrice * item.qty,
           gst_amount: item.gstAmount,

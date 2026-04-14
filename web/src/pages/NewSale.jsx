@@ -19,7 +19,7 @@ export default function NewSale() {
   
   // Line items
   const [items, setItems] = useState([
-    { id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, product: null }
+    { id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, hsn_code: '', product: null }
   ]);
   
   // Totals
@@ -93,7 +93,7 @@ export default function NewSale() {
 
   const addItem = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, product: null }]);
+    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, hsn_code: '', product: null }]);
   };
 
   const removeItem = (id) => {
@@ -144,6 +144,7 @@ export default function NewSale() {
           updated.product = product;
           updated.unit_price = product.selling_price_excl_gst;
           updated.gst_rate = product.gst_rate || 12;
+          updated.hsn_code = product.hsn_code || '';
           return updated;
         }
         return it;
@@ -200,6 +201,7 @@ export default function NewSale() {
       const saleItems = validItems.map(item => ({
         product_id: item.product_id || null,
         service_name: item.service_name || null,
+        hsn_code: item.hsn_code || null,
         qty: parseInt(item.qty) || 1,
         unit_price: parseFloat(item.unit_price) || 0,
         gst_rate: parseFloat(item.gst_rate) || 12
@@ -240,7 +242,7 @@ export default function NewSale() {
       vehicle_reg: '',
       sale_date: new Date().toISOString().split('T')[0]
     });
-    setItems([{ id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, product: null }]);
+    setItems([{ id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, hsn_code: '', product: null }]);
     setReceivedAmount(0);
   }
 
@@ -447,9 +449,10 @@ export default function NewSale() {
               <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #6c63ff' }}>#</th>
               <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #6c63ff' }}>Item name</th>
               <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '80px' }}>Qty</th>
-              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '120px' }}>Price/Unit</th>
-              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '120px' }}>GST</th>
-              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '120px' }}>Amount</th>
+              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '100px' }}>Price/Unit</th>
+              <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '80px' }}>HSN</th>
+              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '100px' }}>GST</th>
+              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '100px' }}>Amount</th>
               <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '50px' }}></th>
             </tr>
           </thead>
@@ -517,6 +520,15 @@ export default function NewSale() {
                       value={item.unit_price}
                       onChange={(e) => updateItem(item.id, 'unit_price', e.target.value)}
                       style={{ width: '100px', padding: '5px', textAlign: 'right' }}
+                    />
+                  </td>
+                  <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'center' }}>
+                    <input
+                      type="text"
+                      placeholder="HSN"
+                      value={item.hsn_code || ''}
+                      onChange={(e) => updateItem(item.id, 'hsn_code', e.target.value)}
+                      style={{ width: '70px', padding: '5px', textAlign: 'center' }}
                     />
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>

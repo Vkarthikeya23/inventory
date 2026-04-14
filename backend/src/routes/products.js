@@ -38,6 +38,7 @@ router.get('/', verifyToken, async (req, res) => {
         gst_rate,
         price_entry_mode,
         stock_qty,
+        hsn_code,
         is_deleted,
         created_at,
         COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '') as display_name

@@ -310,9 +310,10 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                 <th style="width: 40px;">#</th>
                 <th>Item name</th>
                 <th style="width: 80px;">Qty</th>
-                <th style="width: 120px;" class="text-right">Price/Unit</th>
-                <th style="width: 120px;" class="text-right">GST</th>
-                <th style="width: 120px;" class="text-right">Amount</th>
+                <th style="width: 100px;" class="text-right">Price/Unit</th>
+                <th style="width: 80px;" class="text-center">HSN</th>
+                <th style="width: 100px;" class="text-right">GST</th>
+                <th style="width: 100px;" class="text-right">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -322,6 +323,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                   <td class="item-name">${item.name}</td>
                   <td class="text-center">${item.qty}</td>
                   <td class="text-right">${formatIndianNumber(item.unit_price)}</td>
+                  <td class="text-center">${item.hsn_code || '-'}</td>
                   <td class="text-right">${formatIndianNumber(item.gst_amount)} (${item.gst_rate}%)</td>
                   <td class="text-right">${formatIndianNumber(item.amount)}</td>
                 </tr>
@@ -330,6 +332,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               <tr style="background: #6c63ff; color: white; font-weight: 600;">
                 <td colspan="2">Total</td>
                 <td class="text-center">${data.items.reduce((sum, item) => sum + item.qty, 0)}</td>
+                <td></td>
                 <td></td>
                 <td class="text-right">${formatIndianNumber(data.items.reduce((sum, item) => sum + item.gst_amount, 0))}</td>
                 <td class="text-right">${formatIndianNumber(data.total)}</td>
