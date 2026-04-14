@@ -205,7 +205,7 @@ export default function NewSale() {
         hsn_code: item.hsn_code || null,
         qty: parseInt(item.qty) || 1,
         unit_price: parseFloat(item.unit_price) || 0,
-        gst_rate: parseFloat(item.gst_rate) || 12
+        gst_rate: !isNaN(parseFloat(item.gst_rate)) ? parseFloat(item.gst_rate) : 12
       }));
       
       const res = await api.post('/sales', {
