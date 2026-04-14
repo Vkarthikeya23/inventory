@@ -280,7 +280,8 @@ router.get('/invoice/:invoice_number', async (req, res) => {
           <!-- Header -->
           <div class="header">
             <div class="shop-name">${data.shop.name}</div>
-            <div class="shop-phone">Phone no.: 9000909817</div>
+            <div class="shop-phone">Phone no.: 9000909817, 9346513095, 9100717642</div>
+            <div class="shop-gstin" style="font-size: 13px; color: #666; margin-top: 3px;">GSTIN: 36AVGPJ4122R1Z8</div>
           </div>
           
           <!-- Tax Invoice Title -->

@@ -31,6 +31,11 @@ export default function Inventory() {
       setProducts(res.data);
     } catch (err) {
       console.error('Fetch products error:', err);
+      if (err.response?.status === 401) {
+        setProducts([]);
+      } else {
+        setProducts([]);
+      }
     }
     setLoading(false);
   }
