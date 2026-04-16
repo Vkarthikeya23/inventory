@@ -612,27 +612,112 @@ router.get('/invoice/:invoice_number', async (req, res) => {
 
           /* Responsive */
           @media screen and (max-width: 600px) {
-            .two-column, .totals-section {
+            body {
+              padding: 5px;
+            }
+            .invoice-container {
+              padding: 10px;
+              max-width: 100%;
+            }
+            .header {
               flex-direction: column;
+              text-align: center;
+              gap: 10px;
+              padding-bottom: 10px;
+            }
+            .header-left {
+              width: 100%;
+            }
+            .logo {
+              width: 60px;
+              height: 60px;
+            }
+            .shop-name {
+              font-size: 18px;
+            }
+            .shop-phone, .shop-address, .shop-gstin {
+              font-size: 11px;
+            }
+            .logos {
+              flex-direction: row;
+              justify-content: center;
+            }
+            .tax-invoice-title {
+              font-size: 14px;
+              padding: 6px;
+              margin: 10px 0;
+            }
+            .two-column {
+              flex-direction: column;
+              margin-bottom: 10px;
+            }
+            .column {
+              padding: 10px;
             }
             .column:first-child {
               border-right: none;
               border-bottom: 2px solid #444;
             }
+            .column-label {
+              font-size: 12px;
+            }
+            .customer-name {
+              font-size: 13px;
+            }
+            .detail-row {
+              font-size: 11px;
+            }
+            table {
+              font-size: 10px;
+              margin: 10px 0;
+            }
+            th {
+              padding: 6px 4px;
+              font-size: 9px;
+            }
+            td {
+              padding: 5px 4px;
+            }
+            .totals-section {
+              flex-direction: column;
+              margin-top: 10px;
+            }
             .words-column {
               border-right: none;
               border-bottom: 2px solid #444;
+              padding: 10px;
             }
             .amounts-column {
               width: 100%;
+              padding: 10px;
+            }
+            .amount-row {
+              font-size: 11px;
+            }
+            .total-row {
+              margin: 6px -10px -10px -10px;
+              padding: 6px 10px;
+            }
+            .thank-you {
+              font-size: 11px;
+            }
+            .warranty-box {
+              font-size: 9px;
+              padding: 5px;
             }
             .footer {
               flex-direction: column;
-              gap: 15px;
+              gap: 10px;
+              margin-top: 10px;
+              padding-top: 10px;
             }
-            .header {
-              flex-direction: column;
+            .shop-signature {
               text-align: center;
+              font-size: 12px;
+            }
+            .btn {
+              padding: 6px 12px;
+              font-size: 12px;
             }
           }
         </style>
