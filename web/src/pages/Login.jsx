@@ -40,7 +40,7 @@ export default function Login() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{ width: '100%', padding: '12px 40px 12px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '16px', height: '42px' }}
+              style={{ width: '100%', padding: '12px 45px 12px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '16px', height: '44px', boxSizing: 'border-box' }}
               required
             />
             <button
