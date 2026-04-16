@@ -14,6 +14,7 @@ export default function NewSale() {
     customer_name: '',
     customer_phone: '',
     vehicle_reg: '',
+    vehicle_type: '',
     km_reading: '',
     sale_date: new Date().toISOString().split('T')[0]
   });
@@ -212,6 +213,7 @@ export default function NewSale() {
         customer_name: invoiceHeader.customer_name,
         customer_phone: invoiceHeader.customer_phone,
         vehicle_reg: invoiceHeader.vehicle_reg,
+        vehicle_type: invoiceHeader.vehicle_type || null,
         km_reading: invoiceHeader.km_reading || null,
         sale_date: invoiceHeader.sale_date,
         received_amount: receivedAmount || total,
@@ -396,11 +398,24 @@ export default function NewSale() {
               placeholder="Car number plate (e.g., TS09AB1234)"
               value={invoiceHeader.vehicle_reg}
               onChange={(e) => setInvoiceHeader({...invoiceHeader, vehicle_reg: e.target.value})}
-              style={{ 
-                width: '100%', 
-                padding: '10px', 
-                border: '1px solid #ddd', 
-                borderRadius: '4px' 
+              style={{
+                width: '100%',
+                padding: '10px',
+                border: '1px solid #ddd',
+                borderRadius: '4px'
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Vehicle type (e.g., Swift, Baleno)"
+              value={invoiceHeader.vehicle_type || ''}
+              onChange={(e) => setInvoiceHeader({...invoiceHeader, vehicle_type: e.target.value})}
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginTop: '10px',
+                border: '1px solid #ddd',
+                borderRadius: '4px'
               }}
             />
             <input
@@ -408,12 +423,12 @@ export default function NewSale() {
               placeholder="KM reading (optional)"
               value={invoiceHeader.km_reading || ''}
               onChange={(e) => setInvoiceHeader({...invoiceHeader, km_reading: e.target.value})}
-              style={{ 
-                width: '100%', 
-                padding: '10px', 
+              style={{
+                width: '100%',
+                padding: '10px',
                 marginTop: '10px',
-                border: '1px solid #ddd', 
-                borderRadius: '4px' 
+                border: '1px solid #ddd',
+                borderRadius: '4px'
               }}
             />
           </div>

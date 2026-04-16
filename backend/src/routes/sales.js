@@ -49,6 +49,7 @@ router.post('/', verifyToken, async (req, res) => {
     customer_name,
     customer_phone,
     vehicle_reg,
+    vehicle_type,
     km_reading,
     sale_date,
     received_amount,
@@ -266,6 +267,7 @@ router.post('/', verifyToken, async (req, res) => {
           name: customer.name,
           phone: customer.phone,
           vehicle_reg: vehicle_reg ?? '',
+          vehicle_type: vehicle_type || '',
           km_reading: km_reading || ''
         },
         items: parsedItems.map(i => ({

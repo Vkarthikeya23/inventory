@@ -360,10 +360,15 @@ router.get('/invoice/:invoice_number', async (req, res) => {
           <div class="header">
             <div class="header-left">
               <div class="shop-name">${data.shop.name}</div>
-              <div class="shop-phone">Phone no.: 9000909817, 9346513095, 9100717642</div>
+              <div class="shop-phone">Phone no.: 99499 56515, 9346513095, 9100717642</div>
               <div class="shop-address">H.No. 3-25, Old RC Puram, Patancheru, Sangareddy Dist.</div>
               <div class="shop-gstin">GSTIN: 36AVGPJ4122R1Z8</div>
             </div>
+            <div class="logos" style="display: flex; gap: 10px; align-items: center;">
+              <img src="/assets/logo.png" alt="Logo" class="logo">
+              <img src="/assets/logo2.png" alt="Logo" class="logo" style="width: 70px;">
+            </div>
+          </div>
             <img src="/assets/logo.png" alt="Logo" class="logo">
           </div>
 
@@ -377,6 +382,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               <div class="customer-name">${data.customer.name.toUpperCase()}</div>
               <div class="detail-row">Contact No.: ${data.customer.phone}</div>
               ${data.customer.vehicle_reg ? `<div class="detail-row">Vehicle No.: ${data.customer.vehicle_reg}</div>` : ''}
+              ${data.customer.vehicle_type ? `<div class="detail-row">Vehicle Type: ${data.customer.vehicle_type}</div>` : ''}
               ${data.customer.km_reading ? `<div class="detail-row">KM Reading: ${data.customer.km_reading}</div>` : ''}
             </div>
             <div class="column invoice-details">
@@ -427,9 +433,6 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             <div class="words-column">
               <div class="amount-in-words">Amount In Words</div>
               <div style="font-size: 15px; font-weight: 600; color: #1a1a1a;">${data.amount_in_words}</div>
-              <div style="margin-top: 20px; text-align: center;">
-                <img src="/assets/stamp.png" alt="Stamp" style="width: 90px; height: auto; opacity: 0.9;">
-              </div>
               <div class="thank-you">Thanks for doing business with us!</div>
               <div class="warranty-box">
                 Free inspection/service is available for any issues related to the work performed, valid for 15 days from the date of installation.
@@ -451,6 +454,10 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               <div class="total-row">
                 <span>TOTAL</span>
                 <span>${formatIndianNumber(data.total)}</span>
+              </div>
+              <div style="margin-top: 30px; text-align: center;">
+                <img src="/assets/stamp.png" alt="Stamp" style="width: 85px; height: auto; opacity: 0.9;">
+                <div style="font-size: 11px; font-weight: 600; margin-top: 5px; color: #333;">Authorized Signature</div>
               </div>
             </div>
           </div>
