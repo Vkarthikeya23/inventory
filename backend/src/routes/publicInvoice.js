@@ -60,10 +60,240 @@ router.get('/invoice/:invoice_number', async (req, res) => {
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.4;
+            line-height: 1.3;
             color: #333;
             background: #f5f5f5;
+            padding: 8px;
+          }
+          .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 15px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            border: 2px solid #4a4a4a;
+          }
+          .header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          }
+          .header-left {
+            flex: 1;
+          }
+          .logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+          }
+          .shop-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+          }
+          .shop-phone {
+            font-size: 11px;
+            color: #444;
+            font-weight: 500;
+          }
+          .shop-address {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+          }
+          .shop-gstin {
+            font-size: 10px;
+            color: #666;
+            margin-top: 1px;
+            font-weight: 600;
+          }
+          .tax-invoice-title {
+            text-align: center;
+            color: #333;
+            font-size: 16px;
+            font-weight: 700;
+            margin: 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid #333;
+            padding: 6px;
+            background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+          }
+          .two-column {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border: 2px solid #444;
+          }
+          .column {
+            flex: 1;
             padding: 10px;
+          }
+          .column:first-child {
+            border-right: 2px solid #444;
+            background: #fafafa;
+          }
+          .column:last-child {
+            background: #fafafa;
+          }
+          .column-label {
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 2px;
+          }
+          .customer-name {
+            font-weight: 700;
+            font-size: 12px;
+            margin-bottom: 3px;
+            color: #1a1a1a;
+          }
+          .detail-row {
+            font-size: 10px;
+            color: #333;
+            margin: 1px 0;
+          }
+          .invoice-details {
+            text-align: right;
+          }
+          .invoice-details .detail-row {
+            justify-content: flex-end;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 10px;
+            border: 2px solid #333;
+          }
+          th {
+            background: #333;
+            color: white;
+            font-weight: 700;
+            padding: 5px 4px;
+            text-align: left;
+            border-bottom: 2px solid #222;
+            text-transform: uppercase;
+            font-size: 9px;
+            letter-spacing: 0.5px;
+          }
+          td {
+            padding: 4px;
+            border: 1px solid #999;
+            vertical-align: top;
+            color: #333;
+          }
+          tbody tr:nth-child(even) {
+            background: #f9f9f9;
+          }
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .item-name {
+            font-weight: 600;
+            color: #1a1a1a;
+          }
+          .item-service {
+            color: #c62828;
+          }
+          .totals-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            border: 2px solid #444;
+          }
+          .words-column {
+            flex: 1;
+            padding: 10px;
+            border-right: 2px solid #444;
+            background: #fafafa;
+          }
+          .amounts-column {
+            width: 220px;
+            padding: 10px;
+            background: #fafafa;
+          }
+          .amount-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 10px;
+            border-bottom: 1px solid #ddd;
+          }
+          .amount-row:last-child {
+            border-bottom: none;
+          }
+          .total-row {
+            background: #333;
+            color: white;
+            font-weight: 700;
+            padding: 6px 10px;
+            margin: 6px -10px -10px -10px;
+            font-size: 11px;
+          }
+          .amount-in-words {
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+          }
+          .thank-you {
+            color: #444;
+            font-size: 10px;
+            margin-top: 12px;
+            font-weight: 500;
+          }
+          .warranty-box {
+            margin-top: 8px;
+            padding: 5px 6px;
+            background-color: #fffde7;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            font-size: 8px;
+            color: #856404;
+            font-weight: 500;
+          }
+          .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 2px solid #333;
+          }
+          .buttons {
+            display: flex;
+            gap: 8px;
+          }
+          .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+          }
+          .btn-print {
+            background: #333;
+            color: #fff;
+          }
+          .btn-print:hover {
+            background: #555;
+          }
+          .shop-signature {
+            text-align: right;
+            font-weight: 700;
+            color: #1a1a1a;
+            font-size: 12px;
           }
           .invoice-container {
             max-width: 800px;
@@ -591,8 +821,93 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             .invoice-container {
               box-shadow: none;
               max-width: 100%;
-              padding: 20px;
+              padding: 10px 15px;
               border: none;
+            }
+            .header {
+              padding-bottom: 8px;
+              margin-bottom: 8px;
+              gap: 10px;
+            }
+            .logo {
+              width: 55px;
+              height: 55px;
+            }
+            .shop-name {
+              font-size: 16px;
+              margin-bottom: 2px;
+            }
+            .shop-phone, .shop-address, .shop-gstin {
+              font-size: 9px;
+            }
+            .tax-invoice-title {
+              font-size: 14px;
+              padding: 5px;
+              margin: 8px 0;
+            }
+            .two-column {
+              margin-bottom: 8px;
+            }
+            .column {
+              padding: 8px;
+            }
+            .column-label {
+              font-size: 10px;
+              margin-bottom: 3px;
+              padding-bottom: 2px;
+            }
+            .customer-name {
+              font-size: 11px;
+            }
+            .detail-row {
+              font-size: 9px;
+              margin: 1px 0;
+            }
+            table {
+              margin: 8px 0;
+              font-size: 9px;
+            }
+            th {
+              padding: 4px 3px;
+              font-size: 8px;
+            }
+            td {
+              padding: 3px;
+            }
+            .totals-section {
+              margin-top: 8px;
+            }
+            .words-column, .amounts-column {
+              padding: 8px;
+            }
+            .amount-row {
+              font-size: 9px;
+              padding: 2px 0;
+            }
+            .total-row {
+              padding: 5px 8px;
+              margin: 5px -8px -8px -8px;
+              font-size: 10px;
+            }
+            .amount-in-words {
+              font-size: 10px;
+              margin-bottom: 3px;
+            }
+            .thank-you {
+              font-size: 9px;
+              margin-top: 8px;
+            }
+            .warranty-box {
+              margin-top: 6px;
+              padding: 4px 6px;
+              font-size: 8px;
+            }
+            .footer {
+              margin-top: 10px;
+              padding-top: 8px;
+            }
+            .shop-signature {
+              font-size: 11px;
             }
             .no-print {
               display: none !important;
@@ -607,7 +922,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
 
           @page {
             size: A4;
-            margin: 10mm 12mm;
+            margin: 5mm 8mm;
           }
 
           /* Responsive */
