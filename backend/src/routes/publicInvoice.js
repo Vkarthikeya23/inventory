@@ -55,7 +55,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Tax Invoice ${data.invoice_number} - ${data.shop.name}</title>
+        <title>Invoice - ${data.shop.name}</title>
         <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body {
@@ -246,7 +246,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             font-weight: 700;
             color: #1a1a1a;
             margin-bottom: 10px;
-            font-size: 14px;
+            font-size: 16px;
             text-transform: uppercase;
           }
           .thank-you {
@@ -455,7 +455,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               </div>
               <div style="margin-top: 30px; text-align: center;">
                 <img src="/assets/stamp.png" alt="Stamp" style="width: 85px; height: auto; opacity: 0.9;">
-                <div style="font-size: 11px; font-weight: 600; margin-top: 5px; color: #333;">Authorized Signature</div>
+                <div style="font-size: 13px; font-weight: 600; margin-top: 5px; color: #333;">Authorized Signature</div>
               </div>
             </div>
           </div>
@@ -473,11 +473,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
         </div>
 
         <script>
-          document.title = 'Invoice-${data.invoice_number}';
-
-          window.addEventListener('beforeprint', () => {
-            document.title = 'Invoice-${data.invoice_number}';
-          });
+          document.title = 'Invoice';
         </script>
       </body>
       </html>

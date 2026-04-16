@@ -23,9 +23,9 @@ export default function Login() {
       <h1 style={{ textAlign: 'center', marginBottom: '30px', fontSize: 'clamp(18px, 5vw, 28px)' }}>SRI MAHALAKSHMI TYRES</h1>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Email</label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Username</label>
           <input
-            type="email"
+            type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             style={{ width: '100%', padding: '12px', border: '1px solid #ddd', borderRadius: '4px' }}
