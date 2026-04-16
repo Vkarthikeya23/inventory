@@ -60,10 +60,293 @@ router.get('/invoice/:invoice_number', async (req, res) => {
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.5;
+            line-height: 1.4;
             color: #333;
             background: #f5f5f5;
+            padding: 10px;
+          }
+          .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
             padding: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            border: 2px solid #4a4a4a;
+          }
+          .header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+          }
+          .header-left {
+            flex: 1;
+          }
+          .logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+          }
+          .shop-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+          }
+          .shop-phone {
+            font-size: 13px;
+            color: #444;
+            font-weight: 500;
+          }
+          .shop-address {
+            font-size: 12px;
+            color: #666;
+            margin-top: 3px;
+          }
+          .shop-gstin {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+            font-weight: 600;
+          }
+          .tax-invoice-title {
+            text-align: center;
+            color: #333;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid #333;
+            padding: 8px;
+            background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+          }
+          .two-column {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border: 2px solid #444;
+          }
+          .column {
+            flex: 1;
+            padding: 12px;
+          }
+          .column:first-child {
+            border-right: 2px solid #444;
+            background: #fafafa;
+          }
+          .column:last-child {
+            background: #fafafa;
+          }
+          .column-label {
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 3px;
+          }
+          .customer-name {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #1a1a1a;
+          }
+          .detail-row {
+            font-size: 12px;
+            color: #333;
+            margin: 2px 0;
+          }
+          .invoice-details {
+            text-align: right;
+          }
+          .invoice-details .detail-row {
+            justify-content: flex-end;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 12px;
+            border: 2px solid #333;
+          }
+          th {
+            background: #333;
+            color: white;
+            font-weight: 700;
+            padding: 8px 6px;
+            text-align: left;
+            border-bottom: 2px solid #222;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+          }
+          td {
+            padding: 6px;
+            border: 1px solid #999;
+            vertical-align: top;
+            color: #333;
+          }
+          tbody tr:nth-child(even) {
+            background: #f9f9f9;
+          }
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .item-name {
+            font-weight: 600;
+            color: #1a1a1a;
+          }
+          .item-service {
+            color: #c62828;
+          }
+          .totals-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            border: 2px solid #444;
+          }
+          .words-column {
+            flex: 1;
+            padding: 12px;
+            border-right: 2px solid #444;
+            background: #fafafa;
+          }
+          .amounts-column {
+            width: 250px;
+            padding: 12px;
+            background: #fafafa;
+          }
+          .amount-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #ddd;
+          }
+          .amount-row:last-child {
+            border-bottom: none;
+          }
+          .total-row {
+            background: #333;
+            color: white;
+            font-weight: 700;
+            padding: 8px 12px;
+            margin: 8px -12px -12px -12px;
+            font-size: 13px;
+          }
+          .amount-in-words {
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            font-size: 13px;
+          }
+          .thank-you {
+            color: #444;
+            font-size: 12px;
+            margin-top: 15px;
+            font-weight: 500;
+          }
+          .warranty-box {
+            margin-top: 10px;
+            padding: 6px 8px;
+            background-color: #fffde7;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            font-size: 10px;
+            color: #856404;
+            font-weight: 500;
+          }
+          .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #333;
+          }
+          .buttons {
+            display: flex;
+            gap: 10px;
+          }
+          .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+          }
+          .btn-print {
+            background: #333;
+            color: #fff;
+          }
+          .btn-print:hover {
+            background: #555;
+          }
+          .shop-signature {
+            text-align: right;
+            font-weight: 700;
+            color: #1a1a1a;
+            font-size: 14px;
+          }
+
+          /* Print styles */
+          @media print {
+            body {
+              background: #fff;
+              padding: 0;
+            }
+            .invoice-container {
+              box-shadow: none;
+              max-width: 100%;
+              padding: 15px;
+              border: none;
+            }
+            .no-print {
+              display: none !important;
+            }
+            .two-column, .totals-section {
+              break-inside: avoid;
+            }
+            table {
+              break-inside: avoid;
+            }
+          }
+
+          @page {
+            size: A4;
+            margin: 8mm 10mm;
+          }
+
+          /* Responsive */
+          @media screen and (max-width: 600px) {
+            .two-column, .totals-section {
+              flex-direction: column;
+            }
+            .column:first-child {
+              border-right: none;
+              border-bottom: 2px solid #444;
+            }
+            .words-column {
+              border-right: none;
+              border-bottom: 2px solid #444;
+            }
+            .amounts-column {
+              width: 100%;
+            }
+            .footer {
+              flex-direction: column;
+              gap: 15px;
+            }
+            .header {
+              flex-direction: column;
+              text-align: center;
+            }
           }
           .invoice-container {
             max-width: 800px;
