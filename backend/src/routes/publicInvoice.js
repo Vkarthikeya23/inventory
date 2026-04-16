@@ -369,8 +369,6 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               <img src="/assets/logo2.png" alt="Logo" class="logo" style="width: 70px;">
             </div>
           </div>
-            <img src="/assets/logo.png" alt="Logo" class="logo">
-          </div>
 
           <!-- Tax Invoice Title -->
           <div class="tax-invoice-title">Tax Invoice</div>
