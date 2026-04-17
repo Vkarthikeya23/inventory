@@ -1049,7 +1049,6 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             </div>
             <div class="logos" style="display: flex; gap: 10px; align-items: center;">
               <img src="/assets/logo.png" alt="Logo" class="logo">
-              <img src="/assets/logo2.png" alt="Logo" class="logo" style="width: 70px;">
             </div>
           </div>
 
