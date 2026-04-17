@@ -23,7 +23,7 @@ router.post('/:sale_id/send', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGE
     
     let baseUrl = process.env.FRONTEND_URL || process.env.APP_BASE_URL || 'http://localhost:4000';
     baseUrl = baseUrl.replace(/\/+$/, '');
-    const invoiceUrl = `${baseUrl}/invoice/${invoice.invoice_number}`;
+    const invoiceUrl = `${baseUrl}/api/invoice/${invoice.invoice_number}`;
     
     res.json({ invoice_url: invoiceUrl });
   } catch (err) {

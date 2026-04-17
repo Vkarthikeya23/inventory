@@ -330,11 +330,11 @@ router.post('/', verifyToken, async (req, res) => {
     invoiceBaseUrl = invoiceBaseUrl.replace(/\/+$/g, '');
     
     console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
-    console.log('Generated invoice URL:', `${invoiceBaseUrl}/invoice/${result.invoice_number}`);
+    console.log('Generated invoice URL:', `${invoiceBaseUrl}/api/invoice/${result.invoice_number}`);
     
     return res.status(201).json({
       ...result,
-      invoice_url: `${invoiceBaseUrl}/invoice/${result.invoice_number}`
+      invoice_url: `${invoiceBaseUrl}/api/invoice/${result.invoice_number}`
     });
 
   } catch (err) {
