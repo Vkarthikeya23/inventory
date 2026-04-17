@@ -715,7 +715,8 @@ export default async function handler(req, res) {
       <head><title>Error</title></head>
       <body>
         <h1>Server Error</h1>
-        <p>Unable to load invoice. Please try again later.</p>
+        <p>Error: ${err.message}</p>
+        <pre>${err.stack}</pre>
       </body>
       </html>
     `);
