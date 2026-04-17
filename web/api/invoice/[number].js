@@ -705,8 +705,8 @@ export default async function handler(req, res) {
       </html>
     `;
 
-    res.set('Content-Type', 'text/html');
-    res.send(html);
+    res.setHeader('Content-Type', 'text/html');
+    res.status(200).send(html);
   } catch (err) {
     console.error('Invoice API error:', err);
     res.status(500).send(`
