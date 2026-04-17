@@ -324,16 +324,17 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
     // Step 4 — send response
-    let baseUrl = process.env.APP_BASE_URL || 'http://localhost:4000';
+    // Use Vercel frontend URL for invoice links (works on all networks including Jio)
+    let invoiceBaseUrl = process.env.FRONTEND_URL || process.env.APP_BASE_URL || 'http://localhost:4000';
     // Remove any trailing slashes
-    baseUrl = baseUrl.replace(/\/+$/g, '');
+    invoiceBaseUrl = invoiceBaseUrl.replace(/\/+$/g, '');
     
-    console.log('APP_BASE_URL:', process.env.APP_BASE_URL);
-    console.log('Generated invoice URL:', `${baseUrl}/invoice/${result.invoice_number}`);
+    console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
+    console.log('Generated invoice URL:', `${invoiceBaseUrl}/invoice/${result.invoice_number}`);
     
     return res.status(201).json({
       ...result,
-      invoice_url: `${baseUrl}/invoice/${result.invoice_number}`
+      invoice_url: `${invoiceBaseUrl}/invoice/${result.invoice_number}`
     });
 
   } catch (err) {

@@ -1,5 +1,5 @@
 // Fix double slash in invoice URL
-const baseUrl = (process.env.APP_BASE_URL || 'http://localhost:4000')
+const baseUrl = (process.env.FRONTEND_URL || process.env.APP_BASE_URL || 'http://localhost:4000')
   .replace(/\/$/, '')  // Remove trailing slash
   .replace(/^\//, '');  // Remove leading slash if present
 

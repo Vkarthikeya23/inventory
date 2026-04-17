@@ -21,7 +21,7 @@ router.post('/:sale_id/send', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGE
       return res.status(404).json({ error: 'Invoice not found' });
     }
     
-    let baseUrl = process.env.APP_BASE_URL || 'http://localhost:4000';
+    let baseUrl = process.env.FRONTEND_URL || process.env.APP_BASE_URL || 'http://localhost:4000';
     baseUrl = baseUrl.replace(/\/+$/, '');
     const invoiceUrl = `${baseUrl}/invoice/${invoice.invoice_number}`;
     
