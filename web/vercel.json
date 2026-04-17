@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/invoice/([^/]+)",
+      "destination": "/api/invoice/[number].js?number=$1"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
