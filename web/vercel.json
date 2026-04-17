@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/invoice/:number", "destination": "/api/invoice/:number" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
