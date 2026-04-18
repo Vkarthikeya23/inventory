@@ -10,6 +10,21 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
   try {
     const date = req.query.date ?? new Date().toISOString().slice(0, 10);
     
+    console.log('Daily report - requested date:', date);
+    console.log('Daily report - current server time:', new Date().toISOString());
+    
+    // Check if there are ANY sales in the database
+    const allSales = await all(`
+      SELECT COUNT(*) as total_sales, 
+             MIN(sale_date) as earliest_sale, 
+             MAX(sale_date) as latest_sale,
+             DATE(sale_date) as date_part
+      FROM sales
+      WHERE DATE(sale_date) = $date
+    `, { date });
+    
+    console.log('Daily report - sales found for date:', allSales);
+    
     // Main metrics query
     const result = await all(`
       SELECT
@@ -24,6 +39,8 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
       JOIN products p ON p.id = si.product_id
       WHERE DATE(s.sale_date) = $date
     `, { date });
+    
+    console.log('Daily report - metrics result:', result);
     
     const metrics = result[0] || {
       total_transactions: 0,
@@ -49,6 +66,8 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
       GROUP BY s.id, s.invoice_number, s.total_amount, s.created_at, s.customer_name, s.customer_phone
       ORDER BY s.created_at DESC
     `, { date });
+    
+    console.log('Daily report - sales details count:', salesDetails.length);
     
     // Hourly breakdown - PostgreSQL version
     const hourlyData = await all(`
