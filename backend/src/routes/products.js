@@ -56,7 +56,42 @@ router.get('/', verifyToken, async (req, res) => {
     query += ' ORDER BY company_name, size_spec';
     
     const result = await all(query, params);
-    res.json(result);
+    
+    // If search is provided and results found, calculate combined stock for matching company
+    let brandStockSummary = null;
+    if (search && result.length > 0) {
+      // Get unique company names from results
+      const companyNames = [...new Set(result.map(p => p.company_name))];
+      
+      if (companyNames.length === 1) {
+        // Single company match - calculate total stock
+        const companyName = companyNames[0];
+        
+        const stockResult = await get(`
+          SELECT 
+            company_name,
+            SUM(stock_qty) as total_stock,
+            COUNT(*) as product_count
+          FROM products
+          WHERE is_deleted = false 
+            AND company_name = $company_name
+          GROUP BY company_name
+        `, { company_name: companyName });
+        
+        if (stockResult) {
+          brandStockSummary = {
+            company_name: stockResult.company_name,
+            total_stock: parseInt(stockResult.total_stock) || 0,
+            product_count: parseInt(stockResult.product_count) || 0
+          };
+        }
+      }
+    }
+    
+    res.json({
+      products: result,
+      brand_summary: brandStockSummary
+    });
   } catch (err) {
     console.error('Get products error:', err);
     res.status(500).json({ error: 'Internal server error' });

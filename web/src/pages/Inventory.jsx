@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 export default function Inventory() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
+  const [brandSummary, setBrandSummary] = useState(null);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -25,16 +26,39 @@ export default function Inventory() {
     fetchProducts();
   }, []);
 
-  async function fetchProducts() {
+  // Debounced search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (search) {
+        fetchProducts(search);
+      } else {
+        fetchProducts();
+      }
+    }, 300); // Wait 300ms after typing stops
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  async function fetchProducts(searchTerm = '') {
     try {
-      const res = await api.get('/products');
-      setProducts(res.data);
+      const url = searchTerm ? `/products?search=${encodeURIComponent(searchTerm)}` : '/products';
+      const res = await api.get(url);
+      // Handle both old and new response format
+      if (res.data.products) {
+        setProducts(res.data.products);
+        setBrandSummary(res.data.brand_summary);
+      } else {
+        setProducts(res.data);
+        setBrandSummary(null);
+      }
     } catch (err) {
       console.error('Fetch products error:', err);
       if (err.response?.status === 401) {
         setProducts([]);
+        setBrandSummary(null);
       } else {
         setProducts([]);
+        setBrandSummary(null);
       }
     }
     setLoading(false);
@@ -124,11 +148,8 @@ export default function Inventory() {
     }
   }
 
-  const filteredProducts = products.filter(p => 
-    p.display_name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.company_name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.size_spec?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Products are already filtered by server when searching
+  const displayProducts = products;
 
   if (loading) return <div>Loading...</div>;
 
@@ -174,6 +195,41 @@ export default function Inventory() {
           </div>
         </div>
 
+        {/* Brand Stock Summary - Shows when searching for a specific company */}
+        {brandSummary && (
+          <div style={{ 
+            marginBottom: '20px', 
+            padding: '15px 20px', 
+            backgroundColor: '#e8f5e9', 
+            borderRadius: '8px',
+            border: '2px solid #4CAF50',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px'
+          }}>
+            <span style={{ fontSize: '28px' }}>🏭</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '16px', color: '#666', marginBottom: '4px' }}>
+                <strong>{brandSummary.company_name}</strong> Combined Stock:
+              </div>
+              <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontSize: '14px', color: '#666' }}>Total Units: </span>
+                  <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2e7d32' }}>
+                    {brandSummary.total_stock}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '14px', color: '#666' }}>Products: </span>
+                  <span style={{ fontSize: '18px', fontWeight: '600', color: '#1976d2' }}>
+                    {brandSummary.product_count} variants
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div style={{ marginBottom: '20px' }}>
           <input
             type="text"
@@ -203,7 +259,7 @@ export default function Inventory() {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map(p => (
+            {displayProducts.map(p => (
               <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
                 <td style={{ padding: '10px' }}>
                   <div style={{ fontWeight: '500' }}>{p.display_name}</div>
@@ -237,7 +293,7 @@ export default function Inventory() {
           </tbody>
         </table>
         
-        {filteredProducts.length === 0 && (
+        {displayProducts.length === 0 && (
           <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>No products found</p>
         )}
       </div>
