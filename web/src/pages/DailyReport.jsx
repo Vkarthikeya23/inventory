@@ -21,6 +21,7 @@ export default function DailyReport() {
   async function fetchReport() {
     try {
       const res = await api.get(`/reports/daily?date=${date}`);
+      console.log('Report data:', res.data); // Debug logging
       setData(res.data);
       setSales(res.data.sales_details || []);
     } catch (err) {
@@ -109,18 +110,22 @@ export default function DailyReport() {
           <button onClick={exportCSV} style={{ marginLeft: '20px', padding: '8px 15px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Export CSV</button>
         </div>
         
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
-          <div style={{ padding: '20px', backgroundColor: '#e8f5e9', borderRadius: '8px', flex: 1 }}>
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
+          <div style={{ padding: '20px', backgroundColor: '#e8f5e9', borderRadius: '8px', flex: 1, minWidth: '200px' }}>
             <h3>Revenue</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{data?.total_revenue || 0}</p>
+            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{data?.total_revenue?.toFixed(2) || 0}</p>
           </div>
-          <div style={{ padding: '20px', backgroundColor: '#e3f2fd', borderRadius: '8px', flex: 1 }}>
+          <div style={{ padding: '20px', backgroundColor: '#e3f2fd', borderRadius: '8px', flex: 1, minWidth: '200px' }}>
             <h3>Profit</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{data?.total_profit || 0}</p>
+            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{data?.total_profit?.toFixed(2) || 0}</p>
           </div>
-          <div style={{ padding: '20px', backgroundColor: '#fff3e0', borderRadius: '8px', flex: 1 }}>
+          <div style={{ padding: '20px', backgroundColor: '#fff3e0', borderRadius: '8px', flex: 1, minWidth: '200px' }}>
             <h3>Transactions</h3>
             <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{data?.total_transactions || 0}</p>
+          </div>
+          <div style={{ padding: '20px', backgroundColor: '#fce4ec', borderRadius: '8px', flex: 1, minWidth: '200px' }}>
+            <h3>Units Sold</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{data?.units_sold || 0}</p>
           </div>
         </div>
 
