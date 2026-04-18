@@ -13,19 +13,29 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
     console.log('Daily report - requested date:', date);
     console.log('Daily report - current server time:', new Date().toISOString());
     
-    // Check if there are ANY sales in the database
-    const allSales = await all(`
-      SELECT COUNT(*) as total_sales, 
-             MIN(sale_date) as earliest_sale, 
-             MAX(sale_date) as latest_sale,
-             DATE(sale_date) as date_part
+    // Check if there are ANY sales at all
+    const totalCount = await all(`SELECT COUNT(*) as count FROM sales`);
+    console.log('Total sales in database:', totalCount[0].count);
+    
+    // Check date range of sales
+    const dateRange = await all(`
+      SELECT 
+        MIN(sale_date) as earliest,
+        MAX(sale_date) as latest
       FROM sales
-      WHERE DATE(sale_date) = $date
-    `, { date });
+    `);
+    console.log('Sales date range:', dateRange[0]);
     
-    console.log('Daily report - sales found for date:', allSales);
+    // Get all sales for debugging (limit 5)
+    const sampleSales = await all(`
+      SELECT id, invoice_number, sale_date, DATE(sale_date) as date_only
+      FROM sales 
+      ORDER BY sale_date DESC 
+      LIMIT 5
+    `);
+    console.log('Sample recent sales:', sampleSales);
     
-    // Main metrics query
+    // Main metrics query - use timezone-aware date comparison
     const result = await all(`
       SELECT
         COUNT(DISTINCT s.id) AS total_transactions,
@@ -37,7 +47,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
       FROM sales s
       JOIN sale_items si ON si.sale_id = s.id
       JOIN products p ON p.id = si.product_id
-      WHERE DATE(s.sale_date) = $date
+      WHERE s.sale_date::date = $date
     `, { date });
     
     console.log('Daily report - metrics result:', result);
@@ -62,7 +72,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
         SUM(si.qty) AS total_qty
       FROM sales s
       JOIN sale_items si ON si.sale_id = s.id
-      WHERE DATE(s.sale_date) = $date
+      WHERE s.sale_date::date = $date
       GROUP BY s.id, s.invoice_number, s.total_amount, s.created_at, s.customer_name, s.customer_phone
       ORDER BY s.created_at DESC
     `, { date });
@@ -76,7 +86,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
         COALESCE(SUM(si.total_amount), 0) AS total
       FROM sales s
       JOIN sale_items si ON si.sale_id = s.id
-      WHERE DATE(s.sale_date) = $date
+      WHERE s.sale_date::date = $date
       GROUP BY EXTRACT(HOUR FROM s.sale_date)
       ORDER BY hour
     `, { date });
@@ -95,7 +105,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
       FROM sale_items si
       JOIN sales s ON s.id = si.sale_id
       JOIN products p ON p.id = si.product_id
-      WHERE DATE(s.sale_date) = $date
+      WHERE s.sale_date::date = $date
       GROUP BY p.id, p.company_name, p.size_spec
       ORDER BY revenue DESC
       LIMIT 5
