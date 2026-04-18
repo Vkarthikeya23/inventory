@@ -49,7 +49,7 @@ router.get('/', verifyToken, async (req, res) => {
     const params = {};
     
     if (search) {
-      query += ` AND (company_name LIKE $search OR size_spec LIKE $search)`;
+      query += ` AND (company_name ILIKE $search OR size_spec ILIKE $search)`;
       params.search = `%${search}%`;
     }
     
@@ -74,7 +74,7 @@ router.get('/', verifyToken, async (req, res) => {
             COUNT(*) as product_count
           FROM products
           WHERE is_deleted = false 
-            AND company_name = $company_name
+            AND company_name ILIKE $company_name
           GROUP BY company_name
         `, { company_name: companyName });
         
