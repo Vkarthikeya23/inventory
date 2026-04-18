@@ -646,7 +646,6 @@ export default async function handler(req, res) {
           <!-- Footer -->
           <div class="footer">
             <div class="buttons no-print">
-              <button onclick="generatePDF()" class="btn btn-print">Download PDF</button>
               <button onclick="window.print()" class="btn btn-print">Print</button>
             </div>
             <div class="shop-signature">
@@ -655,52 +654,7 @@ export default async function handler(req, res) {
           </div>
         </div>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        
         <script>
-          document.title = 'Invoice';
-          
-          async function generatePDF() {
-            const element = document.querySelector('.invoice-container');
-            const buttons = document.querySelector('.buttons');
-            
-            // Temporarily hide buttons
-            if (buttons) buttons.style.display = 'none';
-            
-            try {
-              const canvas = await html2canvas(element, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                windowWidth: element.scrollWidth,
-                windowHeight: element.scrollHeight
-              });
-              
-              const imgData = canvas.toDataURL('image/png');
-              const { jsPDF } = window.jspdf;
-              
-              const pdf = new jsPDF('p', 'mm', 'a4');
-              const pdfWidth = pdf.internal.pageSize.getWidth();
-              const pdfHeight = pdf.internal.pageSize.getHeight();
-              const imgWidth = canvas.width;
-              const imgHeight = canvas.height;
-              const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-              
-              const imgX = (pdfWidth - imgWidth * ratio) / 2;
-              const imgY = 10;
-              
-              pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-              pdf.save('Invoice-${data.invoice_number}.pdf');
-            } catch (error) {
-              console.error('PDF generation failed:', error);
-              alert('Failed to generate PDF. Please use Print button instead.');
-            } finally {
-              // Restore buttons
-              if (buttons) buttons.style.display = '';
-            }
-          }
-        </script>
       </body>
       </html>
     `;
