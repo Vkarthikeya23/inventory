@@ -35,6 +35,15 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
     `);
     console.log('Sample recent sales:', sampleSales);
     
+    // Check sale_items for today
+    const itemsCheck = await all(`
+      SELECT COUNT(*) as item_count
+      FROM sale_items si
+      JOIN sales s ON s.id = si.sale_id
+      WHERE s.sale_date::date = $date
+    `, { date });
+    console.log('Sale items count for date:', itemsCheck[0]);
+    
     // Main metrics query - use timezone-aware date comparison
     const result = await all(`
       SELECT
@@ -46,7 +55,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
         ), 0) AS total_profit
       FROM sales s
       JOIN sale_items si ON si.sale_id = s.id
-      JOIN products p ON p.id = si.product_id
+      LEFT JOIN products p ON p.id = si.product_id
       WHERE s.sale_date::date = $date
     `, { date });
     
