@@ -210,14 +210,6 @@ export default function Inventory() {
           <div style={{ display: 'flex', gap: '40px', flex: 1 }}>
             <div>
               <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                Total Cost Price
-              </span>
-              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#e65100' }}>
-                ₹{products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
-              </span>
-            </div>
-            <div>
-              <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
                 Total Selling Price (Excl GST)
               </span>
               <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2e7d32' }}>
@@ -230,6 +222,14 @@ export default function Inventory() {
               </span>
               <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#1565c0' }}>
                 ₹{products.reduce((sum, p) => sum + ((p.selling_price_incl_gst || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
+              </span>
+            </div>
+            <div>
+              <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
+                Total Cost Price
+              </span>
+              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#e65100' }}>
+                ₹{products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
               </span>
             </div>
             <div>
