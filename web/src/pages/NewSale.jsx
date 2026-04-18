@@ -53,7 +53,9 @@ export default function NewSale() {
   async function fetchProducts() {
     try {
       const res = await api.get('/products');
-      setProducts(res.data.filter(p => p.stock_qty > 0));
+      // Handle both old array format and new object format
+      const productsList = res.data.products || res.data;
+      setProducts(productsList.filter(p => p.stock_qty > 0));
     } catch (err) {
       console.error('Fetch products error:', err);
     }
