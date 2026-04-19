@@ -33,6 +33,23 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
     const allItems = await all(`SELECT COUNT(*) as total FROM sale_items`);
     console.log('Total sale_items:', allItems[0].total);
     
+    // Check sales in date range
+    const dateRange = await all(`
+      SELECT 
+        MIN(sale_date::date) as earliest,
+        MAX(sale_date::date) as latest
+      FROM sales
+    `);
+    console.log('Sales date range:', dateRange[0]);
+    
+    // Check all sales for this date (no aggregations)
+    const rawSales = await all(`
+      SELECT id, invoice_number, sale_date
+      FROM sales
+      WHERE sale_date::date = $date
+    `, { date });
+    console.log('Raw sales for date:', rawSales);
+    
     // Now run the actual query with date filter
     const result = await all(`
       SELECT
