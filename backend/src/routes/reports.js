@@ -10,17 +10,30 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
   try {
     const date = req.query.date ?? new Date().toISOString().slice(0, 10);
     
-    // Check if sale_items exist for this date
-    const itemsCheck = await all(`
-      SELECT COUNT(*) as item_count
-      FROM sale_items si
-      JOIN sales s ON s.id = si.sale_id
-      WHERE s.sale_date::date = $date
-    `, { date });
+    console.log('=== DAILY REPORT DEBUG ===');
+    console.log('Requested date:', date);
+    console.log('Server time:', new Date().toISOString());
     
-    console.log('Sale items count for date:', itemsCheck[0]);
+    // First, check ALL sales in database
+    const allSales = await all(`
+      SELECT COUNT(*) as total FROM sales
+    `);
+    console.log('Total sales in database:', allSales[0].total);
     
-    // Main metrics query - use LEFT JOIN for products to include services
+    // Check sales for ANY date to see if sale_date is populated
+    const sampleSales = await all(`
+      SELECT id, invoice_number, sale_date, created_at
+      FROM sales 
+      ORDER BY sale_date DESC 
+      LIMIT 5
+    `);
+    console.log('Sample sales:', sampleSales);
+    
+    // Check if sale_items exist
+    const allItems = await all(`SELECT COUNT(*) as total FROM sale_items`);
+    console.log('Total sale_items:', allItems[0].total);
+    
+    // Now run the actual query with date filter
     const result = await all(`
       SELECT
         COUNT(DISTINCT s.id) AS total_transactions,
@@ -35,7 +48,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
       WHERE s.sale_date::date = $date
     `, { date });
     
-    console.log('Daily report - metrics result:', result);
+    console.log('Metrics result:', result);
     
     const metrics = result[0] || {
       total_transactions: 0,
@@ -62,7 +75,20 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
       ORDER BY s.created_at DESC
     `, { date });
     
-    console.log('Daily report - sales details count:', salesDetails.length);
+    console.log('Sales details count:', salesDetails.length);
+    console.log('=== END DEBUG ===');
+    
+    // Hourly breakdown
+    const hourlyData = await all(`
+      SELECT
+        EXTRACT(HOUR FROM s.sale_date) AS hour,
+        COALESCE(SUM(si.total_amount), 0) AS total
+      FROM sales s
+      JOIN sale_items si ON si.sale_id = s.id
+      WHERE s.sale_date::date = $date
+      GROUP BY EXTRACT(HOUR FROM s.sale_date)
+      ORDER BY hour
+    `, { date });
     
     // Hourly breakdown
     const hourlyData = await all(`
