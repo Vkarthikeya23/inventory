@@ -283,7 +283,7 @@ export default function Inventory() {
               <th style={{ textAlign: 'right' }}>Cost</th>
               {canEdit && <th style={{ textAlign: 'center' }}>Action</th>}
             </tr>
-            <!-- Total row for columns -->
+            {/* Total row for columns */}
             <tr style={{ borderBottom: '1px solid #ddd', backgroundColor: '#e3f2fd' }}>
               <td style={{ padding: '8px 10px', fontWeight: 'bold', color: '#333' }}>Total</td>
               <td style={{ textAlign: 'right', padding: '8px 10px', fontWeight: 'bold', color: '#2e7d32' }}>
