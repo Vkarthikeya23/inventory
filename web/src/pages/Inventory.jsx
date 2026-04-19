@@ -195,7 +195,7 @@ export default function Inventory() {
           </div>
         </div>
 
-        {/* Total Cost and Selling Price Summary */}
+        {/* Potential Profit Summary Only */}
         <div style={{ 
           marginBottom: '20px', 
           padding: '15px 20px', 
@@ -207,43 +207,17 @@ export default function Inventory() {
           gap: '30px'
         }}>
           <span style={{ fontSize: '28px' }}>💰</span>
-          <div style={{ display: 'flex', gap: '40px', flex: 1 }}>
-            <div>
-              <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                Total Selling Price (Excl GST)
-              </span>
-              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2e7d32' }}>
-                ₹{products.reduce((sum, p) => sum + ((p.selling_price_excl_gst || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
-              </span>
-            </div>
-            <div>
-              <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                Total Selling Price (Incl GST)
-              </span>
-              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#1565c0' }}>
-                ₹{products.reduce((sum, p) => sum + ((p.selling_price_incl_gst || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
-              </span>
-            </div>
-            <div>
-              <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                Total Cost Price
-              </span>
-              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#e65100' }}>
-                ₹{products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
-              </span>
-            </div>
-            <div>
-              <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
-                Potential Profit
-              </span>
-              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2e7d32' }}>
-                ₹{products.reduce((sum, p) => {
-                  const cost = (p.cost_price || 0) * (p.stock_qty || 0);
-                  const selling = (p.selling_price_excl_gst || 0) * (p.stock_qty || 0);
-                  return sum + (selling - cost);
-                }, 0).toFixed(2)}
-              </span>
-            </div>
+          <div>
+            <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
+              Potential Profit
+            </span>
+            <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2e7d32' }}>
+              ₹{products.reduce((sum, p) => {
+                const cost = (p.cost_price || 0) * (p.stock_qty || 0);
+                const selling = (p.selling_price_excl_gst || 0) * (p.stock_qty || 0);
+                return sum + (selling - cost);
+              }, 0).toFixed(2)}
+            </span>
           </div>
         </div>
 
@@ -308,6 +282,24 @@ export default function Inventory() {
               <th style={{ textAlign: 'right' }}>Stock</th>
               <th style={{ textAlign: 'right' }}>Cost</th>
               {canEdit && <th style={{ textAlign: 'center' }}>Action</th>}
+            </tr>
+            <!-- Total row for columns -->
+            <tr style={{ borderBottom: '1px solid #ddd', backgroundColor: '#e3f2fd' }}>
+              <td style={{ padding: '8px 10px', fontWeight: 'bold', color: '#333' }}>Total</td>
+              <td style={{ textAlign: 'right', padding: '8px 10px', fontWeight: 'bold', color: '#2e7d32' }}>
+                ₹{products.reduce((sum, p) => sum + ((p.selling_price_excl_gst || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
+              </td>
+              <td style={{ textAlign: 'right', padding: '8px 10px', fontWeight: 'bold', color: '#1565c0' }}>
+                ₹{products.reduce((sum, p) => sum + ((p.selling_price_incl_gst || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
+              </td>
+              <td></td>
+              <td style={{ textAlign: 'right', padding: '8px 10px', fontWeight: 'bold', color: '#333' }}>
+                {products.reduce((sum, p) => sum + (p.stock_qty || 0), 0)}
+              </td>
+              <td style={{ textAlign: 'right', padding: '8px 10px', fontWeight: 'bold', color: '#e65100' }}>
+                ₹{products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
+              </td>
+              {canEdit && <td></td>}
             </tr>
           </thead>
           <tbody>
