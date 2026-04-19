@@ -126,11 +126,6 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-  } catch (err) {
-    console.error('Daily report error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 router.get('/weekly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
