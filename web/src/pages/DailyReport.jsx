@@ -129,16 +129,6 @@ export default function DailyReport() {
           </div>
         </div>
 
-        <h2>Hourly Sales</h2>
-        {data?.hourly_sales?.length > 0 ? (
-          <BarChart width={800} height={300} data={data.hourly_sales}>
-            <XAxis dataKey="hour" tickFormatter={(h) => `${h}:00`} />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="total" fill="#2196F3" name="Revenue (₹)" />
-          </BarChart>
-        ) : <p>No sales data for this date.</p>}
-
         <h2>Sales Details</h2>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>

@@ -95,35 +95,6 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
     console.log('Sales details count:', salesDetails.length);
     console.log('=== END DEBUG ===');
     
-    // Hourly breakdown
-    const hourlyData = await all(`
-      SELECT
-        EXTRACT(HOUR FROM s.sale_date) AS hour,
-        COALESCE(SUM(si.total_amount), 0) AS total
-      FROM sales s
-      JOIN sale_items si ON si.sale_id = s.id
-      WHERE s.sale_date::date = $date
-      GROUP BY EXTRACT(HOUR FROM s.sale_date)
-      ORDER BY hour
-    `, { date });
-    
-    // Hourly breakdown
-    const hourlyData = await all(`
-      SELECT
-        EXTRACT(HOUR FROM s.sale_date) AS hour,
-        COALESCE(SUM(si.total_amount), 0) AS total
-      FROM sales s
-      JOIN sale_items si ON si.sale_id = s.id
-      WHERE s.sale_date::date = $date
-      GROUP BY EXTRACT(HOUR FROM s.sale_date)
-      ORDER BY hour
-    `, { date });
-    
-    const hourly_sales = hourlyData.map(h => ({
-      hour: parseInt(h.hour),
-      total: parseFloat(h.total)
-    })).filter(h => h.total > 0);
-    
     // Top products
     const topProductsData = await all(`
       SELECT
@@ -152,7 +123,6 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
       total_transactions: metrics.total_transactions,
       units_sold: metrics.units_sold,
       top_products: top_products,
-      hourly_sales: hourly_sales,
       sales_details: salesDetails.map(s => ({
         id: s.id,
         invoice_number: s.invoice_number,
