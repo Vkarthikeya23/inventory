@@ -6,45 +6,21 @@ import { ROLES } from '../../../shared/constants.js';
 
 const router = express.Router();
 
-router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
+router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASHIER), async (req, res) => {
   try {
     const date = req.query.date ?? new Date().toISOString().slice(0, 10);
     
-    console.log('Daily report - requested date:', date);
-    console.log('Daily report - current server time:', new Date().toISOString());
-    
-    // Check if there are ANY sales at all
-    const totalCount = await all(`SELECT COUNT(*) as count FROM sales`);
-    console.log('Total sales in database:', totalCount[0].count);
-    
-    // Check date range of sales
-    const dateRange = await all(`
-      SELECT 
-        MIN(sale_date) as earliest,
-        MAX(sale_date) as latest
-      FROM sales
-    `);
-    console.log('Sales date range:', dateRange[0]);
-    
-    // Get all sales for debugging (limit 5)
-    const sampleSales = await all(`
-      SELECT id, invoice_number, sale_date, DATE(sale_date) as date_only
-      FROM sales 
-      ORDER BY sale_date DESC 
-      LIMIT 5
-    `);
-    console.log('Sample recent sales:', sampleSales);
-    
-    // Check sale_items for today
+    // Check if sale_items exist for this date
     const itemsCheck = await all(`
       SELECT COUNT(*) as item_count
       FROM sale_items si
       JOIN sales s ON s.id = si.sale_id
       WHERE s.sale_date::date = $date
     `, { date });
+    
     console.log('Sale items count for date:', itemsCheck[0]);
     
-    // Main metrics query - use timezone-aware date comparison
+    // Main metrics query - use LEFT JOIN for products to include services
     const result = await all(`
       SELECT
         COUNT(DISTINCT s.id) AS total_transactions,
@@ -88,7 +64,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
     
     console.log('Daily report - sales details count:', salesDetails.length);
     
-    // Hourly breakdown - PostgreSQL version
+    // Hourly breakdown
     const hourlyData = await all(`
       SELECT
         EXTRACT(HOUR FROM s.sale_date) AS hour,
@@ -108,14 +84,14 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
     // Top products
     const topProductsData = await all(`
       SELECT
-        COALESCE(p.company_name, 'Unknown') || ' ' || COALESCE(p.size_spec, '') AS name,
+        COALESCE(p.company_name, si.service_name, 'Service') || ' ' || COALESCE(p.size_spec, '') AS name,
         SUM(si.qty) AS units_sold,
         SUM(si.total_amount) AS revenue
       FROM sale_items si
       JOIN sales s ON s.id = si.sale_id
-      JOIN products p ON p.id = si.product_id
+      LEFT JOIN products p ON p.id = si.product_id
       WHERE s.sale_date::date = $date
-      GROUP BY p.id, p.company_name, p.size_spec
+      GROUP BY si.service_name, p.company_name, p.size_spec
       ORDER BY revenue DESC
       LIMIT 5
     `, { date });
@@ -145,6 +121,11 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async
         total_qty: s.total_qty
       }))
     });
+  } catch (err) {
+    console.error('Daily report error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
   } catch (err) {
     console.error('Daily report error:', err);
     res.status(500).json({ error: 'Internal server error' });
