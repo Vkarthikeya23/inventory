@@ -281,6 +281,7 @@ export default function Inventory() {
               <th style={{ textAlign: 'center' }}>GST</th>
               <th style={{ textAlign: 'right' }}>Stock</th>
               <th style={{ textAlign: 'right' }}>Cost</th>
+              <th style={{ textAlign: 'right' }}>Total Cost</th>
               {canEdit && <th style={{ textAlign: 'center' }}>Action</th>}
             </tr>
             {/* Total row for columns */}
@@ -299,6 +300,9 @@ export default function Inventory() {
               <td style={{ textAlign: 'right', padding: '8px 10px', fontWeight: 'bold', color: '#e65100' }}>
                 ₹{products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
               </td>
+              <td style={{ textAlign: 'right', padding: '8px 10px', fontWeight: 'bold', color: '#d84315' }}>
+                ₹{products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
+              </td>
               {canEdit && <td></td>}
             </tr>
           </thead>
@@ -313,6 +317,9 @@ export default function Inventory() {
                 <td style={{ textAlign: 'center' }}>{p.gst_rate}%</td>
                 <td style={{ textAlign: 'right' }}>{p.stock_qty}</td>
                 <td style={{ textAlign: 'right' }}>₹{p.cost_price ? parseFloat(p.cost_price).toFixed(2) : '-'}</td>
+                <td style={{ textAlign: 'right' }}>
+                  ₹{((p.cost_price || 0) * (p.stock_qty || 0)).toFixed(2)}
+                </td>
                 {canEdit && (
                   <td style={{ textAlign: 'center' }}>
                     <button
