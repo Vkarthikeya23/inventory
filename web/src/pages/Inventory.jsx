@@ -509,7 +509,7 @@ export default function Inventory() {
                 {products.reduce((sum, p) => sum + (p.stock_qty || 0), 0)}
               </td>
               <td style={{ textAlign: 'right', padding: '8px 10px', fontWeight: 'bold', color: '#e65100' }}>
-                ₹{products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
+                -
               </td>
               <td style={{ textAlign: 'right', padding: '8px 10px', fontWeight: 'bold', color: '#d84315' }}>
                 ₹{products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
