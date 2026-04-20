@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { jsPDF } from 'jspdf';
+import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 export default function Inventory() {
@@ -241,85 +241,99 @@ export default function Inventory() {
     setPoSelectedProducts(selected);
   }
 
-  function generatePoPdf() {
+  async function generatePoPdf() {
+    console.log('generatePoPdf called');
+    console.log('jsPDF available:', typeof jsPDF);
+    console.log('poSelectedProducts:', poSelectedProducts);
+    console.log('products:', products.length, 'items');
+    
     const selectedProducts = products.filter(p => poSelectedProducts[p.id]);
+    console.log('selectedProducts:', selectedProducts.length, 'items');
     
     if (selectedProducts.length === 0) {
       alert('Please select at least one product');
       return;
     }
 
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    
-    // Header
-    doc.setFontSize(20);
-    doc.setTextColor(0, 0, 128);
-    doc.text('PURCHASE ORDER', pageWidth / 2, 20, { align: 'center' });
-    
-    // Shop details
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text('SRI MAHALAKSHMI TYRES', pageWidth / 2, 35, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text('Tiruchengode, Namakkal - 637211', pageWidth / 2, 42, { align: 'center' });
-    doc.text('Phone: +91 98765 43210', pageWidth / 2, 48, { align: 'center' });
-    
-    // PO Details
-    doc.setFontSize(11);
-    doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, 20, 60);
-    doc.text(`PO #: PO-${Date.now().toString().slice(-6)}`, 20, 68);
-    
-    // Table data
-    const tableData = selectedProducts.map(p => {
-      const qty = poQuantities[p.id] || 0;
-      const cost = p.cost_price || 0;
-      return [
-        p.display_name,
-        qty,
-        `₹${cost.toFixed(2)}`,
-        `₹${(qty * cost).toFixed(2)}`
-      ];
-    });
+    try {
+      console.log('Creating jsPDF instance...');
+      const doc = new jsPDF();
+      console.log('jsPDF instance created, autoTable available:', typeof doc.autoTable);
+      const pageWidth = doc.internal.pageSize.width;
+      
+      // Header
+      doc.setFontSize(20);
+      doc.setTextColor(0, 0, 128);
+      doc.text('PURCHASE ORDER', pageWidth / 2, 20, { align: 'center' });
+      
+      // Shop details
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text('SRI MAHALAKSHMI TYRES', pageWidth / 2, 35, { align: 'center' });
+      doc.setFontSize(10);
+      doc.text('Tiruchengode, Namakkal - 637211', pageWidth / 2, 42, { align: 'center' });
+      doc.text('Phone: +91 98765 43210', pageWidth / 2, 48, { align: 'center' });
+      
+      // PO Details
+      doc.setFontSize(11);
+      doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, 20, 60);
+      doc.text(`PO #: PO-${Date.now().toString().slice(-6)}`, 20, 68);
+      
+      // Table data
+      const tableData = selectedProducts.map(p => {
+        const qty = poQuantities[p.id] || 0;
+        const cost = p.cost_price || 0;
+        return [
+          p.display_name,
+          qty,
+          `Rs.${cost.toFixed(2)}`,
+          `Rs.${(qty * cost).toFixed(2)}`
+        ];
+      });
 
-    doc.autoTable({
-      startY: 78,
-      head: [['Product', 'Quantity', 'Cost Price', 'Total']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [33, 150, 243],
-        textColor: 255,
-        fontStyle: 'bold'
-      },
-      columnStyles: {
-        0: { cellWidth: 'auto' },
-        1: { halign: 'center' },
-        2: { halign: 'right' },
-        3: { halign: 'right' }
-      },
-      margin: { left: 20, right: 20 }
-    });
+      doc.autoTable({
+        startY: 78,
+        head: [['Product', 'Quantity', 'Cost Price', 'Total']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [33, 150, 243],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          0: { cellWidth: 'auto' },
+          1: { halign: 'center' },
+          2: { halign: 'right' },
+          3: { halign: 'right' }
+        },
+        margin: { left: 20, right: 20 }
+      });
 
-    // Total
-    const totalAmount = selectedProducts.reduce((sum, p) => {
-      return sum + ((poQuantities[p.id] || 0) * (p.cost_price || 0));
-    }, 0);
+      // Total
+      const totalAmount = selectedProducts.reduce((sum, p) => {
+        return sum + ((poQuantities[p.id] || 0) * (p.cost_price || 0));
+      }, 0);
 
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Total Amount: ₹${totalAmount.toFixed(2)}`, pageWidth - 20, finalY, { align: 'right' });
-    
-    // Footer note
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text('This is a purchase order for stock replenishment.', 20, finalY + 20);
-    doc.text('Please confirm availability and delivery schedule.', 20, finalY + 28);
+      const finalY = doc.lastAutoTable.finalY + 10;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Total Amount: Rs.${totalAmount.toFixed(2)}`, pageWidth - 20, finalY, { align: 'right' });
+      
+      // Footer note
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text('This is a purchase order for stock replenishment.', 20, finalY + 20);
+      doc.text('Please confirm availability and delivery schedule.', 20, finalY + 28);
 
-    doc.save(`Purchase_Order_${new Date().toISOString().slice(0, 10)}.pdf`);
-    closePoModal();
+      doc.save(`Purchase_Order_${new Date().toISOString().slice(0, 10)}.pdf`);
+      closePoModal();
+      console.log('PDF generated successfully');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error generating PDF: ' + error.message);
+    }
   }
 
   // Products are already filtered by server when searching
