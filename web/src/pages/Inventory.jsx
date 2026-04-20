@@ -274,8 +274,9 @@ export default function Inventory() {
       doc.setTextColor(0, 0, 0);
       doc.text('SRI MAHALAKSHMI TYRES', pageWidth / 2, 35, { align: 'center' });
       doc.setFontSize(10);
-      doc.text('Tiruchengode, Namakkal - 637211', pageWidth / 2, 42, { align: 'center' });
-      doc.text('Phone: +91 98765 43210', pageWidth / 2, 48, { align: 'center' });
+      doc.text('H.No. 3-25, Old RC Puram, Patancheru, Sangareddy Dist.', pageWidth / 2, 42, { align: 'center' });
+      doc.text('Phone no.: 99499 56515, 9346513095, 9100717642', pageWidth / 2, 48, { align: 'center' });
+      doc.text('GSTIN: 36AVGPJ4122R1Z8', pageWidth / 2, 54, { align: 'center' });
       
       // PO Details
       doc.setFontSize(11);
