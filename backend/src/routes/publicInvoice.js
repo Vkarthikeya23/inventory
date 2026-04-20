@@ -1180,8 +1180,8 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                 <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.cgst)}</span>
               </div>
               <div class="total-row">
-                <span>TOTAL</span>
-                <span>${formatIndianNumber(data.total)}</span>
+                <span style="color: #fff;">TOTAL</span>
+                <span style="color: #fff;">${formatIndianNumber(data.total)}</span>
               </div>
               <div style="margin-top: 40px; text-align: center;">
                 <img src="/assets/stamp.png" alt="Stamp" style="width: 120px; height: auto;">
