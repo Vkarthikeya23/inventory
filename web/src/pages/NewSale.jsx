@@ -101,9 +101,7 @@ export default function NewSale() {
   };
 
   const removeItem = (id) => {
-    if (items.length > 1) {
-      setItems(items.filter(i => i.id !== id));
-    }
+    setItems(items.filter(i => i.id !== id));
   };
 
   const updateItem = (id, field, value) => {
