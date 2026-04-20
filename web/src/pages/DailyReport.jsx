@@ -124,8 +124,8 @@ export default function DailyReport() {
             <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{data?.total_transactions || 0}</p>
           </div>
           <div style={{ padding: '20px', backgroundColor: '#fce4ec', borderRadius: '8px', flex: 1, minWidth: '200px' }}>
-            <h3>Units Sold</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{data?.units_sold || 0}</p>
+            <h3>Profit (Incl GST)</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{data?.profit_incl_gst?.toFixed(2) || 0}</p>
           </div>
         </div>
 

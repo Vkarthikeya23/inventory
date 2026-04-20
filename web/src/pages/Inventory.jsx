@@ -84,6 +84,7 @@ export default function Inventory() {
       cost_price: product.cost_price?.toString() || '',
       selling_price_excl_gst: product.selling_price_excl_gst?.toString() || '',
       selling_price_incl_gst: product.selling_price_incl_gst?.toString() || '',
+      gst_rate: product.gst_rate?.toString() || '12',
       price_entry_mode: 'excl'
     });
     setEditError(null);
@@ -91,13 +92,13 @@ export default function Inventory() {
 
   function closeEditModal() {
     setEditingProduct(null);
-    setEditForm({ stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', price_entry_mode: 'excl' });
+    setEditForm({ stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', gst_rate: '12', price_entry_mode: 'excl' });
     setEditError(null);
   }
 
   // Calculate prices based on entry mode
   const calculatePrices = () => {
-    const gstRate = parseFloat(editingProduct?.gst_rate) || 12;
+    const gstRate = parseFloat(editForm.gst_rate) || 12;
     
     if (editForm.price_entry_mode === 'excl') {
       // User entered price excluding GST
@@ -118,6 +119,7 @@ export default function Inventory() {
 
     const stockQty = parseInt(editForm.stock_qty);
     const costPrice = parseFloat(editForm.cost_price);
+    const gstRate = parseFloat(editForm.gst_rate);
     const { excl: sellingPriceExcl, incl: sellingPriceIncl } = calculatePrices();
 
     if (isNaN(stockQty) || stockQty < 0) {
@@ -138,6 +140,12 @@ export default function Inventory() {
       return;
     }
 
+    if (isNaN(gstRate) || gstRate < 0 || gstRate > 100) {
+      setEditError('GST rate must be between 0 and 100');
+      setSaving(false);
+      return;
+    }
+
     try {
       console.log('Frontend - Editing product ID:', editingProduct.id);
       console.log('Frontend - Editing product:', editingProduct);
@@ -146,7 +154,8 @@ export default function Inventory() {
         stock_qty: stockQty,
         cost_price: costPrice,
         selling_price_excl_gst: sellingPriceExcl,
-        selling_price_incl_gst: sellingPriceIncl
+        selling_price_incl_gst: sellingPriceIncl,
+        gst_rate: gstRate
       };
       
       console.log('Frontend - Sending payload:', payload);
@@ -387,7 +396,7 @@ export default function Inventory() {
           </div>
         </div>
 
-        {/* Potential Profit Summary Only */}
+        {/* Potential Profit Summary - Excl and Incl GST */}
         <div style={{ 
           marginBottom: '20px', 
           padding: '15px 20px', 
@@ -396,20 +405,34 @@ export default function Inventory() {
           border: '2px solid #ffa000',
           display: 'flex',
           alignItems: 'center',
-          gap: '30px'
+          gap: '40px'
         }}>
           <span style={{ fontSize: '28px' }}>💰</span>
-          <div>
-            <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
-              Potential Profit
-            </span>
-            <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2e7d32' }}>
-              ₹{products.reduce((sum, p) => {
-                const cost = (p.cost_price || 0) * (p.stock_qty || 0);
-                const selling = (p.selling_price_excl_gst || 0) * (p.stock_qty || 0);
-                return sum + (selling - cost);
-              }, 0).toFixed(2)}
-            </span>
+          <div style={{ display: 'flex', gap: '40px' }}>
+            <div>
+              <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
+                Potential Profit (Excl GST)
+              </span>
+              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2e7d32' }}>
+                ₹{products.reduce((sum, p) => {
+                  const cost = (p.cost_price || 0) * (p.stock_qty || 0);
+                  const selling = (p.selling_price_excl_gst || 0) * (p.stock_qty || 0);
+                  return sum + (selling - cost);
+                }, 0).toFixed(2)}
+              </span>
+            </div>
+            <div>
+              <span style={{ fontSize: '14px', color: '#666', display: 'block', marginBottom: '4px' }}>
+                Potential Profit (Incl GST)
+              </span>
+              <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#1976d2' }}>
+                ₹{products.reduce((sum, p) => {
+                  const cost = (p.cost_price || 0) * (p.stock_qty || 0);
+                  const selling = (p.selling_price_incl_gst || 0) * (p.stock_qty || 0);
+                  return sum + (selling - cost);
+                }, 0).toFixed(2)}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -626,6 +649,28 @@ export default function Inventory() {
               />
             </div>
 
+            {/* GST Rate */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
+                GST Rate (%)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                value={editForm.gst_rate}
+                onChange={(e) => setEditForm({ ...editForm, gst_rate: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
+
             {/* Price Entry Mode Toggle */}
             <div style={{ marginBottom: '10px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
@@ -719,7 +764,7 @@ export default function Inventory() {
                 <span style={{ fontWeight: '600' }}>₹ {calculatePrices().excl.toFixed(2)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                <span>Incl. GST ({editingProduct.gst_rate}%):</span>
+                <span>Incl. GST ({editForm.gst_rate}%):</span>
                 <span style={{ fontWeight: '600' }}>₹ {calculatePrices().incl.toFixed(2)}</span>
               </div>
             </div>

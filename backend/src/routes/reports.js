@@ -49,8 +49,8 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
     // Calculate totals
     let total_revenue = 0;
     let total_transactions = sales.length;
-    let units_sold = 0;
     let total_profit = 0;
+    let profit_incl_gst = 0;
     
     // Get sale items for each sale
     const salesWithDetails = [];
@@ -60,7 +60,9 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
           si.qty,
           si.total_amount,
           si.unit_cost,
-          p.cost_price
+          si.unit_price,
+          p.cost_price,
+          p.gst_rate
         FROM sale_items si
         LEFT JOIN products p ON p.id = si.product_id
         WHERE si.sale_id = $sale_id
@@ -69,17 +71,23 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
       let saleTotal = 0;
       let saleQty = 0;
       let saleProfit = 0;
+      let saleProfitInclGst = 0;
       
       for (const item of items) {
         saleTotal += parseFloat(item.total_amount) || 0;
         saleQty += parseInt(item.qty) || 0;
         const cost = (item.unit_cost || item.cost_price || 0) * (item.qty || 0);
+        const unitPriceExcl = parseFloat(item.unit_price) || 0;
+        const gstRate = parseFloat(item.gst_rate) || 12;
+        const unitPriceIncl = unitPriceExcl * (1 + gstRate / 100);
+        const totalIncl = unitPriceIncl * (item.qty || 0);
         saleProfit += (parseFloat(item.total_amount) || 0) - cost;
+        saleProfitInclGst += totalIncl - cost;
       }
       
       total_revenue += saleTotal;
-      units_sold += saleQty;
       total_profit += saleProfit;
+      profit_incl_gst += saleProfitInclGst;
       
       salesWithDetails.push({
         id: sale.id,
@@ -88,8 +96,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         created_at: sale.created_at,
         customer_name: sale.customer_name,
         customer_phone: sale.customer_phone,
-        item_count: items.length,
-        total_qty: saleQty
+        item_count: items.length
       });
     }
     
@@ -97,8 +104,8 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
       date: date,
       total_revenue: total_revenue,
       total_profit: total_profit,
+      profit_incl_gst: profit_incl_gst,
       total_transactions: total_transactions,
-      units_sold: units_sold,
       sales_details: salesWithDetails
     };
     

@@ -209,9 +209,10 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
       return res.status(404).json({ error: 'Product not found' });
     }
     
-    // Handle selling price updates
-    const gstRate = currentProduct.gst_rate || 12;
+    // Handle GST rate update
+    let gstRate = updates.gst_rate !== undefined ? parseFloat(updates.gst_rate) : (currentProduct.gst_rate || 12);
     
+    // Handle selling price updates with the GST rate (either updated or current)
     if ('selling_price_excl_gst' in updates) {
       const { sellingPriceExcl, sellingPriceIncl } = calculatePrices(updates.selling_price_excl_gst, gstRate, 'excl');
       updates.selling_price_excl_gst = sellingPriceExcl;
@@ -222,7 +223,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
       updates.selling_price_incl_gst = sellingPriceIncl;
     }
     
-    const allowedFields = ['company_name', 'size_spec', 'cost_price', 'selling_price_excl_gst', 'selling_price_incl_gst', 'stock_qty'];
+    const allowedFields = ['company_name', 'size_spec', 'cost_price', 'selling_price_excl_gst', 'selling_price_incl_gst', 'stock_qty', 'gst_rate'];
     const fields = [];
     const values = {};
     
