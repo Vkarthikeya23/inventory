@@ -1146,12 +1146,12 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                 </tr>
               `).join('')}
               <!-- Total Row -->
-              <tr style="background: #000; color: #fff; font-weight: 800;">
-                <td colspan="3" style="padding: 14px 10px; font-size: 12px; letter-spacing: 1px;">TOTAL</td>
-                <td></td>
-                <td></td>
-                <td class="text-right" style="padding: 14px 10px; font-weight: 800;">${formatIndianNumber(data.items.reduce((sum, item) => sum + item.gst_amount, 0))}</td>
-                <td class="text-right" style="padding: 14px 10px; font-weight: 800;">${formatIndianNumber(data.total)}</td>
+              <tr style="background: #000; font-weight: 800;">
+                <td colspan="3" style="padding: 14px 10px; font-size: 12px; letter-spacing: 1px; color: #fff;">TOTAL</td>
+                <td style="color: #fff;"></td>
+                <td style="color: #fff;"></td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff;">${formatIndianNumber(data.items.reduce((sum, item) => sum + item.gst_amount, 0))}</td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff;">${formatIndianNumber(data.total)}</td>
               </tr>
             </tbody>
           </table>
