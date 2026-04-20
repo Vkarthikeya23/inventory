@@ -1171,14 +1171,16 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                 <span style="font-weight: 800; color: #000;">Sub Total</span>
                 <span style="font-weight: 800; color: #000;">${formatIndianNumber(data.subtotal)}</span>
               </div>
+              ${data.sgst > 0 ? `
               <div class="amount-row">
-                <span style="color: #000; font-weight: 600;">SGST @ 6%</span>
+                <span style="color: #000; font-weight: 600;">SGST @ ${data.items[0]?.gst_rate || 6}%</span>
                 <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.sgst)}</span>
               </div>
               <div class="amount-row">
-                <span style="color: #000; font-weight: 600;">CGST @ 6%</span>
+                <span style="color: #000; font-weight: 600;">CGST @ ${data.items[0]?.gst_rate || 6}%</span>
                 <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.cgst)}</span>
               </div>
+              ` : ''}
               <div class="total-row">
                 <span style="color: #fff;">TOTAL</span>
                 <span style="color: #fff;">${formatIndianNumber(data.total)}</span>
