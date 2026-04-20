@@ -74,19 +74,20 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
       let saleProfitInclGst = 0;
       
       for (const item of items) {
-        saleTotal += parseFloat(item.total_amount) || 0;
+        const itemTotal = parseFloat(item.total_amount) || 0;
+        saleTotal += itemTotal;
         const cost = (item.unit_cost || item.cost_price || 0) * (item.qty || 0);
-        const unitPriceExcl = parseFloat(item.unit_price) || 0;
         const gstRate = parseFloat(item.gst_rate) || 12;
-        const totalExcl = unitPriceExcl * (item.qty || 0);
-        const totalIncl = totalExcl * (1 + gstRate / 100);
+        const gstAmount = itemTotal * (gstRate / 100) / (1 + gstRate / 100); // Calculate GST from total_amount
+        const totalExcl = itemTotal - gstAmount; // Amount without GST
+        const totalIncl = itemTotal; // Amount already includes GST
         
-        console.log(`DEBUG: qty=${item.qty}, unit_price=${unitPriceExcl}, total_amount=${item.total_amount}, cost=${cost}, unit_cost=${item.unit_cost}, cost_price=${item.cost_price}, gst_rate=${gstRate}`);
-        console.log(`DEBUG: totalExcl=${totalExcl}, totalIncl=${totalIncl}, profit_excl=${totalExcl - cost}, profit_incl=${totalIncl - cost}`);
+        console.log(`DEBUG: qty=${item.qty}, unit_price=${item.unit_price}, total_amount=${item.total_amount}, cost=${cost}, gst_rate=${gstRate}`);
+        console.log(`DEBUG: gstAmount=${gstAmount}, totalExcl=${totalExcl}, totalIncl=${totalIncl}, profit_excl=${totalExcl - cost}, profit_incl=${totalIncl - cost}`);
         
-        // Profit excluding GST = (Price excl GST × Qty) - Cost
+        // Profit excluding GST = Revenue without GST - Cost
         saleProfit += totalExcl - cost;
-        // Profit including GST = (Price incl GST × Qty) - Cost
+        // Profit including GST = Revenue with GST - Cost
         saleProfitInclGst += totalIncl - cost;
       }
       
