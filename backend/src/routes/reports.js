@@ -76,13 +76,21 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
       for (const item of items) {
         saleTotal += parseFloat(item.total_amount) || 0;
         const cost = (item.unit_cost || item.cost_price || 0) * (item.qty || 0);
-        saleProfit += (parseFloat(item.total_amount) || 0) - cost;
+        const unitPriceExcl = parseFloat(item.unit_price) || 0;
+        const gstRate = parseFloat(item.gst_rate) || 12;
+        const unitPriceIncl = unitPriceExcl * (1 + gstRate / 100);
+        const totalExcl = unitPriceExcl * (item.qty || 0);
+        const totalIncl = unitPriceIncl * (item.qty || 0);
+        
+        // Profit excluding GST = (Price excl GST × Qty) - Cost
+        saleProfit += totalExcl - cost;
+        // Profit including GST = (Price incl GST × Qty) - Cost
+        saleProfitInclGst += totalIncl - cost;
       }
       
       total_revenue += saleTotal;
       total_profit += saleProfit;
-      // profit_incl_gst = total_amount (which already includes GST) - cost
-      profit_incl_gst += saleProfit;
+      profit_incl_gst += saleProfitInclGst;
       
       salesWithDetails.push({
         id: sale.id,
