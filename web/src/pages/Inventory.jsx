@@ -816,7 +816,7 @@ export default function Inventory() {
                   fontSize: '14px'
                 }}
               >
-                Select Low Stock (< 4)
+                Select Low Stock ({'<'} 4)
               </button>
               <span style={{ marginLeft: 'auto', fontSize: '14px', color: '#666' }}>
                 Selected: {Object.values(poSelectedProducts).filter(Boolean).length} products
