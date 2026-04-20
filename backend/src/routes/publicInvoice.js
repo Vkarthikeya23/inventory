@@ -812,102 +812,148 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             font-size: 16px;
           }
 
-          /* Print styles */
+          /* Print styles - Optimized for readability on A4 */
           @media print {
             body {
               background: #fff;
               padding: 0;
+              color: #000 !important;
             }
             .invoice-container {
               box-shadow: none;
               max-width: 100%;
-              padding: 10px 15px;
-              border: none;
+              padding: 12px 15px;
+              border: 2px solid #000;
+              color: #000 !important;
             }
             .header {
-              padding-bottom: 8px;
-              margin-bottom: 8px;
-              gap: 10px;
+              padding-bottom: 10px;
+              margin-bottom: 10px;
+              gap: 12px;
+              border-bottom: 2px solid #000;
             }
             .logo {
-              width: 55px;
-              height: 55px;
+              width: 65px;
+              height: 65px;
             }
             .shop-name {
-              font-size: 16px;
-              margin-bottom: 2px;
+              font-size: 18px;
+              margin-bottom: 4px;
+              color: #000 !important;
+              font-weight: 800;
             }
             .shop-phone, .shop-address, .shop-gstin {
-              font-size: 9px;
+              font-size: 11px;
+              color: #000 !important;
+              font-weight: 600;
             }
             .tax-invoice-title {
-              font-size: 14px;
-              padding: 5px;
-              margin: 8px 0;
+              font-size: 16px;
+              padding: 8px;
+              margin: 10px 0;
+              border: 2px solid #000;
+              color: #000 !important;
+              font-weight: 800;
             }
             .two-column {
-              margin-bottom: 8px;
+              margin-bottom: 10px;
+              border: 2px solid #000;
             }
             .column {
-              padding: 8px;
+              padding: 10px;
+              border-right: 2px solid #000;
             }
             .column-label {
-              font-size: 10px;
-              margin-bottom: 3px;
-              padding-bottom: 2px;
+              font-size: 11px;
+              margin-bottom: 4px;
+              padding-bottom: 3px;
+              color: #000 !important;
+              font-weight: 700;
+              border-bottom: 1px solid #000;
             }
             .customer-name {
-              font-size: 11px;
+              font-size: 13px;
+              color: #000 !important;
+              font-weight: 700;
             }
             .detail-row {
-              font-size: 9px;
-              margin: 1px 0;
+              font-size: 11px;
+              margin: 2px 0;
+              color: #000 !important;
+              font-weight: 500;
             }
             table {
-              margin: 8px 0;
-              font-size: 9px;
+              margin: 10px 0;
+              font-size: 10px;
+              border: 2px solid #000;
             }
             th {
-              padding: 4px 3px;
-              font-size: 8px;
+              padding: 6px 4px;
+              font-size: 9px;
+              background: #000 !important;
+              color: #fff !important;
+              border: 1px solid #000;
             }
             td {
-              padding: 3px;
+              padding: 5px 4px;
+              border: 1px solid #666;
+              color: #000 !important;
+              font-weight: 600;
+            }
+            .item-name {
+              color: #000 !important;
+              font-weight: 700;
             }
             .totals-section {
-              margin-top: 8px;
+              margin-top: 10px;
+              border: 2px solid #000;
             }
             .words-column, .amounts-column {
-              padding: 8px;
+              padding: 10px;
             }
             .amount-row {
-              font-size: 9px;
-              padding: 2px 0;
+              font-size: 11px;
+              padding: 3px 0;
+              color: #000 !important;
+              font-weight: 600;
             }
             .total-row {
-              padding: 5px 8px;
-              margin: 5px -8px -8px -8px;
-              font-size: 10px;
+              padding: 8px 10px;
+              margin: 6px -10px -10px -10px;
+              font-size: 12px;
+              background: #000 !important;
+              color: #fff !important;
+              font-weight: 800;
             }
             .amount-in-words {
-              font-size: 10px;
-              margin-bottom: 3px;
+              font-size: 11px;
+              margin-bottom: 4px;
+              color: #000 !important;
+              font-weight: 700;
             }
             .thank-you {
-              font-size: 9px;
-              margin-top: 8px;
+              font-size: 10px;
+              margin-top: 10px;
+              color: #000 !important;
+              font-weight: 600;
             }
             .warranty-box {
-              margin-top: 6px;
-              padding: 4px 6px;
-              font-size: 8px;
+              margin-top: 8px;
+              padding: 6px 8px;
+              font-size: 9px;
+              border: 1px solid #000;
+              color: #000 !important;
+              font-weight: 600;
             }
             .footer {
-              margin-top: 10px;
-              padding-top: 8px;
+              margin-top: 12px;
+              padding-top: 10px;
+              border-top: 2px solid #000;
             }
             .shop-signature {
-              font-size: 11px;
+              font-size: 12px;
+              color: #000 !important;
+              font-weight: 700;
             }
             .no-print {
               display: none !important;
