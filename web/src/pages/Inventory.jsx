@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 export default function Inventory() {
   const { user } = useAuth();
@@ -20,6 +22,11 @@ export default function Inventory() {
   const [editError, setEditError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteNotification, setDeleteNotification] = useState(null);
+
+  // Purchase Order Modal States
+  const [poModalOpen, setPoModalOpen] = useState(false);
+  const [poSelectedProducts, setPoSelectedProducts] = useState({});
+  const [poQuantities, setPoQuantities] = useState({});
 
   const isOwner = user?.role === 'owner';
   const isManager = user?.role === 'manager';
@@ -189,6 +196,132 @@ export default function Inventory() {
     }
   }
 
+  // Purchase Order Functions
+  function openPoModal() {
+    setPoModalOpen(true);
+    setPoSelectedProducts({});
+    // Initialize quantities to 10 for all products
+    const initialQuantities = {};
+    products.forEach(p => {
+      initialQuantities[p.id] = 10;
+    });
+    setPoQuantities(initialQuantities);
+  }
+
+  function closePoModal() {
+    setPoModalOpen(false);
+    setPoSelectedProducts({});
+    setPoQuantities({});
+  }
+
+  function toggleProductSelection(productId) {
+    setPoSelectedProducts(prev => ({
+      ...prev,
+      [productId]: !prev[productId]
+    }));
+  }
+
+  function updatePoQuantity(productId, quantity) {
+    const num = parseInt(quantity) || 0;
+    if (num >= 0) {
+      setPoQuantities(prev => ({
+        ...prev,
+        [productId]: num
+      }));
+    }
+  }
+
+  function selectLowStock() {
+    const selected = {};
+    products.forEach(p => {
+      if ((p.stock_qty || 0) < 4) {
+        selected[p.id] = true;
+      }
+    });
+    setPoSelectedProducts(selected);
+  }
+
+  function generatePoPdf() {
+    const selectedProducts = products.filter(p => poSelectedProducts[p.id]);
+    
+    if (selectedProducts.length === 0) {
+      alert('Please select at least one product');
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(0, 0, 128);
+    doc.text('PURCHASE ORDER', pageWidth / 2, 20, { align: 'center' });
+    
+    // Shop details
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('SRI MAHALAKSHMI TYRES', pageWidth / 2, 35, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text('Tiruchengode, Namakkal - 637211', pageWidth / 2, 42, { align: 'center' });
+    doc.text('Phone: +91 98765 43210', pageWidth / 2, 48, { align: 'center' });
+    
+    // PO Details
+    doc.setFontSize(11);
+    doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, 20, 60);
+    doc.text(`PO #: PO-${Date.now().toString().slice(-6)}`, 20, 68);
+    
+    // Table data
+    const tableData = selectedProducts.map(p => {
+      const qty = poQuantities[p.id] || 0;
+      const cost = p.cost_price || 0;
+      return [
+        p.display_name,
+        qty,
+        `₹${cost.toFixed(2)}`,
+        `₹${(qty * cost).toFixed(2)}`
+      ];
+    });
+
+    doc.autoTable({
+      startY: 78,
+      head: [['Product', 'Quantity', 'Cost Price', 'Total']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [33, 150, 243],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      columnStyles: {
+        0: { cellWidth: 'auto' },
+        1: { halign: 'center' },
+        2: { halign: 'right' },
+        3: { halign: 'right' }
+      },
+      margin: { left: 20, right: 20 }
+    });
+
+    // Total
+    const totalAmount = selectedProducts.reduce((sum, p) => {
+      return sum + ((poQuantities[p.id] || 0) * (p.cost_price || 0));
+    }, 0);
+
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Total Amount: ₹${totalAmount.toFixed(2)}`, pageWidth - 20, finalY, { align: 'right' });
+    
+    // Footer note
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text('This is a purchase order for stock replenishment.', 20, finalY + 20);
+    doc.text('Please confirm availability and delivery schedule.', 20, finalY + 28);
+
+    doc.save(`Purchase_Order_${new Date().toISOString().slice(0, 10)}.pdf`);
+    closePoModal();
+  }
+
   // Products are already filtered by server when searching
   const displayProducts = products;
 
@@ -297,20 +430,39 @@ export default function Inventory() {
           </div>
         )}
 
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'center' }}>
           <input
             type="text"
             placeholder="Search products..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ 
-              padding: '10px', 
-              border: '1px solid #ddd', 
-              borderRadius: '4px', 
+            style={{
+              padding: '10px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
               width: '400px',
               fontSize: '16px'
             }}
           />
+          <button
+            onClick={openPoModal}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#2196F3',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <span>📥</span>
+            Download PO
+          </button>
         </div>
 
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -616,6 +768,185 @@ export default function Inventory() {
                 }}
               >
                 {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Purchase Order Modal */}
+      {poModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            padding: '30px',
+            borderRadius: '8px',
+            width: '90%',
+            maxWidth: '900px',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+          }}>
+            <h2 style={{ marginBottom: '20px' }}>
+              Generate Purchase Order
+            </h2>
+
+            {/* Actions Bar */}
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+              <button
+                onClick={selectLowStock}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#ff9800',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Select Low Stock (< 4)
+              </button>
+              <span style={{ marginLeft: 'auto', fontSize: '14px', color: '#666' }}>
+                Selected: {Object.values(poSelectedProducts).filter(Boolean).length} products
+              </span>
+            </div>
+
+            {/* Products Table */}
+            <div style={{ maxHeight: '50vh', overflow: 'auto', marginBottom: '20px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #ddd', backgroundColor: '#f5f5f5' }}>
+                    <th style={{ textAlign: 'left', padding: '10px', width: '40px' }}>Select</th>
+                    <th style={{ textAlign: 'left', padding: '10px' }}>Product</th>
+                    <th style={{ textAlign: 'right', padding: '10px' }}>Current Stock</th>
+                    <th style={{ textAlign: 'right', padding: '10px' }}>Cost Price</th>
+                    <th style={{ textAlign: 'center', padding: '10px', width: '120px' }}>Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map(p => {
+                    const isLowStock = (p.stock_qty || 0) < 4;
+                    return (
+                      <tr
+                        key={p.id}
+                        style={{
+                          borderBottom: '1px solid #eee',
+                          backgroundColor: isLowStock ? '#fff3e0' : 'transparent'
+                        }}
+                      >
+                        <td style={{ padding: '10px', textAlign: 'center' }}>
+                          <input
+                            type="checkbox"
+                            checked={!!poSelectedProducts[p.id]}
+                            onChange={() => toggleProductSelection(p.id)}
+                            style={{ width: '18px', height: '18px' }}
+                          />
+                        </td>
+                        <td style={{ padding: '10px' }}>
+                          <div style={{ fontWeight: '500' }}>{p.display_name}</div>
+                          {isLowStock && (
+                            <span style={{
+                              fontSize: '12px',
+                              color: '#e65100',
+                              fontWeight: 'bold'
+                            }}>
+                              ⚠ Low Stock
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ padding: '10px', textAlign: 'right' }}>
+                          {p.stock_qty || 0}
+                        </td>
+                        <td style={{ padding: '10px', textAlign: 'right' }}>
+                          ₹{parseFloat(p.cost_price || 0).toFixed(2)}
+                        </td>
+                        <td style={{ padding: '10px', textAlign: 'center' }}>
+                          <input
+                            type="number"
+                            min="1"
+                            value={poQuantities[p.id] || ''}
+                            onChange={(e) => updatePoQuantity(p.id, e.target.value)}
+                            disabled={!poSelectedProducts[p.id]}
+                            style={{
+                              width: '80px',
+                              padding: '6px',
+                              border: '1px solid #ddd',
+                              borderRadius: '4px',
+                              textAlign: 'center',
+                              opacity: poSelectedProducts[p.id] ? 1 : 0.5
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Summary */}
+            <div style={{
+              marginBottom: '20px',
+              padding: '15px',
+              backgroundColor: '#e3f2fd',
+              borderRadius: '4px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span style={{ fontSize: '14px', color: '#666' }}>
+                Total Items: {Object.values(poSelectedProducts).filter(Boolean).length}
+              </span>
+              <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1976d2' }}>
+                Total: ₹{products
+                  .filter(p => poSelectedProducts[p.id])
+                  .reduce((sum, p) => sum + ((poQuantities[p.id] || 0) * (p.cost_price || 0)), 0)
+                  .toFixed(2)}
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={closePoModal}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#999',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '16px'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={generatePoPdf}
+                disabled={Object.values(poSelectedProducts).filter(Boolean).length === 0}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: Object.values(poSelectedProducts).filter(Boolean).length === 0 ? '#ccc' : '#4CAF50',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: Object.values(poSelectedProducts).filter(Boolean).length === 0 ? 'not-allowed' : 'pointer',
+                  fontSize: '16px'
+                }}
+              >
+                📄 Download PDF
               </button>
             </div>
           </div>
