@@ -194,10 +194,23 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             font-weight: 500;
           }
           tbody tr:nth-child(even) {
-            background: #f5f5f5;
+            background: #e8e8e8;
           }
           .text-right { text-align: right; }
           .text-center { text-align: center; }
+          
+          /* Print styles */
+          @media print {
+            body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .invoice-container { box-shadow: none; border: 2px solid #000; }
+            th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tbody tr:nth-child(even) { background: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tbody tr { color: #000 !important; }
+            td { border: 2px solid #000 !important; color: #000 !important; font-weight: 600 !important; }
+            .total-table-row { background: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .total-table-row td { color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .item-name { color: #000 !important; font-weight: 700 !important; }
+          }
           .item-name {
             font-weight: 600;
             color: #1a1a1a;
@@ -1135,7 +1148,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             </thead>
             <tbody>
               ${data.items.map((item, idx) => `
-                <tr>
+                <tr class="data-row">
                   <td class="text-center">${idx + 1}</td>
                   <td class="${item.is_service ? 'item-name item-service' : 'item-name'}">${item.name}</td>
                   <td class="text-center">${item.qty}</td>
@@ -1146,12 +1159,12 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                 </tr>
               `).join('')}
               <!-- Total Row -->
-              <tr style="background: #000; font-weight: 800;">
-                <td colspan="3" style="padding: 14px 10px; font-size: 12px; letter-spacing: 1px; color: #fff;">TOTAL</td>
-                <td style="color: #fff;"></td>
-                <td style="color: #fff;"></td>
-                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff;">${formatIndianNumber(data.items.reduce((sum, item) => sum + item.gst_amount, 0))}</td>
-                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff;">${formatIndianNumber(data.total)}</td>
+              <tr class="total-table-row" style="background: #000 !important; font-weight: 800; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                <td colspan="3" style="padding: 14px 10px; font-size: 12px; letter-spacing: 1px; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">TOTAL</td>
+                <td style="color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;"></td>
+                <td style="color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;"></td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${formatIndianNumber(data.items.reduce((sum, item) => sum + item.gst_amount, 0))}</td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${formatIndianNumber(data.total)}</td>
               </tr>
             </tbody>
           </table>
