@@ -281,8 +281,8 @@ export default function Inventory() {
       
       // Table data
       const tableData = selectedProducts.map(p => {
-        const qty = poQuantities[p.id] || 0;
-        const cost = p.cost_price || 0;
+        const qty = parseInt(poQuantities[p.id]) || 0;
+        const cost = parseFloat(p.cost_price) || 0;
         return [
           p.display_name,
           qty,
