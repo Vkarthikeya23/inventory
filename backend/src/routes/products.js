@@ -49,7 +49,7 @@ router.get('/', verifyToken, async (req, res) => {
     const params = {};
     
     if (search) {
-      query += ` AND (company_name ILIKE $search OR size_spec ILIKE $search)`;
+      query += ` AND (company_name ILIKE $search OR size_spec ILIKE $search OR display_name ILIKE $search)`;
       params.search = `%${search}%`;
     }
     
