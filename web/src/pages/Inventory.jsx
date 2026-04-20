@@ -3,7 +3,10 @@ import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { applyPlugin } from 'jspdf-autotable';
+
+// Apply autoTable plugin to jsPDF
+applyPlugin(jsPDF);
 
 export default function Inventory() {
   const { user } = useAuth();
