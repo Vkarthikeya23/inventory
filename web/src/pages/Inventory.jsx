@@ -12,7 +12,10 @@ export default function Inventory() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [editForm, setEditForm] = useState({
     stock_qty: '',
-    selling_price_excl_gst: ''
+    cost_price: '',
+    selling_price_excl_gst: '',
+    selling_price_incl_gst: '',
+    price_entry_mode: 'excl'
   });
   const [editError, setEditError] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -68,22 +71,35 @@ export default function Inventory() {
     setEditingProduct(product);
     setEditForm({
       stock_qty: product.stock_qty.toString(),
-      selling_price_excl_gst: product.selling_price_excl_gst?.toString() || ''
+      cost_price: product.cost_price?.toString() || '',
+      selling_price_excl_gst: product.selling_price_excl_gst?.toString() || '',
+      selling_price_incl_gst: product.selling_price_incl_gst?.toString() || '',
+      price_entry_mode: 'excl'
     });
     setEditError(null);
   }
 
   function closeEditModal() {
     setEditingProduct(null);
-    setEditForm({ stock_qty: '', selling_price_excl_gst: '' });
+    setEditForm({ stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', price_entry_mode: 'excl' });
     setEditError(null);
   }
 
-  // Calculate incl. GST price from excl. GST price
-  const computedInclPrice = () => {
-    const price = parseFloat(editForm.selling_price_excl_gst) || 0;
+  // Calculate prices based on entry mode
+  const calculatePrices = () => {
     const gstRate = parseFloat(editingProduct?.gst_rate) || 12;
-    return Math.round(price * (1 + gstRate / 100) * 100) / 100;
+    
+    if (editForm.price_entry_mode === 'excl') {
+      // User entered price excluding GST
+      const exclPrice = parseFloat(editForm.selling_price_excl_gst) || 0;
+      const inclPrice = Math.round(exclPrice * (1 + gstRate / 100) * 100) / 100;
+      return { excl: exclPrice, incl: inclPrice };
+    } else {
+      // User entered price including GST
+      const inclPrice = parseFloat(editForm.selling_price_incl_gst) || 0;
+      const exclPrice = Math.round(inclPrice / (1 + gstRate / 100) * 100) / 100;
+      return { excl: exclPrice, incl: inclPrice };
+    }
   };
 
   async function handleSaveEdit() {
@@ -91,7 +107,8 @@ export default function Inventory() {
     setSaving(true);
 
     const stockQty = parseInt(editForm.stock_qty);
-    const sellingPriceExcl = parseFloat(editForm.selling_price_excl_gst);
+    const costPrice = parseFloat(editForm.cost_price);
+    const { excl: sellingPriceExcl, incl: sellingPriceIncl } = calculatePrices();
 
     if (isNaN(stockQty) || stockQty < 0) {
       setEditError('Stock quantity must be a non-negative number');
@@ -99,8 +116,14 @@ export default function Inventory() {
       return;
     }
 
+    if (isNaN(costPrice) || costPrice < 0) {
+      setEditError('Cost price must be a non-negative number');
+      setSaving(false);
+      return;
+    }
+
     if (isNaN(sellingPriceExcl) || sellingPriceExcl <= 0) {
-      setEditError('Selling price must be a positive number');
+      setEditError('Selling price must be greater than 0');
       setSaving(false);
       return;
     }
@@ -111,7 +134,9 @@ export default function Inventory() {
       
       const payload = {
         stock_qty: stockQty,
-        selling_price_excl_gst: sellingPriceExcl
+        cost_price: costPrice,
+        selling_price_excl_gst: sellingPriceExcl,
+        selling_price_incl_gst: sellingPriceIncl
       };
       
       console.log('Frontend - Sending payload:', payload);
@@ -120,29 +145,45 @@ export default function Inventory() {
       
       console.log('Frontend - Response:', res.data);
       
-      // Check if product was soft-deleted (stock set to 0)
-      if (res.data.deleted) {
-        // Remove product from local state
-        setProducts(products.filter(p => p.id !== editingProduct.id));
-        // Show notification
-        setDeleteNotification({
-          message: `${res.data.display_name} removed from inventory (stock set to 0)`,
-          visible: true
-        });
-        // Hide notification after 3 seconds
-        setTimeout(() => {
-          setDeleteNotification(null);
-        }, 3000);
-      } else {
-        // Update local state normally
-        setProducts(products.map(p => 
-          p.id === editingProduct.id ? res.data : p
-        ));
-      }
+      // Update local state
+      setProducts(products.map(p => 
+        p.id === editingProduct.id ? res.data : p
+      ));
       
       closeEditModal();
     } catch (err) {
       setEditError(err.response?.data?.error || 'Failed to update product');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteProduct() {
+    if (!confirm(`Are you sure you want to permanently delete ${editingProduct.company_name} ${editingProduct.size_spec}? This cannot be undone.`)) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await api.delete(`/products/${editingProduct.id}`);
+      
+      // Remove from local state
+      setProducts(products.filter(p => p.id !== editingProduct.id));
+      
+      // Show notification
+      setDeleteNotification({
+        message: `${editingProduct.company_name} ${editingProduct.size_spec} has been permanently deleted`,
+        visible: true
+      });
+      
+      // Hide notification after 3 seconds
+      setTimeout(() => {
+        setDeleteNotification(null);
+      }, 3000);
+      
+      closeEditModal();
+    } catch (err) {
+      setEditError(err.response?.data?.error || 'Failed to delete product');
     } finally {
       setSaving(false);
     }
@@ -368,14 +409,15 @@ export default function Inventory() {
             padding: '30px',
             borderRadius: '8px',
             width: '90%',
-            maxWidth: '450px',
+            maxWidth: '500px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
           }}>
             <h2 style={{ marginBottom: '8px' }}>
               Update — {editingProduct.company_name} {editingProduct.size_spec}
             </h2>
             
-            <div style={{ marginBottom: '20px' }}>
+            {/* Stock Quantity */}
+            <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
                 Stock quantity
               </label>
@@ -394,15 +436,16 @@ export default function Inventory() {
               />
             </div>
 
-            <div style={{ marginBottom: '10px' }}>
+            {/* Cost Price */}
+            <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
-                Selling price (excl GST) ₹
+                Cost Price (₹)
               </label>
               <input
                 type="number"
                 step="0.01"
-                value={editForm.selling_price_excl_gst}
-                onChange={(e) => setEditForm({ ...editForm, selling_price_excl_gst: e.target.value })}
+                value={editForm.cost_price}
+                onChange={(e) => setEditForm({ ...editForm, cost_price: e.target.value })}
                 style={{
                   width: '100%',
                   padding: '10px',
@@ -413,6 +456,86 @@ export default function Inventory() {
               />
             </div>
 
+            {/* Price Entry Mode Toggle */}
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
+                Price Entry Mode
+              </label>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditForm({ ...editForm, price_entry_mode: 'excl' })}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    backgroundColor: editForm.price_entry_mode === 'excl' ? '#2196F3' : '#f5f5f5',
+                    color: editForm.price_entry_mode === 'excl' ? '#fff' : '#333',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: editForm.price_entry_mode === 'excl' ? '600' : '400'
+                  }}
+                >
+                  Excluding GST
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditForm({ ...editForm, price_entry_mode: 'incl' })}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    backgroundColor: editForm.price_entry_mode === 'incl' ? '#2196F3' : '#f5f5f5',
+                    color: editForm.price_entry_mode === 'incl' ? '#fff' : '#333',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: editForm.price_entry_mode === 'incl' ? '600' : '400'
+                  }}
+                >
+                  Including GST
+                </button>
+              </div>
+            </div>
+
+            {/* Selling Price Input */}
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
+                Selling Price ({editForm.price_entry_mode === 'excl' ? 'Excl' : 'Incl'} GST) ₹
+              </label>
+              {editForm.price_entry_mode === 'excl' ? (
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editForm.selling_price_excl_gst}
+                  onChange={(e) => setEditForm({ ...editForm, selling_price_excl_gst: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '16px'
+                  }}
+                />
+              ) : (
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editForm.selling_price_incl_gst}
+                  onChange={(e) => setEditForm({ ...editForm, selling_price_incl_gst: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '16px'
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Display Calculated Price */}
             <div style={{
               marginBottom: '20px',
               padding: '10px',
@@ -421,7 +544,14 @@ export default function Inventory() {
               fontSize: '14px',
               color: '#666'
             }}>
-              Incl. GST ({editingProduct.gst_rate}%): ₹ {computedInclPrice().toFixed(2)}
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Excl. GST:</span>
+                <span style={{ fontWeight: '600' }}>₹ {calculatePrices().excl.toFixed(2)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                <span>Incl. GST ({editingProduct.gst_rate}%):</span>
+                <span style={{ fontWeight: '600' }}>₹ {calculatePrices().incl.toFixed(2)}</span>
+              </div>
             </div>
 
             {editError && (
@@ -437,6 +567,7 @@ export default function Inventory() {
               </div>
             )}
 
+            {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button
                 onClick={closeEditModal}
@@ -453,6 +584,24 @@ export default function Inventory() {
               >
                 Cancel
               </button>
+              
+              {/* Delete button - red color */}
+              <button
+                onClick={handleDeleteProduct}
+                disabled={saving}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: '#f44336',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '16px'
+                }}
+              >
+                Delete
+              </button>
+              
               <button
                 onClick={handleSaveEdit}
                 disabled={saving}

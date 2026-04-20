@@ -203,51 +203,28 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
     console.log('PUT /products/:id - Product ID:', id);
     console.log('PUT /products/:id - Request body:', updates);
     
-    // Check if stock_qty is being set to 0 (soft delete)
-    if ('stock_qty' in updates && parseInt(updates.stock_qty) === 0) {
-      const result = await get(`
-        UPDATE products 
-        SET is_deleted = true, stock_qty = 0 
-        WHERE id = $id 
-        RETURNING 
-          id,
-          company_name,
-          size_spec,
-          COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '') as display_name
-      `, { id });
-      
-      if (!result) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-      
-      return res.json({ 
-        deleted: true, 
-        id: result.id, 
-        display_name: result.display_name 
-      });
-    }
-    
-    // Get current product to know the GST rate if not provided
-    // Check without is_deleted filter so we can update soft-deleted products
-    const currentProduct = await get('SELECT gst_rate FROM products WHERE id = $id', { id });
+    // Get current product to know the GST rate
+    const currentProduct = await get('SELECT gst_rate FROM products WHERE id = $id AND is_deleted = false', { id });
     if (!currentProduct) {
       return res.status(404).json({ error: 'Product not found' });
     }
     
-    // If selling_price_excl_gst is being updated, recalculate selling_price_incl_gst
+    // Handle selling price updates
+    const gstRate = currentProduct.gst_rate || 12;
+    
     if ('selling_price_excl_gst' in updates) {
-      const gstRate = updates.gst_rate || currentProduct.gst_rate || 12;
       const { sellingPriceExcl, sellingPriceIncl } = calculatePrices(updates.selling_price_excl_gst, gstRate, 'excl');
+      updates.selling_price_excl_gst = sellingPriceExcl;
+      updates.selling_price_incl_gst = sellingPriceIncl;
+    } else if ('selling_price_incl_gst' in updates) {
+      const { sellingPriceExcl, sellingPriceIncl } = calculatePrices(updates.selling_price_incl_gst, gstRate, 'incl');
       updates.selling_price_excl_gst = sellingPriceExcl;
       updates.selling_price_incl_gst = sellingPriceIncl;
     }
     
-    const allowedFields = ['company_name', 'size_spec', 'cost_price', 'selling_price_excl_gst', 'selling_price_incl_gst', 'gst_rate', 'price_entry_mode', 'stock_qty', 'is_deleted'];
+    const allowedFields = ['company_name', 'size_spec', 'cost_price', 'selling_price_excl_gst', 'selling_price_incl_gst', 'stock_qty'];
     const fields = [];
     const values = {};
-    
-    // Always set is_deleted = false when updating (restocking a deleted product)
-    fields.push('is_deleted = false');
     
     for (const key of Object.keys(updates)) {
       if (allowedFields.includes(key)) {
@@ -263,19 +240,11 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
     values.id = id;
     
     const result = await get(`
-      UPDATE products SET ${fields.join(', ')}, created_at = created_at WHERE id = $id
+      UPDATE products SET ${fields.join(', ')} WHERE id = $id
       RETURNING 
-        id, 
-        company_name, 
-        size_spec, 
-        cost_price, 
-        selling_price_excl_gst, 
-        selling_price_incl_gst, 
-        gst_rate, 
-        price_entry_mode, 
-        stock_qty, 
-        is_deleted, 
-        created_at,
+        id, company_name, size_spec, cost_price, 
+        selling_price_excl_gst, selling_price_incl_gst, gst_rate, 
+        stock_qty, is_deleted, created_at,
         COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '') as display_name
     `, values);
     
@@ -286,6 +255,41 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
     res.json(result);
   } catch (err) {
     console.error('Update product error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    console.log('DELETE /products/:id - Product ID:', id);
+    
+    // Check if product exists
+    const product = await get('SELECT id, company_name, size_spec FROM products WHERE id = $id', { id });
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    
+    // Check if product is referenced in sales
+    const salesCheck = await get('SELECT COUNT(*) as count FROM sale_items WHERE product_id = $id', { id });
+    if (salesCheck.count > 0) {
+      return res.status(400).json({ 
+        error: 'Cannot delete product that has sales history. Use stock = 0 to hide it instead.' 
+      });
+    }
+    
+    // Permanently delete the product
+    await run('DELETE FROM products WHERE id = $id', { id });
+    
+    console.log('DELETE /products/:id - Product deleted:', id);
+    res.json({ 
+      message: 'Product deleted permanently',
+      id: id,
+      display_name: `${product.company_name} ${product.size_spec}`
+    });
+  } catch (err) {
+    console.error('Delete product error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
