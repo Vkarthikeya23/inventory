@@ -69,14 +69,13 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             max-width: 800px;
             margin: 0 auto;
             background: #fff;
-            padding: 15px;
+            padding: 12px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-            border: 2px solid #4a4a4a;
+            border: 2px solid #000;
           }
           .header {
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
+            padding-bottom: 8px;
+            margin-bottom: 0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -85,44 +84,44 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             flex: 1;
           }
           .logo {
-            width: 60px;
-            height: 60px;
+            width: 90px;
+            height: 90px;
             object-fit: contain;
           }
           .shop-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 3px;
-            letter-spacing: 0.5px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #000;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
           }
           .shop-phone {
-            font-size: 11px;
-            color: #444;
-            font-weight: 500;
+            font-size: 12px;
+            color: #000;
+            font-weight: 600;
           }
           .shop-address {
-            font-size: 10px;
-            color: #666;
+            font-size: 12px;
+            color: #000;
             margin-top: 2px;
           }
           .shop-gstin {
-            font-size: 10px;
-            color: #666;
-            margin-top: 1px;
-            font-weight: 600;
+            font-size: 12px;
+            color: #000;
+            margin-top: 2px;
+            font-weight: 700;
           }
           .tax-invoice-title {
             text-align: center;
-            color: #333;
-            font-size: 16px;
-            font-weight: 700;
-            margin: 10px 0;
+            color: #000;
+            font-size: 18px;
+            font-weight: 800;
+            margin: 8px 0;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            border: 2px solid #333;
-            padding: 6px;
-            background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+            letter-spacing: 3px;
+            border: 3px solid #000;
+            padding: 8px;
+            background: #fff;
           }
           .two-column {
             display: flex;
@@ -142,25 +141,26 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             background: #fafafa;
           }
           .column-label {
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-            font-size: 11px;
+            font-weight: 800;
+            color: #000;
+            margin-bottom: 6px;
+            font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 2px;
+            letter-spacing: 1.5px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 3px;
           }
           .customer-name {
-            font-weight: 700;
-            font-size: 12px;
-            margin-bottom: 3px;
-            color: #1a1a1a;
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #000;
           }
           .detail-row {
-            font-size: 10px;
-            color: #333;
-            margin: 1px 0;
+            font-size: 11px;
+            color: #000;
+            font-weight: 600;
+            margin: 2px 0;
           }
           .invoice-details {
             text-align: right;
@@ -176,24 +176,25 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             border: 2px solid #333;
           }
           th {
-            background: #333;
-            color: white;
-            font-weight: 700;
-            padding: 5px 4px;
+            background: #000;
+            color: #fff;
+            font-weight: 800;
+            padding: 8px 6px;
             text-align: left;
-            border-bottom: 2px solid #222;
+            border-bottom: 3px solid #000;
             text-transform: uppercase;
-            font-size: 9px;
-            letter-spacing: 0.5px;
+            font-size: 10px;
+            letter-spacing: 0.8px;
           }
           td {
-            padding: 4px;
-            border: 1px solid #999;
+            padding: 6px;
+            border: 2px solid #000;
             vertical-align: top;
-            color: #333;
+            color: #000;
+            font-weight: 500;
           }
           tbody tr:nth-child(even) {
-            background: #f9f9f9;
+            background: #f5f5f5;
           }
           .text-right { text-align: right; }
           .text-center { text-align: center; }
@@ -232,12 +233,13 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             border-bottom: none;
           }
           .total-row {
-            background: #333;
-            color: white;
-            font-weight: 700;
-            padding: 6px 10px;
-            margin: 6px -10px -10px -10px;
-            font-size: 11px;
+            background: #000;
+            color: #fff;
+            font-weight: 800;
+            padding: 10px;
+            margin: 8px -10px -10px -10px;
+            font-size: 14px;
+            letter-spacing: 1px;
           }
           .amount-in-words {
             font-weight: 700;
@@ -990,11 +992,11 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               width: 100%;
             }
             .logo {
-              width: 60px;
-              height: 60px;
+              width: 70px;
+              height: 70px;
             }
             .shop-name {
-              font-size: 18px;
+              font-size: 20px;
             }
             .shop-phone, .shop-address, .shop-gstin {
               font-size: 11px;
@@ -1144,12 +1146,12 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                 </tr>
               `).join('')}
               <!-- Total Row -->
-              <tr style="background: #333; color: white; font-weight: 700;">
-                <td colspan="3" style="padding: 14px 10px;">TOTAL</td>
+              <tr style="background: #000; color: #fff; font-weight: 800;">
+                <td colspan="3" style="padding: 14px 10px; font-size: 12px; letter-spacing: 1px;">TOTAL</td>
                 <td></td>
                 <td></td>
-                <td class="text-right" style="padding: 14px 10px;">${formatIndianNumber(data.items.reduce((sum, item) => sum + item.gst_amount, 0))}</td>
-                <td class="text-right" style="padding: 14px 10px;">${formatIndianNumber(data.total)}</td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800;">${formatIndianNumber(data.items.reduce((sum, item) => sum + item.gst_amount, 0))}</td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800;">${formatIndianNumber(data.total)}</td>
               </tr>
             </tbody>
           </table>
@@ -1166,24 +1168,24 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             </div>
             <div class="amounts-column">
               <div class="amount-row">
-                <span style="font-weight: 600;">Sub Total</span>
-                <span style="font-weight: 600;">${formatIndianNumber(data.subtotal)}</span>
+                <span style="font-weight: 800; color: #000;">Sub Total</span>
+                <span style="font-weight: 800; color: #000;">${formatIndianNumber(data.subtotal)}</span>
               </div>
               <div class="amount-row">
-                <span>SGST @ 6%</span>
-                <span>${formatIndianNumber(data.sgst)}</span>
+                <span style="color: #000; font-weight: 600;">SGST @ 6%</span>
+                <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.sgst)}</span>
               </div>
               <div class="amount-row">
-                <span>CGST @ 6%</span>
-                <span>${formatIndianNumber(data.cgst)}</span>
+                <span style="color: #000; font-weight: 600;">CGST @ 6%</span>
+                <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.cgst)}</span>
               </div>
               <div class="total-row">
                 <span>TOTAL</span>
                 <span>${formatIndianNumber(data.total)}</span>
               </div>
-              <div style="margin-top: 30px; text-align: center;">
-                <img src="/assets/stamp.png" alt="Stamp" style="width: 85px; height: auto; opacity: 0.9;">
-                <div style="font-size: 13px; font-weight: 600; margin-top: 5px; color: #333;">Authorized Signature</div>
+              <div style="margin-top: 40px; text-align: center;">
+                <img src="/assets/stamp.png" alt="Stamp" style="width: 120px; height: auto;">
+                <div style="font-size: 16px; font-weight: 800; margin-top: 10px; color: #000;">Authorized Signature</div>
               </div>
             </div>
           </div>
