@@ -78,9 +78,11 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         const cost = (item.unit_cost || item.cost_price || 0) * (item.qty || 0);
         const unitPriceExcl = parseFloat(item.unit_price) || 0;
         const gstRate = parseFloat(item.gst_rate) || 12;
-        const unitPriceIncl = unitPriceExcl * (1 + gstRate / 100);
         const totalExcl = unitPriceExcl * (item.qty || 0);
-        const totalIncl = unitPriceIncl * (item.qty || 0);
+        const totalIncl = totalExcl * (1 + gstRate / 100);
+        
+        console.log(`DEBUG: qty=${item.qty}, unit_price=${unitPriceExcl}, total_amount=${item.total_amount}, cost=${cost}, unit_cost=${item.unit_cost}, cost_price=${item.cost_price}, gst_rate=${gstRate}`);
+        console.log(`DEBUG: totalExcl=${totalExcl}, totalIncl=${totalIncl}, profit_excl=${totalExcl - cost}, profit_incl=${totalIncl - cost}`);
         
         // Profit excluding GST = (Price excl GST × Qty) - Cost
         saleProfit += totalExcl - cost;
