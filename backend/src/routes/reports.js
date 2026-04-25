@@ -79,6 +79,8 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         const cost = (item.unit_cost || item.cost_price || 0) * (item.qty || 0);
         const gstRate = parseFloat(item.gst_rate) || 12;
         
+        console.log(`DEBUG ITEM: sale=${sale.invoice_number}, item_total=${itemTotal}, cost=${cost}, gst_rate=${gstRate}`);
+        
         // Profit including GST = Revenue - Cost (simple!)
         saleProfitInclGst += itemTotal - cost;
         
@@ -86,9 +88,6 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         // If total_amount includes GST, then: amount_excl = amount_incl / (1 + gst_rate/100)
         const revenueExclGst = itemTotal / (1 + gstRate / 100);
         saleProfit += revenueExclGst - cost;
-        
-        console.log(`DEBUG: qty=${item.qty}, total_amount=${item.total_amount}, cost=${cost}, gst_rate=${gstRate}, revenueExcl=${revenueExclGst}`);
-        console.log(`DEBUG: profit_excl=${revenueExclGst - cost}, profit_incl=${itemTotal - cost}`);
       }
       
       total_revenue += saleTotal;
