@@ -52,7 +52,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
     let total_profit = 0;
     let profit_incl_gst = 0;
     
-    // Get sale items for each sale
+    // Get sale items for each sale (use si.gst_rate directly from sale_items, not from products)
     const salesWithDetails = [];
     for (const sale of sales) {
       const items = await all(`
@@ -60,9 +60,8 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
           si.qty,
           si.total_amount,
           si.unit_cost,
-          si.unit_price,
-          p.cost_price,
-          p.gst_rate
+          si.gst_rate as item_gst_rate,
+          p.cost_price
         FROM sale_items si
         LEFT JOIN products p ON p.id = si.product_id
         WHERE si.sale_id = $sale_id
@@ -77,16 +76,19 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         const itemTotal = parseFloat(item.total_amount) || 0;
         saleTotal += itemTotal;
         const cost = (item.unit_cost || item.cost_price || 0) * (item.qty || 0);
-        const gstRate = parseFloat(item.gst_rate) || 12;
+        // Use the gst_rate stored in sale_items directly
+        const gstRate = parseFloat(item.item_gst_rate);
         
-        console.log(`DEBUG ITEM: sale=${sale.invoice_number}, item_total=${itemTotal}, cost=${cost}, gst_rate=${gstRate}`);
+        console.log(`DEBUG ITEM: sale=${sale.invoice_number}, item_total=${itemTotal}, cost=${cost}, gst_rate=${gstRate}, item=${JSON.stringify(item)}`);
         
         // Profit including GST = Revenue - Cost (simple!)
         saleProfitInclGst += itemTotal - cost;
         
-        // For profit excluding GST, we need to subtract GST from revenue first
-        // If total_amount includes GST, then: amount_excl = amount_incl / (1 + gst_rate/100)
-        const revenueExclGst = itemTotal / (1 + gstRate / 100);
+        // For profit excluding GST, only subtract GST if gst_rate > 0
+        let revenueExclGst = itemTotal;
+        if (gstRate > 0) {
+          revenueExclGst = itemTotal / (1 + gstRate / 100);
+        }
         saleProfit += revenueExclGst - cost;
       }
       
