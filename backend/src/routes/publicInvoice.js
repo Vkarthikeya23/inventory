@@ -1130,7 +1130,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             </div>
           </div>
 
-          <!-- Line Items Table -->
+            <!-- Line Items Table -->
           <table>
             <thead>
               <tr>
@@ -1139,7 +1139,8 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                 <th style="width: 70px;">Qty</th>
                 <th style="width: 100px;" class="text-right">Rate (₹)</th>
                 <th style="width: 70px;" class="text-center">HSN</th>
-                <th style="width: 100px;" class="text-right">GST (₹)</th>
+                <th style="width: 80px;" class="text-right">CGST</th>
+                <th style="width: 80px;" class="text-right">SGST</th>
                 <th style="width: 100px;" class="text-right">Amount (₹)</th>
               </tr>
             </thead>
@@ -1151,16 +1152,17 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                   <td class="text-center">${item.qty}</td>
                   <td class="text-right">${formatIndianNumber(item.unit_price)}</td>
                   <td class="text-center">${item.hsn_code || '-'}</td>
-                  <td class="text-right">${formatIndianNumber(item.gst_amount)}</td>
+                  <td class="text-right">${formatIndianNumber(item.gst_amount / 2)}</td>
+                  <td class="text-right">${formatIndianNumber(item.gst_amount / 2)}</td>
                   <td class="text-right" style="font-weight: 600;">${formatIndianNumber(item.amount)}</td>
                 </tr>
               `).join('')}
               <!-- Total Row -->
               <tr class="total-table-row" style="background: #000 !important; font-weight: 800; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                <td colspan="3" style="padding: 14px 10px; font-size: 12px; letter-spacing: 1px; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">TOTAL</td>
+                <td colspan="4" style="padding: 14px 10px; font-size: 12px; letter-spacing: 1px; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">TOTAL</td>
                 <td style="color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;"></td>
-                <td style="color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;"></td>
-                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${formatIndianNumber(data.items.reduce((sum, item) => sum + item.gst_amount, 0))}</td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${formatIndianNumber(data.cgst)}</td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${formatIndianNumber(data.sgst)}</td>
                 <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${formatIndianNumber(data.total)}</td>
               </tr>
             </tbody>
