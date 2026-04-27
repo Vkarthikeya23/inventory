@@ -125,7 +125,7 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
     
     // Parse numeric values
     const costPrice = parseFloat(cost_price) || null;
-    const gstRate = parseFloat(gst_rate) || 12;
+    const gstRate = gst_rate !== undefined && gst_rate !== '' && !isNaN(parseFloat(gst_rate)) ? parseFloat(gst_rate) : 12;
     const stockQty = parseInt(stock_qty) || 0;
     
     let sellingPriceExcl = parseFloat(selling_price_excl_gst);
@@ -210,7 +210,14 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
     }
     
     // Handle GST rate update
-    let gstRate = updates.gst_rate !== undefined ? parseFloat(updates.gst_rate) : (currentProduct.gst_rate || 12);
+    let gstRate;
+    if (updates.gst_rate !== undefined) {
+      const parsedGstRate = parseFloat(updates.gst_rate);
+      // Use parsed value only if it's a valid number (including 0), otherwise fallback
+      gstRate = !isNaN(parsedGstRate) ? parsedGstRate : (currentProduct.gst_rate || 12);
+    } else {
+      gstRate = currentProduct.gst_rate || 12;
+    }
     
     // Handle selling price updates with the GST rate (either updated or current)
     if ('selling_price_excl_gst' in updates) {
