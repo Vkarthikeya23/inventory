@@ -118,7 +118,9 @@ export default function NewSale() {
             updated.product = product;
             updated.unit_price = product.selling_price_excl_gst;
             // Auto-calculate CGST and SGST from product's GST rate (split equally)
-            const gstRate = product.gst_rate || 12;
+            // Handle 0 GST rate properly
+            const productGstRate = product.gst_rate;
+            const gstRate = productGstRate !== undefined && productGstRate !== null && !isNaN(productGstRate) ? productGstRate : 12;
             updated.gst_rate = gstRate;
             updated.cgst_percent = gstRate / 2;
             updated.sgst_percent = gstRate / 2;
@@ -153,7 +155,9 @@ export default function NewSale() {
           updated.product = product;
           updated.unit_price = product.selling_price_excl_gst;
           // Auto-calculate CGST and SGST from product's GST rate (split equally)
-          const gstRate = product.gst_rate || 12;
+          // Handle 0 GST rate properly
+          const productGstRate = product.gst_rate;
+          const gstRate = productGstRate !== undefined && productGstRate !== null && !isNaN(productGstRate) ? productGstRate : 12;
           updated.gst_rate = gstRate;
           updated.cgst_percent = gstRate / 2;
           updated.sgst_percent = gstRate / 2;
