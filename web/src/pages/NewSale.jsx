@@ -13,6 +13,7 @@ export default function NewSale() {
   const [invoiceHeader, setInvoiceHeader] = useState({
     customer_name: '',
     customer_phone: '',
+    customer_gstin: '',
     vehicle_reg: '',
     vehicle_type: '',
     km_reading: '',
@@ -21,7 +22,7 @@ export default function NewSale() {
   
   // Line items
   const [items, setItems] = useState([
-    { id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, hsn_code: '', product: null }
+    { id: 1, product_id: '', qty: 1, unit_price: 0, cgst_amount: 0, sgst_amount: 0, hsn_code: '', product: null }
   ]);
   
   // Totals
@@ -65,39 +66,38 @@ export default function NewSale() {
   const calculateItemAmount = (item) => {
     const qty = parseFloat(item.qty) || 0;
     const unitPrice = parseFloat(item.unit_price) || 0;
-    const gstRate = isNaN(parseFloat(item.gst_rate)) ? 12 : parseFloat(item.gst_rate);
+    const cgstAmount = parseFloat(item.cgst_amount) || 0;
+    const sgstAmount = parseFloat(item.sgst_amount) || 0;
     
     const subtotal = qty * unitPrice;
-    const gstAmount = subtotal * (gstRate / 100);
-    const total = subtotal + gstAmount;
+    const total = subtotal + cgstAmount + sgstAmount;
     
-    return { subtotal, gstAmount, total };
+    return { subtotal, cgstAmount, sgstAmount, total };
   };
 
   const calculateTotals = () => {
     let subtotal = 0;
-    let totalGst = 0;
+    let totalCgst = 0;
+    let totalSgst = 0;
     
     items.forEach(item => {
-      const { subtotal: itemSubtotal, gstAmount } = calculateItemAmount(item);
+      const { subtotal: itemSubtotal, cgstAmount, sgstAmount } = calculateItemAmount(item);
       subtotal += itemSubtotal;
-      totalGst += gstAmount;
+      totalCgst += cgstAmount;
+      totalSgst += sgstAmount;
     });
     
-    // Split total GST equally into CGST and SGST
-    const cgst = totalGst / 2;
-    const sgst = totalGst / 2;
-    const total = subtotal + cgst + sgst;
+    const total = subtotal + totalCgst + totalSgst;
     const balance = total - receivedAmount;
     
-    return { subtotal, cgst, sgst, total, balance };
+    return { subtotal, cgst: totalCgst, sgst: totalSgst, total, balance };
   };
 
   const { subtotal, cgst, sgst, total, balance } = calculateTotals();
 
   const addItem = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, hsn_code: '', product: null }]);
+    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, cgst_amount: 0, sgst_amount: 0, hsn_code: '', product: null }]);
   };
 
   const removeItem = (id) => {
@@ -109,13 +109,18 @@ export default function NewSale() {
       if (item.id === id) {
         const updated = { ...item, [field]: value };
         
-        // If product selected, auto-fill price and GST
+        // If product selected, auto-fill price and CGST/SGST
         if (field === 'product_id' && value) {
           const product = products.find(p => p.id === value);
           if (product) {
             updated.product = product;
             updated.unit_price = product.selling_price_excl_gst;
-            updated.gst_rate = product.gst_rate || 12;
+            // Auto-calculate CGST and SGST from product's GST rate
+            const gstRate = product.gst_rate || 12;
+            const subtotal = product.selling_price_excl_gst * (item.qty || 1);
+            const totalGst = subtotal * (gstRate / 100);
+            updated.cgst_amount = (totalGst / 2).toFixed(2);
+            updated.sgst_amount = (totalGst / 2).toFixed(2);
           }
         }
         
@@ -145,7 +150,12 @@ export default function NewSale() {
           const updated = { ...it, product_id: product.id, service_name: null };
           updated.product = product;
           updated.unit_price = product.selling_price_excl_gst;
-          updated.gst_rate = product.gst_rate || 12;
+          // Auto-calculate CGST and SGST from product's GST rate
+          const gstRate = product.gst_rate || 12;
+          const subtotal = product.selling_price_excl_gst * (item.qty || 1);
+          const totalGst = subtotal * (gstRate / 100);
+          updated.cgst_amount = (totalGst / 2).toFixed(2);
+          updated.sgst_amount = (totalGst / 2).toFixed(2);
           updated.hsn_code = product.hsn_code || '';
           return updated;
         }
@@ -166,7 +176,8 @@ export default function NewSale() {
             product_id: null,
             service_name: service.service_name,
             unit_price: service.price,
-            gst_rate: 0,
+            cgst_amount: 0,
+            sgst_amount: 0,
             product: null
           };
         }
@@ -206,12 +217,14 @@ export default function NewSale() {
         hsn_code: item.hsn_code || null,
         qty: parseInt(item.qty) || 1,
         unit_price: parseFloat(item.unit_price) || 0,
-        gst_rate: !isNaN(parseFloat(item.gst_rate)) ? parseFloat(item.gst_rate) : 12
+        cgst_amount: parseFloat(item.cgst_amount) || 0,
+        sgst_amount: parseFloat(item.sgst_amount) || 0
       }));
       
       const res = await api.post('/sales', {
         customer_name: invoiceHeader.customer_name,
         customer_phone: invoiceHeader.customer_phone,
+        customer_gstin: invoiceHeader.customer_gstin || null,
         vehicle_reg: invoiceHeader.vehicle_reg,
         vehicle_type: invoiceHeader.vehicle_type || null,
         km_reading: invoiceHeader.km_reading || null,
@@ -243,10 +256,11 @@ export default function NewSale() {
     setInvoiceHeader({
       customer_name: '',
       customer_phone: '',
+      customer_gstin: '',
       vehicle_reg: '',
       sale_date: new Date().toISOString().split('T')[0]
     });
-    setItems([{ id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, hsn_code: '', product: null }]);
+    setItems([{ id: 1, product_id: '', qty: 1, unit_price: 0, cgst_amount: 0, sgst_amount: 0, hsn_code: '', product: null }]);
     setReceivedAmount(0);
   }
 
@@ -395,6 +409,19 @@ export default function NewSale() {
             />
             <input
               type="text"
+              placeholder="Customer GSTIN (optional)"
+              value={invoiceHeader.customer_gstin}
+              onChange={(e) => setInvoiceHeader({...invoiceHeader, customer_gstin: e.target.value})}
+              style={{ 
+                width: '100%', 
+                padding: '10px', 
+                marginBottom: '10px', 
+                border: '1px solid #ddd', 
+                borderRadius: '4px' 
+              }}
+            />
+            <input
+              type="text"
               placeholder="Car number plate (e.g., TS09AB1234)"
               value={invoiceHeader.vehicle_reg}
               onChange={(e) => setInvoiceHeader({...invoiceHeader, vehicle_reg: e.target.value})}
@@ -478,17 +505,18 @@ export default function NewSale() {
             <tr style={{ backgroundColor: '#6c63ff', color: 'white' }}>
               <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #6c63ff' }}>#</th>
               <th style={{ padding: '12px', textAlign: 'left', border: '1px solid #6c63ff' }}>Item name</th>
-              <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '80px' }}>Qty</th>
-              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '100px' }}>Price/Unit</th>
-              <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '80px' }}>HSN</th>
-              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '100px' }}>GST</th>
+              <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '60px' }}>Qty</th>
+              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '80px' }}>Price/Unit</th>
+              <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '70px' }}>HSN</th>
+              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '80px' }}>CGST</th>
+              <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '80px' }}>SGST</th>
               <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '100px' }}>Amount</th>
               <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '50px' }}></th>
             </tr>
           </thead>
           <tbody>
             {items.map((item, index) => {
-              const { gstAmount, total: itemTotal } = calculateItemAmount(item);
+              const { cgstAmount, sgstAmount, total: itemTotal } = calculateItemAmount(item);
               return (
                 <tr key={item.id} style={{ borderBottom: '1px solid #ddd' }}>
                   <td style={{ padding: '10px', border: '1px solid #ddd' }}>{index + 1}</td>
@@ -562,14 +590,22 @@ export default function NewSale() {
                     />
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>
-                    <div>₹{gstAmount.toFixed(2)}</div>
                     <input
                       type="number"
-                      value={item.gst_rate}
-                      onChange={(e) => updateItem(item.id, 'gst_rate', e.target.value)}
-                      style={{ width: '50px', padding: '5px', textAlign: 'right', marginTop: '5px' }}
+                      step="0.01"
+                      value={item.cgst_amount}
+                      onChange={(e) => updateItem(item.id, 'cgst_amount', e.target.value)}
+                      style={{ width: '70px', padding: '5px', textAlign: 'right' }}
                     />
-                    <span>%</span>
+                  </td>
+                  <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={item.sgst_amount}
+                      onChange={(e) => updateItem(item.id, 'sgst_amount', e.target.value)}
+                      style={{ width: '70px', padding: '5px', textAlign: 'right' }}
+                    />
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right', fontWeight: '500' }}>
                     ₹{itemTotal.toFixed(2)}
@@ -635,12 +671,12 @@ export default function NewSale() {
               <span style={{ fontWeight: '500' }}>₹{subtotal.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span>SGST @{cgst > 0 && subtotal > 0 ? ((cgst / subtotal) * 100).toFixed(1) : 0}%</span>
-              <span>₹{sgst.toFixed(2)}</span>
+              <span>CGST</span>
+              <span>₹{cgst.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span>CGST @{cgst > 0 && subtotal > 0 ? ((cgst / subtotal) * 100).toFixed(1) : 0}%</span>
-              <span>₹{cgst.toFixed(2)}</span>
+              <span>SGST</span>
+              <span>₹{sgst.toFixed(2)}</span>
             </div>
             <div style={{ 
               display: 'flex', 

@@ -1077,10 +1077,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             .thank-you {
               font-size: 11px;
             }
-            .warranty-box {
-              font-size: 9px;
-              padding: 5px;
-            }
+
             .footer {
               flex-direction: column;
               gap: 10px;
@@ -1175,23 +1172,20 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               <div class="amount-in-words">Amount In Words</div>
               <div style="font-size: 15px; font-weight: 600; color: #1a1a1a;">${data.amount_in_words}</div>
               <div class="thank-you">Thanks for doing business with us!</div>
-              <div class="warranty-box">
-                Free inspection/service is available for any issues related to the work performed, valid for 15 days from the date of installation.
-              </div>
             </div>
             <div class="amounts-column">
               <div class="amount-row">
                 <span style="font-weight: 800; color: #000;">Sub Total</span>
                 <span style="font-weight: 800; color: #000;">${formatIndianNumber(data.subtotal)}</span>
               </div>
-              ${data.sgst > 0 ? `
+              ${(data.sgst > 0 || data.cgst > 0) ? `
               <div class="amount-row">
-                <span style="color: #000; font-weight: 600;">SGST @ ${data.items[0]?.gst_rate || 6}%</span>
-                <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.sgst)}</span>
+                <span style="color: #000; font-weight: 600;">CGST</span>
+                <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.cgst)}</span>
               </div>
               <div class="amount-row">
-                <span style="color: #000; font-weight: 600;">CGST @ ${data.items[0]?.gst_rate || 6}%</span>
-                <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.cgst)}</span>
+                <span style="color: #000; font-weight: 600;">SGST</span>
+                <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.sgst)}</span>
               </div>
               ` : ''}
               <div class="total-row">

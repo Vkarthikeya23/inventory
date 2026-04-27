@@ -82,16 +82,23 @@ router.post('/', verifyToken, async (req, res) => {
   const parsedItems = items.map(item => {
     const qty = Number(item.qty);
     const unitPrice = parseFloat(item.unit_price);
-    const gstRate = parseFloat(item.gst_rate) === 0 ? 0 : parseFloat(item.gst_rate ?? 12);
-    const gstAmount = parseFloat((unitPrice * qty * gstRate / 100).toFixed(2));
-    const amount = parseFloat((unitPrice * qty + gstAmount).toFixed(2));
+    // New format: frontend sends cgst_amount and sgst_amount directly
+    const cgstAmount = parseFloat(item.cgst_amount) || 0;
+    const sgstAmount = parseFloat(item.sgst_amount) || 0;
+    const totalGst = cgstAmount + sgstAmount;
+    const subtotal = parseFloat((unitPrice * qty).toFixed(2));
+    const amount = parseFloat((subtotal + totalGst).toFixed(2));
+    // Calculate effective GST rate from amounts (for storage)
+    const gstRate = subtotal > 0 ? parseFloat(((totalGst / subtotal) * 100).toFixed(2)) : 0;
     return { 
       product_id: item.product_id, 
       service_name: item.service_name,
       qty, 
       unitPrice, 
-      gstRate, 
-      gstAmount, 
+      cgstAmount,
+      sgstAmount,
+      gstRate,
+      gstAmount: totalGst,
       amount,
       unitCost: null // Will be populated from DB
     };
@@ -99,12 +106,9 @@ router.post('/', verifyToken, async (req, res) => {
 
   const subtotal = parseFloat(parsedItems.reduce((s, i) => s + i.unitPrice * i.qty, 0).toFixed(2));
   
-  // Calculate total GST from all items
-  const totalGstAmount = parseFloat(parsedItems.reduce((s, i) => s + i.gstAmount, 0).toFixed(2));
-  
-  // Split total GST equally into CGST and SGST
-  const cgst = parseFloat((totalGstAmount / 2).toFixed(2));
-  const sgst = parseFloat((totalGstAmount / 2).toFixed(2));
+  // Use CGST and SGST totals directly from items
+  const cgst = parseFloat(parsedItems.reduce((s, i) => s + i.cgstAmount, 0).toFixed(2));
+  const sgst = parseFloat(parsedItems.reduce((s, i) => s + i.sgstAmount, 0).toFixed(2));
   const total = parseFloat((subtotal + cgst + sgst).toFixed(2));
   const receivedAmount = received_amount != null ? parseFloat(received_amount) : total;
   const balance = parseFloat((total - receivedAmount).toFixed(2));

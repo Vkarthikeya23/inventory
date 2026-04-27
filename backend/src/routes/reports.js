@@ -8,25 +8,38 @@ const router = express.Router();
 
 router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASHIER), async (req, res) => {
   try {
-    // Get the date from query or use today
-    let date = req.query.date;
-    if (!date) {
+    // Get dates from query - support both single date and range
+    let { date, from_date, to_date } = req.query;
+    
+    // If no dates provided, default to today
+    if (!date && !from_date && !to_date) {
       date = new Date().toISOString().split('T')[0];
+      from_date = date;
+      to_date = date;
+    } else if (date) {
+      // Single date mode
+      from_date = date;
+      to_date = date;
     }
     
-    console.log('Daily Report - Date:', date);
-    console.log('Server time:', new Date().toISOString());
+    console.log('Daily Report - Date range:', from_date, 'to', to_date);
     
-    // First, let's see what dates exist in the database
-    const dateCheck = await all(`
-      SELECT DISTINCT sale_date::date as sale_date
-      FROM sales
-      ORDER BY sale_date DESC
-      LIMIT 10
-    `);
-    console.log('Dates in database:', dateCheck);
+    // Build the date filter clause
+    let dateFilter = '';
+    let dateParams = {};
     
-    // Get all sales for this date - simple query
+    if (from_date && to_date) {
+      dateFilter = 'WHERE s.sale_date::date BETWEEN $from_date AND $to_date';
+      dateParams = { from_date, to_date };
+    } else if (from_date) {
+      dateFilter = 'WHERE s.sale_date::date = $from_date';
+      dateParams = { from_date };
+    } else if (to_date) {
+      dateFilter = 'WHERE s.sale_date::date = $to_date';
+      dateParams = { to_date };
+    }
+    
+    // Get all sales for the date range
     const sales = await all(`
       SELECT 
         s.id,
@@ -34,17 +47,15 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         s.total_amount,
         s.customer_name,
         s.customer_phone,
+        s.vehicle_reg,
         s.created_at,
         s.sale_date
       FROM sales s
-      WHERE s.sale_date::date = $date
+      ${dateFilter}
       ORDER BY s.created_at DESC
-    `, { date });
+    `, dateParams);
     
-    console.log('Sales found for date:', sales.length);
-    if (sales.length > 0) {
-      console.log('First sale:', sales[0]);
-    }
+    console.log('Sales found for date range:', sales.length);
     
     // Calculate totals
     let total_revenue = 0;
@@ -52,7 +63,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
     let total_profit = 0;
     let profit_incl_gst = 0;
     
-    // Get sale items for each sale (use si.gst_rate directly from sale_items, not from products)
+    // Get sale items for each sale with product/service names
     const salesWithDetails = [];
     for (const sale of sales) {
       const items = await all(`
@@ -61,40 +72,58 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
           si.total_amount,
           si.unit_cost,
           si.gst_rate as item_gst_rate,
-          p.cost_price
+          p.cost_price,
+          p.company_name,
+          p.size_spec,
+          si.service_name
         FROM sale_items si
         LEFT JOIN products p ON p.id = si.product_id
         WHERE si.sale_id = $sale_id
       `, { sale_id: sale.id });
       
       let saleTotal = 0;
-      let saleQty = 0;
       let saleProfit = 0;
       let saleProfitInclGst = 0;
       
-      for (const item of items) {
+      // Build items bought string
+      const itemsBought = items.map(item => {
         const itemTotal = parseFloat(item.total_amount) || 0;
-        saleTotal += itemTotal;
         const cost = (item.unit_cost || item.cost_price || 0) * (item.qty || 0);
-        // Use the gst_rate stored in sale_items directly
         const gstRate = parseFloat(item.item_gst_rate);
         
-        console.log(`DEBUG ITEM: sale=${sale.invoice_number}, item_total=${itemTotal}, cost=${cost}, gst_rate=${gstRate}, item=${JSON.stringify(item)}`);
-        
-        // Profit including GST = Revenue - Cost (simple!)
+        saleTotal += itemTotal;
         saleProfitInclGst += itemTotal - cost;
         
-        // For profit excluding GST, only subtract GST if gst_rate > 0
         let revenueExclGst = itemTotal;
         if (gstRate > 0) {
           revenueExclGst = itemTotal / (1 + gstRate / 100);
         }
         saleProfit += revenueExclGst - cost;
-      }
+        
+        // Return product/service name
+        if (item.service_name) {
+          return item.service_name;
+        } else if (item.company_name && item.size_spec) {
+          return `${item.company_name} ${item.size_spec}`;
+        } else if (item.company_name) {
+          return item.company_name;
+        }
+        return 'Item';
+      });
       
       total_revenue += saleTotal;
       total_profit += saleProfit;
       profit_incl_gst += saleProfitInclGst;
+      
+      // Format items bought string
+      let itemsBoughtStr = '';
+      if (itemsBought.length === 1) {
+        itemsBoughtStr = itemsBought[0];
+      } else if (itemsBought.length === 2) {
+        itemsBoughtStr = itemsBought.join(' + ');
+      } else if (itemsBought.length > 2) {
+        itemsBoughtStr = `${itemsBought[0]} +${itemsBought.length - 1} more`;
+      }
       
       salesWithDetails.push({
         id: sale.id,
@@ -103,12 +132,13 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         created_at: sale.created_at,
         customer_name: sale.customer_name,
         customer_phone: sale.customer_phone,
-        item_count: items.length
+        vehicle_reg: sale.vehicle_reg || '-',
+        items_bought: itemsBoughtStr
       });
     }
     
     const response = {
-      date: date,
+      date: from_date === to_date ? from_date : `${from_date} to ${to_date}`,
       total_revenue: total_revenue,
       total_profit: total_profit,
       profit_incl_gst: profit_incl_gst,
@@ -116,7 +146,6 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
       sales_details: salesWithDetails
     };
     
-    console.log('Response:', JSON.stringify(response, null, 2));
     res.json(response);
     
   } catch (err) {
