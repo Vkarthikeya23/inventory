@@ -9,16 +9,17 @@ const router = express.Router();
 
 // Helper function to calculate prices
 function calculatePrices(price, gstRate, mode) {
-  const rate = parseFloat(gstRate) || 12;
+  const parsedRate = parseFloat(gstRate);
+  const rate = !isNaN(parsedRate) ? parsedRate : 12;
   const priceValue = parseFloat(price) || 0;
   
   if (mode === 'excl') {
     const sellingPriceExcl = priceValue;
-    const sellingPriceIncl = Math.round(sellingPriceExcl * (1 + rate / 100) * 100) / 100;
+    const sellingPriceIncl = rate === 0 ? priceValue : Math.round(sellingPriceExcl * (1 + rate / 100) * 100) / 100;
     return { sellingPriceExcl, sellingPriceIncl };
   } else {
     const sellingPriceIncl = priceValue;
-    const sellingPriceExcl = Math.round(sellingPriceIncl / (1 + rate / 100) * 100) / 100;
+    const sellingPriceExcl = rate === 0 ? priceValue : Math.round(sellingPriceIncl / (1 + rate / 100) * 100) / 100;
     return { sellingPriceExcl, sellingPriceIncl };
   }
 }
