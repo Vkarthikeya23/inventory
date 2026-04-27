@@ -75,7 +75,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
           p.cost_price,
           p.company_name,
           p.size_spec,
-          si.service_name
+          si.product_id
         FROM sale_items si
         LEFT JOIN products p ON p.id = si.product_id
         WHERE si.sale_id = $sale_id
@@ -100,9 +100,10 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         }
         saleProfit += revenueExclGst - cost;
         
-        // Return product/service name
-        if (item.service_name) {
-          return item.service_name;
+        // Return product/service name - if product_id is null, it's a service (use item name from invoice_data)
+        if (!item.product_id) {
+          // Service - we'll need to get the name from somewhere
+          return 'Service';
         } else if (item.company_name && item.size_spec) {
           return `${item.company_name} ${item.size_spec}`;
         } else if (item.company_name) {
