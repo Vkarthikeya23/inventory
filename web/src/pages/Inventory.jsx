@@ -126,7 +126,16 @@ export default function Inventory() {
     const stockQty = parseInt(editForm.stock_qty);
     const costPrice = parseFloat(editForm.cost_price);
     const gstRate = parseFloat(editForm.gst_rate);
-    const { excl: sellingPriceExcl, incl: sellingPriceIncl } = calculatePrices();
+    
+    // Handle GST rate validation - treat empty string as 0
+    const effectiveGstRate = isNaN(gstRate) ? 0 : gstRate;
+    
+    let { excl: sellingPriceExcl, incl: sellingPriceIncl } = calculatePrices();
+    
+    // When GST is 0, incl must equal excl
+    if (effectiveGstRate === 0) {
+      sellingPriceIncl = sellingPriceExcl;
+    }
 
     if (isNaN(stockQty) || stockQty < 0) {
       setEditError('Stock quantity must be a non-negative number');
@@ -666,7 +675,17 @@ export default function Inventory() {
                 min="0"
                 max="100"
                 value={editForm.gst_rate}
-                onChange={(e) => setEditForm({ ...editForm, gst_rate: e.target.value })}
+                onChange={(e) => {
+                  const newGstRate = e.target.value;
+                  setEditForm(prev => {
+                    const updated = { ...prev, gst_rate: newGstRate };
+                    // When GST is 0, make incl = excl
+                    if (newGstRate === '0' || newGstRate === '') {
+                      updated.selling_price_incl_gst = prev.selling_price_excl_gst;
+                    }
+                    return updated;
+                  });
+                }}
                 style={{
                   width: '100%',
                   padding: '10px',
