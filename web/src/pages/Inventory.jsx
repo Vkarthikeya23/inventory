@@ -98,16 +98,22 @@ export default function Inventory() {
 
   // Calculate prices based on entry mode
   const calculatePrices = () => {
-    const gstRate = parseFloat(editForm.gst_rate) || 12;
+    const gstRate = editForm.gst_rate !== '' && editForm.gst_rate !== undefined ? parseFloat(editForm.gst_rate) : 12;
     
     if (editForm.price_entry_mode === 'excl') {
       // User entered price excluding GST
       const exclPrice = parseFloat(editForm.selling_price_excl_gst) || 0;
+      if (gstRate === 0) {
+        return { excl: exclPrice, incl: exclPrice };
+      }
       const inclPrice = Math.round(exclPrice * (1 + gstRate / 100) * 100) / 100;
       return { excl: exclPrice, incl: inclPrice };
     } else {
       // User entered price including GST
       const inclPrice = parseFloat(editForm.selling_price_incl_gst) || 0;
+      if (gstRate === 0) {
+        return { excl: inclPrice, incl: inclPrice };
+      }
       const exclPrice = Math.round(inclPrice / (1 + gstRate / 100) * 100) / 100;
       return { excl: exclPrice, incl: inclPrice };
     }

@@ -22,7 +22,7 @@ export default function NewSale() {
   
   // Line items
   const [items, setItems] = useState([
-    { id: 1, product_id: '', qty: 1, unit_price: 0, cgst_amount: 0, sgst_amount: 0, hsn_code: '', product: null }
+    { id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', product: null }
   ]);
   
   // Totals
@@ -66,10 +66,12 @@ export default function NewSale() {
   const calculateItemAmount = (item) => {
     const qty = parseFloat(item.qty) || 0;
     const unitPrice = parseFloat(item.unit_price) || 0;
-    const cgstAmount = parseFloat(item.cgst_amount) || 0;
-    const sgstAmount = parseFloat(item.sgst_amount) || 0;
+    const cgstPercent = parseFloat(item.cgst_percent) || 0;
+    const sgstPercent = parseFloat(item.sgst_percent) || 0;
     
     const subtotal = qty * unitPrice;
+    const cgstAmount = subtotal * (cgstPercent / 100);
+    const sgstAmount = subtotal * (sgstPercent / 100);
     const total = subtotal + cgstAmount + sgstAmount;
     
     return { subtotal, cgstAmount, sgstAmount, total };
@@ -97,7 +99,7 @@ export default function NewSale() {
 
   const addItem = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, cgst_amount: 0, sgst_amount: 0, hsn_code: '', product: null }]);
+    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', product: null }]);
   };
 
   const removeItem = (id) => {
@@ -115,12 +117,12 @@ export default function NewSale() {
           if (product) {
             updated.product = product;
             updated.unit_price = product.selling_price_excl_gst;
-            // Auto-calculate CGST and SGST from product's GST rate
+            // Auto-calculate CGST and SGST from product's GST rate (split equally)
             const gstRate = product.gst_rate || 12;
-            const subtotal = product.selling_price_excl_gst * (item.qty || 1);
-            const totalGst = subtotal * (gstRate / 100);
-            updated.cgst_amount = (totalGst / 2).toFixed(2);
-            updated.sgst_amount = (totalGst / 2).toFixed(2);
+            updated.gst_rate = gstRate;
+            updated.cgst_percent = gstRate / 2;
+            updated.sgst_percent = gstRate / 2;
+            updated.hsn_code = product.hsn_code || '';
           }
         }
         
@@ -150,12 +152,11 @@ export default function NewSale() {
           const updated = { ...it, product_id: product.id, service_name: null };
           updated.product = product;
           updated.unit_price = product.selling_price_excl_gst;
-          // Auto-calculate CGST and SGST from product's GST rate
+          // Auto-calculate CGST and SGST from product's GST rate (split equally)
           const gstRate = product.gst_rate || 12;
-          const subtotal = product.selling_price_excl_gst * (item.qty || 1);
-          const totalGst = subtotal * (gstRate / 100);
-          updated.cgst_amount = (totalGst / 2).toFixed(2);
-          updated.sgst_amount = (totalGst / 2).toFixed(2);
+          updated.gst_rate = gstRate;
+          updated.cgst_percent = gstRate / 2;
+          updated.sgst_percent = gstRate / 2;
           updated.hsn_code = product.hsn_code || '';
           return updated;
         }
@@ -176,8 +177,9 @@ export default function NewSale() {
             product_id: null,
             service_name: service.service_name,
             unit_price: service.price,
-            cgst_amount: 0,
-            sgst_amount: 0,
+            gst_rate: 0,
+            cgst_percent: 0,
+            sgst_percent: 0,
             product: null
           };
         }
@@ -217,8 +219,9 @@ export default function NewSale() {
         hsn_code: item.hsn_code || null,
         qty: parseInt(item.qty) || 1,
         unit_price: parseFloat(item.unit_price) || 0,
-        cgst_amount: parseFloat(item.cgst_amount) || 0,
-        sgst_amount: parseFloat(item.sgst_amount) || 0
+        gst_rate: parseFloat(item.gst_rate) || 0,
+        cgst_percent: parseFloat(item.cgst_percent) || 0,
+        sgst_percent: parseFloat(item.sgst_percent) || 0
       }));
       
       const res = await api.post('/sales', {
@@ -590,21 +593,23 @@ export default function NewSale() {
                     />
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: '#666' }}>{item.cgst_percent || 0}%</div>
                     <input
                       type="number"
                       step="0.01"
-                      value={item.cgst_amount}
-                      onChange={(e) => updateItem(item.id, 'cgst_amount', e.target.value)}
-                      style={{ width: '70px', padding: '5px', textAlign: 'right' }}
+                      value={item.cgst_percent}
+                      onChange={(e) => updateItem(item.id, 'cgst_percent', e.target.value)}
+                      style={{ width: '60px', padding: '5px', textAlign: 'right' }}
                     />
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: '#666' }}>{item.sgst_percent || 0}%</div>
                     <input
                       type="number"
                       step="0.01"
-                      value={item.sgst_amount}
-                      onChange={(e) => updateItem(item.id, 'sgst_amount', e.target.value)}
-                      style={{ width: '70px', padding: '5px', textAlign: 'right' }}
+                      value={item.sgst_percent}
+                      onChange={(e) => updateItem(item.id, 'sgst_percent', e.target.value)}
+                      style={{ width: '60px', padding: '5px', textAlign: 'right' }}
                     />
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right', fontWeight: '500' }}>

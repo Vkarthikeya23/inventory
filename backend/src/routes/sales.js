@@ -82,19 +82,22 @@ router.post('/', verifyToken, async (req, res) => {
   const parsedItems = items.map(item => {
     const qty = Number(item.qty);
     const unitPrice = parseFloat(item.unit_price);
-    // New format: frontend sends cgst_amount and sgst_amount directly
-    const cgstAmount = parseFloat(item.cgst_amount) || 0;
-    const sgstAmount = parseFloat(item.sgst_amount) || 0;
-    const totalGst = cgstAmount + sgstAmount;
+    const cgstPercent = parseFloat(item.cgst_percent) || 0;
+    const sgstPercent = parseFloat(item.sgst_percent) || 0;
     const subtotal = parseFloat((unitPrice * qty).toFixed(2));
+    const cgstAmount = parseFloat((subtotal * cgstPercent / 100).toFixed(2));
+    const sgstAmount = parseFloat((subtotal * sgstPercent / 100).toFixed(2));
+    const totalGst = cgstAmount + sgstAmount;
     const amount = parseFloat((subtotal + totalGst).toFixed(2));
-    // Calculate effective GST rate from amounts (for storage)
-    const gstRate = subtotal > 0 ? parseFloat(((totalGst / subtotal) * 100).toFixed(2)) : 0;
+    // Calculate effective GST rate from percentages (for storage)
+    const gstRate = cgstPercent + sgstPercent;
     return { 
       product_id: item.product_id, 
       service_name: item.service_name,
       qty, 
       unitPrice, 
+      cgstPercent,
+      sgstPercent,
       cgstAmount,
       sgstAmount,
       gstRate,
@@ -106,7 +109,7 @@ router.post('/', verifyToken, async (req, res) => {
 
   const subtotal = parseFloat(parsedItems.reduce((s, i) => s + i.unitPrice * i.qty, 0).toFixed(2));
   
-  // Use CGST and SGST totals directly from items
+  // Sum up CGST and SGST amounts from all items
   const cgst = parseFloat(parsedItems.reduce((s, i) => s + i.cgstAmount, 0).toFixed(2));
   const sgst = parseFloat(parsedItems.reduce((s, i) => s + i.sgstAmount, 0).toFixed(2));
   const total = parseFloat((subtotal + cgst + sgst).toFixed(2));
