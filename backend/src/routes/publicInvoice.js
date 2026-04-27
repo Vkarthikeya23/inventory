@@ -267,16 +267,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
             margin-top: 12px;
             font-weight: 500;
           }
-          .warranty-box {
-            margin-top: 8px;
-            padding: 5px 6px;
-            background-color: #fffde7;
-            border: 1px solid #ffc107;
-            border-radius: 4px;
-            font-size: 8px;
-            color: #856404;
-            font-weight: 500;
-          }
+
           .footer {
             display: flex;
             justify-content: space-between;
