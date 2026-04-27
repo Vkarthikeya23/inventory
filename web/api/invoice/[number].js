@@ -93,14 +93,13 @@ export default async function handler(req, res) {
             max-width: 800px;
             margin: 0 auto;
             background: #fff;
-            padding: 15px;
+            padding: 12px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-            border: 2px solid #4a4a4a;
+            border: 2px solid #000;
           }
           .header {
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
+            padding-bottom: 8px;
+            margin-bottom: 0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -109,82 +108,83 @@ export default async function handler(req, res) {
             flex: 1;
           }
           .logo {
-            width: 60px;
-            height: 60px;
+            width: 90px;
+            height: 90px;
             object-fit: contain;
           }
           .shop-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 3px;
-            letter-spacing: 0.5px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #000;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
           }
           .shop-phone {
-            font-size: 11px;
-            color: #444;
-            font-weight: 500;
+            font-size: 12px;
+            color: #000;
+            font-weight: 600;
           }
           .shop-address {
-            font-size: 10px;
-            color: #666;
+            font-size: 12px;
+            color: #000;
             margin-top: 2px;
           }
           .shop-gstin {
-            font-size: 10px;
-            color: #666;
-            margin-top: 1px;
-            font-weight: 600;
+            font-size: 12px;
+            color: #000;
+            margin-top: 2px;
+            font-weight: 700;
           }
           .tax-invoice-title {
             text-align: center;
-            color: #333;
-            font-size: 16px;
-            font-weight: 700;
-            margin: 10px 0;
+            color: #000;
+            font-size: 18px;
+            font-weight: 800;
+            margin: 8px 0;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            border: 2px solid #333;
-            padding: 6px;
-            background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
+            letter-spacing: 3px;
+            border: 3px solid #000;
+            padding: 8px;
+            background: #fff;
           }
           .two-column {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            border: 2px solid #444;
+            border: 2px solid #000;
           }
           .column {
             flex: 1;
             padding: 10px;
           }
           .column:first-child {
-            border-right: 2px solid #444;
+            border-right: 2px solid #000;
             background: #fafafa;
           }
           .column:last-child {
             background: #fafafa;
           }
           .column-label {
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-            font-size: 11px;
+            font-weight: 800;
+            color: #000;
+            margin-bottom: 6px;
+            font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 2px;
+            letter-spacing: 1.5px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 3px;
           }
           .customer-name {
-            font-weight: 700;
-            font-size: 12px;
-            margin-bottom: 3px;
-            color: #1a1a1a;
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 4px;
+            color: #000;
           }
           .detail-row {
-            font-size: 10px;
-            color: #333;
-            margin: 1px 0;
+            font-size: 11px;
+            color: #000;
+            font-weight: 600;
+            margin: 2px 0;
           }
           .invoice-details {
             text-align: right;
@@ -197,33 +197,34 @@ export default async function handler(req, res) {
             border-collapse: collapse;
             margin: 10px 0;
             font-size: 10px;
-            border: 2px solid #333;
+            border: 2px solid #000;
           }
           th {
-            background: #333;
-            color: white;
-            font-weight: 700;
-            padding: 5px 4px;
+            background: #000;
+            color: #fff;
+            font-weight: 800;
+            padding: 8px 6px;
             text-align: left;
-            border-bottom: 2px solid #222;
+            border-bottom: 3px solid #000;
             text-transform: uppercase;
-            font-size: 9px;
-            letter-spacing: 0.5px;
+            font-size: 10px;
+            letter-spacing: 0.8px;
           }
           td {
-            padding: 4px;
-            border: 1px solid #999;
+            padding: 6px;
+            border: 2px solid #000;
             vertical-align: top;
-            color: #333;
+            color: #000;
+            font-weight: 500;
           }
           tbody tr:nth-child(even) {
-            background: #f9f9f9;
+            background: #e8e8e8;
           }
           .text-right { text-align: right; }
           .text-center { text-align: center; }
           .item-name {
-            font-weight: 600;
-            color: #1a1a1a;
+            font-weight: 700;
+            color: #000;
           }
           .item-service {
             color: #c62828;
@@ -232,12 +233,12 @@ export default async function handler(req, res) {
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
-            border: 2px solid #444;
+            border: 2px solid #000;
           }
           .words-column {
             flex: 1;
             padding: 10px;
-            border-right: 2px solid #444;
+            border-right: 2px solid #000;
             background: #fafafa;
           }
           .amounts-column {
@@ -249,25 +250,26 @@ export default async function handler(req, res) {
             display: flex;
             justify-content: space-between;
             padding: 3px 0;
-            font-size: 10px;
+            font-size: 11px;
             border-bottom: 1px solid #ddd;
           }
           .amount-row:last-child {
             border-bottom: none;
           }
           .total-row {
-            background: #333;
-            color: white;
-            font-weight: 700;
-            padding: 6px 10px;
-            margin: 6px -10px -10px -10px;
-            font-size: 11px;
+            background: #000;
+            color: #fff;
+            font-weight: 800;
+            padding: 10px;
+            margin: 8px -10px -10px -10px;
+            font-size: 14px;
+            letter-spacing: 1px;
           }
           .amount-in-words {
-            font-weight: 700;
-            color: #1a1a1a;
+            font-weight: 800;
+            color: #000;
             margin-bottom: 4px;
-            font-size: 11px;
+            font-size: 13px;
             text-transform: uppercase;
           }
           .thank-you {
@@ -276,23 +278,13 @@ export default async function handler(req, res) {
             margin-top: 12px;
             font-weight: 500;
           }
-          .warranty-box {
-            margin-top: 8px;
-            padding: 5px 6px;
-            background-color: #fffde7;
-            border: 1px solid #ffc107;
-            border-radius: 4px;
-            font-size: 8px;
-            color: #856404;
-            font-weight: 500;
-          }
           .footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 12px;
             padding-top: 10px;
-            border-top: 2px solid #333;
+            border-top: 2px solid #000;
           }
           .buttons {
             display: flex;
@@ -316,116 +308,21 @@ export default async function handler(req, res) {
           .shop-signature {
             text-align: right;
             font-weight: 700;
-            color: #1a1a1a;
+            color: #000;
             font-size: 12px;
           }
 
           /* Print styles */
           @media print {
-            body {
-              background: #fff;
-              padding: 0;
-            }
-            .invoice-container {
-              box-shadow: none;
-              max-width: 100%;
-              padding: 10px 15px;
-              border: none;
-            }
-            .header {
-              padding-bottom: 8px;
-              margin-bottom: 8px;
-              gap: 10px;
-            }
-            .logo {
-              width: 55px;
-              height: 55px;
-            }
-            .shop-name {
-              font-size: 16px;
-              margin-bottom: 2px;
-            }
-            .shop-phone, .shop-address, .shop-gstin {
-              font-size: 9px;
-            }
-            .tax-invoice-title {
-              font-size: 14px;
-              padding: 5px;
-              margin: 8px 0;
-            }
-            .two-column {
-              margin-bottom: 8px;
-            }
-            .column {
-              padding: 8px;
-            }
-            .column-label {
-              font-size: 10px;
-              margin-bottom: 3px;
-              padding-bottom: 2px;
-            }
-            .customer-name {
-              font-size: 11px;
-            }
-            .detail-row {
-              font-size: 9px;
-              margin: 1px 0;
-            }
-            table {
-              margin: 8px 0;
-              font-size: 9px;
-            }
-            th {
-              padding: 4px 3px;
-              font-size: 8px;
-            }
-            td {
-              padding: 3px;
-            }
-            .totals-section {
-              margin-top: 8px;
-            }
-            .words-column, .amounts-column {
-              padding: 8px;
-            }
-            .amount-row {
-              font-size: 9px;
-              padding: 2px 0;
-            }
-            .total-row {
-              padding: 5px 8px;
-              margin: 5px -8px -8px -8px;
-              font-size: 10px;
-            }
-            .amount-in-words {
-              font-size: 10px;
-              margin-bottom: 3px;
-            }
-            .thank-you {
-              font-size: 9px;
-              margin-top: 8px;
-            }
-            .warranty-box {
-              margin-top: 6px;
-              padding: 4px 6px;
-              font-size: 8px;
-            }
-            .footer {
-              margin-top: 10px;
-              padding-top: 8px;
-            }
-            .shop-signature {
-              font-size: 11px;
-            }
-            .no-print {
-              display: none !important;
-            }
-            .two-column, .totals-section {
-              break-inside: avoid;
-            }
-            table {
-              break-inside: avoid;
-            }
+            body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .invoice-container { box-shadow: none; border: 2px solid #000; }
+            th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tbody tr:nth-child(even) { background: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tbody tr { color: #000 !important; }
+            td { border: 2px solid #000 !important; color: #000 !important; font-weight: 600 !important; }
+            .total-row { background: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .total-row td { color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .item-name { color: #000 !important; font-weight: 700 !important; }
           }
 
           @page {
@@ -435,106 +332,32 @@ export default async function handler(req, res) {
 
           /* Responsive */
           @media screen and (max-width: 600px) {
-            body {
-              padding: 5px;
-            }
-            .invoice-container {
-              padding: 10px;
-              max-width: 100%;
-            }
-            .header {
-              flex-direction: column;
-              text-align: center;
-              gap: 10px;
-              padding-bottom: 10px;
-            }
-            .header-left {
-              width: 100%;
-            }
-            .logo {
-              width: 60px;
-              height: 60px;
-            }
-            .shop-name {
-              font-size: 18px;
-            }
-            .shop-phone, .shop-address, .shop-gstin {
-              font-size: 11px;
-            }
-            .logos {
-              flex-direction: row;
-              justify-content: center;
-            }
-            .tax-invoice-title {
-              font-size: 14px;
-              padding: 6px;
-              margin: 10px 0;
-            }
-            .two-column {
-              flex-direction: column;
-              margin-bottom: 10px;
-            }
-            .column {
-              padding: 10px;
-            }
-            .column:first-child {
-              border-right: none;
-              border-bottom: 2px solid #444;
-            }
-            .column-label {
-              font-size: 12px;
-            }
-            .customer-name {
-              font-size: 13px;
-            }
-            .detail-row {
-              font-size: 11px;
-            }
-            table {
-              font-size: 10px;
-              margin: 10px 0;
-            }
-            th {
-              padding: 6px 4px;
-              font-size: 9px;
-            }
-            td {
-              padding: 5px 4px;
-            }
-            .totals-section {
-              flex-direction: column;
-              margin-top: 10px;
-            }
-            .words-column {
-              border-right: none;
-              border-bottom: 2px solid #444;
-              padding: 10px;
-            }
-            .amounts-column {
-              width: 100%;
-              padding: 10px;
-            }
-            .amount-row {
-              font-size: 11px;
-            }
-            .total-row {
-              margin: 6px -10px -10px -10px;
-              padding: 6px 10px;
-            }
-            .footer {
-              flex-direction: column;
-              gap: 10px;
-              margin-top: 10px;
-              padding-top: 10px;
-            }
-            .shop-signature {
-              text-align: center;
-              font-size: 12px;
-            }
-            .btn {
-              padding: 6px 12px;
-              font-size: 12px;
-            }
+            body { padding: 5px; }
+            .invoice-container { padding: 10px; max-width: 100%; }
+            .header { flex-direction: column; text-align: center; gap: 10px; padding-bottom: 10px; }
+            .header-left { width: 100%; }
+            .logo { width: 60px; height: 60px; }
+            .shop-name { font-size: 18px; }
+            .shop-phone, .shop-address, .shop-gstin { font-size: 11px; }
+            .logos { flex-direction: row; justify-content: center; }
+            .tax-invoice-title { font-size: 14px; padding: 6px; margin: 10px 0; }
+            .two-column { flex-direction: column; margin-bottom: 10px; }
+            .column { padding: 10px; }
+            .column:first-child { border-right: none; border-bottom: 2px solid #000; }
+            .column-label { font-size: 12px; }
+            .customer-name { font-size: 13px; }
+            .detail-row { font-size: 11px; }
+            table { font-size: 10px; margin: 10px 0; }
+            th { padding: 6px 4px; font-size: 9px; }
+            td { padding: 5px 4px; }
+            .totals-section { flex-direction: column; margin-top: 10px; }
+            .words-column { border-right: none; border-bottom: 2px solid #000; padding: 10px; }
+            .amounts-column { width: 100%; padding: 10px; }
+            .amount-row { font-size: 11px; }
+            .total-row { margin: 6px -10px -10px -10px; padding: 6px 10px; }
+            .footer { flex-direction: column; gap: 10px; margin-top: 10px; padding-top: 10px; }
+            .shop-signature { text-align: center; font-size: 12px; }
+            .btn { padding: 6px 12px; font-size: 12px; }
           }
         </style>
       </head>
@@ -582,29 +405,31 @@ export default async function handler(req, res) {
                 <th style="width: 70px;">Qty</th>
                 <th style="width: 100px;" class="text-right">Rate (₹)</th>
                 <th style="width: 70px;" class="text-center">HSN</th>
-                <th style="width: 100px;" class="text-right">GST (₹)</th>
+                <th style="width: 80px;" class="text-right">CGST</th>
+                <th style="width: 80px;" class="text-right">SGST</th>
                 <th style="width: 100px;" class="text-right">Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
               ${data.items.map((item, idx) => `
-                <tr>
+                <tr class="data-row">
                   <td class="text-center">${idx + 1}</td>
                   <td class="${item.is_service ? 'item-name item-service' : 'item-name'}">${item.name}</td>
                   <td class="text-center">${item.qty}</td>
                   <td class="text-right">${formatIndianNumber(item.unit_price)}</td>
                   <td class="text-center">${item.hsn_code || '-'}</td>
-                  <td class="text-right">${formatIndianNumber(item.gst_amount)}</td>
+                  <td class="text-right">${formatIndianNumber(item.gst_amount / 2)}</td>
+                  <td class="text-right">${formatIndianNumber(item.gst_amount / 2)}</td>
                   <td class="text-right" style="font-weight: 600;">${formatIndianNumber(item.amount)}</td>
                 </tr>
               `).join('')}
               <!-- Total Row -->
-              <tr style="background: #333; color: white; font-weight: 700;">
-                <td colspan="3" style="padding: 14px 10px;">TOTAL</td>
-                <td></td>
-                <td></td>
-                <td class="text-right" style="padding: 14px 10px;">${formatIndianNumber(data.items.reduce((sum, item) => sum + item.gst_amount, 0))}</td>
-                <td class="text-right" style="padding: 14px 10px;">${formatIndianNumber(data.total)}</td>
+              <tr class="total-table-row" style="background: #000 !important; font-weight: 800; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                <td colspan="4" style="padding: 14px 10px; font-size: 12px; letter-spacing: 1px; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">TOTAL</td>
+                <td style="color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;"></td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${formatIndianNumber(data.cgst)}</td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${formatIndianNumber(data.sgst)}</td>
+                <td class="text-right" style="padding: 14px 10px; font-weight: 800; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${formatIndianNumber(data.total)}</td>
               </tr>
             </tbody>
           </table>
@@ -615,30 +440,29 @@ export default async function handler(req, res) {
               <div class="amount-in-words">Amount In Words</div>
               <div style="font-size: 15px; font-weight: 600; color: #1a1a1a;">${data.amount_in_words}</div>
               <div class="thank-you">Thanks for doing business with us!</div>
-              <div class="warranty-box">
-                Free inspection/service is available for any issues related to the work performed, valid for 15 days from the date of installation.
-              </div>
             </div>
             <div class="amounts-column">
               <div class="amount-row">
-                <span style="font-weight: 600;">Sub Total</span>
-                <span style="font-weight: 600;">${formatIndianNumber(data.subtotal)}</span>
+                <span style="font-weight: 800; color: #000;">Sub Total</span>
+                <span style="font-weight: 800; color: #000;">${formatIndianNumber(data.subtotal)}</span>
+              </div>
+              ${(data.sgst > 0 || data.cgst > 0) ? `
+              <div class="amount-row">
+                <span style="color: #000; font-weight: 600;">CGST</span>
+                <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.cgst)}</span>
               </div>
               <div class="amount-row">
-                <span>SGST @ 6%</span>
-                <span>${formatIndianNumber(data.sgst)}</span>
+                <span style="color: #000; font-weight: 600;">SGST</span>
+                <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.sgst)}</span>
               </div>
-              <div class="amount-row">
-                <span>CGST @ 6%</span>
-                <span>${formatIndianNumber(data.cgst)}</span>
-              </div>
+              ` : ''}
               <div class="total-row">
-                <span>TOTAL</span>
-                <span>${formatIndianNumber(data.total)}</span>
+                <span style="color: #fff;">TOTAL</span>
+                <span style="color: #fff;">${formatIndianNumber(data.total)}</span>
               </div>
-              <div style="margin-top: 30px; text-align: center;">
-                <img src="/assets/stamp.png" alt="Stamp" style="width: 85px; height: auto; opacity: 0.9;">
-                <div style="font-size: 13px; font-weight: 600; margin-top: 5px; color: #333;">Authorized Signature</div>
+              <div style="margin-top: 40px; text-align: center;">
+                <img src="/assets/stamp.png" alt="Stamp" style="width: 120px; height: auto;">
+                <div style="font-size: 16px; font-weight: 800; margin-top: 10px; color: #000;">Authorized Signature</div>
               </div>
             </div>
           </div>
@@ -653,8 +477,6 @@ export default async function handler(req, res) {
             </div>
           </div>
         </div>
-
-        <script>
       </body>
       </html>
     `;
