@@ -231,7 +231,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
     console.log('PUT /products/:id - Request body:', updates);
     
     // Get current product to know the GST rate
-    const currentProduct = await get('SELECT gst_rate FROM products WHERE id = $id AND is_deleted = false', { id });
+    const currentProduct = await get('SELECT gst_rate, cgst_rate, sgst_rate FROM products WHERE id = $id AND is_deleted = false', { id });
     if (!currentProduct) {
       return res.status(404).json({ error: 'Product not found' });
     }
@@ -247,8 +247,13 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
       cgstRate = !isNaN(parsedGstRate) ? parsedGstRate / 2 : (currentProduct.gst_rate || 12) / 2;
       sgstRate = cgstRate;
     } else {
-      cgstRate = currentProduct.cgst_rate || currentProduct.gst_rate / 2 || 6;
-      sgstRate = currentProduct.sgst_rate || currentProduct.gst_rate / 2 || 6;
+      // Use existing values, fall back to gst_rate/2 only if cgst/sgst don't exist
+      cgstRate = (currentProduct.cgst_rate !== undefined && currentProduct.cgst_rate !== null) 
+        ? currentProduct.cgst_rate 
+        : (currentProduct.gst_rate ? currentProduct.gst_rate / 2 : 6);
+      sgstRate = (currentProduct.sgst_rate !== undefined && currentProduct.sgst_rate !== null) 
+        ? currentProduct.sgst_rate 
+        : (currentProduct.gst_rate ? currentProduct.gst_rate / 2 : 6);
     }
     
     // Calculate total GST rate for price calculations

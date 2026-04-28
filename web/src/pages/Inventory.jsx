@@ -84,8 +84,8 @@ export default function Inventory() {
       cost_price: product.cost_price?.toString() || '',
       selling_price_excl_gst: product.selling_price_excl_gst?.toString() || '',
       selling_price_incl_gst: product.selling_price_incl_gst?.toString() || '',
-      cgst_rate: (product.cgst_rate || product.gst_rate / 2 || 6).toString(),
-      sgst_rate: (product.sgst_rate || product.gst_rate / 2 || 6).toString(),
+      cgst_rate: (product.cgst_rate !== undefined && product.cgst_rate !== null && product.cgst_rate !== '' ? product.cgst_rate : (product.gst_rate ? product.gst_rate / 2 : 6)).toString(),
+      sgst_rate: (product.sgst_rate !== undefined && product.sgst_rate !== null && product.sgst_rate !== '' ? product.sgst_rate : (product.gst_rate ? product.gst_rate / 2 : 6)).toString(),
       price_entry_mode: 'excl'
     });
     setEditError(null);
