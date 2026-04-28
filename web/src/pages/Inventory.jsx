@@ -569,8 +569,8 @@ export default function Inventory() {
                 </td>
                 <td style={{ textAlign: 'right' }}>₹{parseFloat(p.selling_price_excl_gst || 0).toFixed(2)}</td>
                 <td style={{ textAlign: 'right' }}>₹{parseFloat(p.selling_price_incl_gst || 0).toFixed(2)}</td>
-                <td style={{ textAlign: 'center' }}>{(p.cgst_rate || p.gst_rate / 2 || 0).toFixed(1)}%</td>
-                <td style={{ textAlign: 'center' }}>{(p.sgst_rate || p.gst_rate / 2 || 0).toFixed(1)}%</td>
+                <td style={{ textAlign: 'center' }}>{((p.cgst_rate !== null && p.cgst_rate !== undefined) ? parseFloat(p.cgst_rate) : (p.gst_rate ? parseFloat(p.gst_rate) / 2 : 0)).toFixed(1)}%</td>
+                <td style={{ textAlign: 'center' }}>{((p.sgst_rate !== null && p.sgst_rate !== undefined) ? parseFloat(p.sgst_rate) : (p.gst_rate ? parseFloat(p.gst_rate) / 2 : 0)).toFixed(1)}%</td>
                 <td style={{ textAlign: 'right' }}>{p.stock_qty}</td>
                 <td style={{ textAlign: 'right' }}>₹{p.cost_price ? parseFloat(p.cost_price).toFixed(2) : '-'}</td>
                 <td style={{ textAlign: 'right' }}>
