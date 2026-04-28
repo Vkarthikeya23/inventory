@@ -126,7 +126,25 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
     
     // Parse numeric values
     const costPrice = parseFloat(cost_price) || null;
-    const gstRate = gst_rate !== undefined && gst_rate !== '' && !isNaN(parseFloat(gst_rate)) ? parseFloat(gst_rate) : 12;
+    // Handle cgst_rate and sgst_rate if provided, otherwise use gst_rate
+    let cgstRate = parseFloat(cgst_rate);
+    let sgstRate = parseFloat(sgst_rate);
+    let gstRate;
+    
+    if (!isNaN(cgstRate) && !isNaN(sgstRate)) {
+      // Use provided cgst and sgst rates
+      gstRate = cgstRate + sgstRate;
+    } else if (gst_rate !== undefined && gst_rate !== '' && !isNaN(parseFloat(gst_rate))) {
+      // Fall back to gst_rate, split equally
+      gstRate = parseFloat(gst_rate);
+      cgstRate = gstRate / 2;
+      sgstRate = gstRate / 2;
+    } else {
+      gstRate = 12;
+      cgstRate = 6;
+      sgstRate = 6;
+    }
+    
     const stockQty = parseInt(stock_qty) || 0;
     
     let sellingPriceExcl = parseFloat(selling_price_excl_gst);
@@ -153,11 +171,13 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
         selling_price_excl_gst, 
         selling_price_incl_gst, 
         gst_rate, 
+        cgst_rate,
+        sgst_rate,
         price_entry_mode, 
         stock_qty,
         hsn_code
       )
-      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $price_entry_mode, $stock_qty, $hsn_code)
+      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $cgst_rate, $sgst_rate, $price_entry_mode, $stock_qty, $hsn_code)
       RETURNING 
         id, 
         company_name, 
@@ -165,8 +185,10 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
         cost_price, 
         selling_price_excl_gst, 
         selling_price_incl_gst, 
-        gst_rate, 
-        price_entry_mode, 
+        gst_rate,
+        cgst_rate,
+        sgst_rate,
+        price_entry_mode,
         stock_qty, 
         hsn_code,
         is_deleted, 
@@ -176,10 +198,12 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
       id: productId,
       company_name,
       size_spec,
-      cost_price: cost_price || null,
+      cost_price: costPrice,
       selling_price_excl_gst: sellingPriceExcl,
       selling_price_incl_gst: sellingPriceIncl,
-      gst_rate,
+      gst_rate: gstRate,
+      cgst_rate: cgstRate,
+      sgst_rate: sgstRate,
       price_entry_mode,
       stock_qty,
       hsn_code: hsn_code || ''
