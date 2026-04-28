@@ -37,6 +37,8 @@ router.get('/', verifyToken, async (req, res) => {
         selling_price_excl_gst,
         selling_price_incl_gst,
         gst_rate,
+        cgst_rate,
+        sgst_rate,
         price_entry_mode,
         stock_qty,
         hsn_code,
