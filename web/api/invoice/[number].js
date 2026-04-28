@@ -316,6 +316,7 @@ export default async function handler(req, res) {
           @media print {
             body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .invoice-container { box-shadow: none; border: 2px solid #000; }
+            .no-print { display: none !important; }
             th { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             tbody tr:nth-child(even) { background: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             tbody tr { color: #000 !important; }
