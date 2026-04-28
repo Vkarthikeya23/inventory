@@ -110,6 +110,8 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
       selling_price_excl_gst,
       selling_price_incl_gst,
       gst_rate = 12,
+      cgst_rate,
+      sgst_rate,
       price_entry_mode = 'excl',
       stock_qty = 0,
       hsn_code = ''
