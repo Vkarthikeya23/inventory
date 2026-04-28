@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { BarChart, XAxis, YAxis, Bar, Tooltip } from 'recharts';
 
 const API_BASE_URL = (import.meta.env.VITE_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
+const INVOICE_URL = (import.meta.env.VITE_INVOICE_URL || import.meta.env.VITE_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
 
 export default function DailyReport() {
   const { user } = useAuth();
@@ -180,7 +181,7 @@ export default function DailyReport() {
                 <td>₹{s.total?.toFixed(2)}</td>
                 <td>{new Date(s.created_at).toLocaleString()}</td>
                 <td>
-                  <a href={`/invoice/${s.invoice_number}`} onClick={(e) => { e.preventDefault(); window.open(`${API_BASE_URL}/invoice/${s.invoice_number}`, '_blank'); }} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>View Invoice</a>
+                  <a href={`/invoice/${s.invoice_number}`} onClick={(e) => { e.preventDefault(); window.open(`${INVOICE_URL}/api/invoice/${s.invoice_number}`, '_blank'); }} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>View Invoice</a>
                 </td>
                 {isOwner && (
                   <td>
