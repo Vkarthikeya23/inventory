@@ -84,7 +84,8 @@ export default function Inventory() {
       cost_price: product.cost_price?.toString() || '',
       selling_price_excl_gst: product.selling_price_excl_gst?.toString() || '',
       selling_price_incl_gst: product.selling_price_incl_gst?.toString() || '',
-      gst_rate: product.gst_rate?.toString() || '12',
+      cgst_rate: (product.cgst_rate || product.gst_rate / 2 || 6).toString(),
+      sgst_rate: (product.sgst_rate || product.gst_rate / 2 || 6).toString(),
       price_entry_mode: 'excl'
     });
     setEditError(null);
@@ -92,29 +93,31 @@ export default function Inventory() {
 
   function closeEditModal() {
     setEditingProduct(null);
-    setEditForm({ stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', gst_rate: '12', price_entry_mode: 'excl' });
+    setEditForm({ stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', cgst_rate: '6', sgst_rate: '6', price_entry_mode: 'excl' });
     setEditError(null);
   }
 
   // Calculate prices based on entry mode
   const calculatePrices = () => {
-    const gstRate = editForm.gst_rate !== '' && editForm.gst_rate !== undefined ? parseFloat(editForm.gst_rate) : 12;
+    const cgstRate = editForm.cgst_rate !== '' && editForm.cgst_rate !== undefined ? parseFloat(editForm.cgst_rate) : 6;
+    const sgstRate = editForm.sgst_rate !== '' && editForm.sgst_rate !== undefined ? parseFloat(editForm.sgst_rate) : 6;
+    const totalGstRate = cgstRate + sgstRate;
     
     if (editForm.price_entry_mode === 'excl') {
       // User entered price excluding GST
       const exclPrice = parseFloat(editForm.selling_price_excl_gst) || 0;
-      if (gstRate === 0) {
+      if (totalGstRate === 0) {
         return { excl: exclPrice, incl: exclPrice };
       }
-      const inclPrice = Math.round(exclPrice * (1 + gstRate / 100) * 100) / 100;
+      const inclPrice = Math.round(exclPrice * (1 + totalGstRate / 100) * 100) / 100;
       return { excl: exclPrice, incl: inclPrice };
     } else {
       // User entered price including GST
       const inclPrice = parseFloat(editForm.selling_price_incl_gst) || 0;
-      if (gstRate === 0) {
+      if (totalGstRate === 0) {
         return { excl: inclPrice, incl: inclPrice };
       }
-      const exclPrice = Math.round(inclPrice / (1 + gstRate / 100) * 100) / 100;
+      const exclPrice = Math.round(inclPrice / (1 + totalGstRate / 100) * 100) / 100;
       return { excl: exclPrice, incl: inclPrice };
     }
   };
@@ -125,15 +128,15 @@ export default function Inventory() {
 
     const stockQty = parseInt(editForm.stock_qty);
     const costPrice = parseFloat(editForm.cost_price);
-    const gstRate = parseFloat(editForm.gst_rate);
-    
-    // Handle GST rate validation - treat empty string as 0
-    const effectiveGstRate = isNaN(gstRate) ? 0 : gstRate;
+    const cgstRate = parseFloat(editForm.cgst_rate);
+    const sgstRate = parseFloat(editForm.sgst_rate);
+    const effectiveCgstRate = isNaN(cgstRate) ? 0 : cgstRate;
+    const effectiveSgstRate = isNaN(sgstRate) ? 0 : sgstRate;
     
     let { excl: sellingPriceExcl, incl: sellingPriceIncl } = calculatePrices();
     
     // When GST is 0, incl must equal excl
-    if (effectiveGstRate === 0) {
+    if (effectiveCgstRate === 0 && effectiveSgstRate === 0) {
       sellingPriceIncl = sellingPriceExcl;
     }
 
@@ -155,8 +158,8 @@ export default function Inventory() {
       return;
     }
 
-    if (isNaN(gstRate) || gstRate < 0 || gstRate > 100) {
-      setEditError('GST rate must be between 0 and 100');
+    if (effectiveCgstRate < 0 || effectiveSgstRate < 0 || effectiveCgstRate > 100 || effectiveSgstRate > 100) {
+      setEditError('CGST and SGST rates must be between 0 and 100');
       setSaving(false);
       return;
     }
@@ -170,7 +173,9 @@ export default function Inventory() {
         cost_price: costPrice,
         selling_price_excl_gst: sellingPriceExcl,
         selling_price_incl_gst: sellingPriceIncl,
-        gst_rate: gstRate
+        cgst_rate: effectiveCgstRate,
+        sgst_rate: effectiveSgstRate,
+        gst_rate: effectiveCgstRate + effectiveSgstRate
       };
       
       console.log('Frontend - Sending payload:', payload);
@@ -527,7 +532,8 @@ export default function Inventory() {
               <th style={{ textAlign: 'left', padding: '10px' }}>Product</th>
               <th style={{ textAlign: 'right' }}>Price (Excl)</th>
               <th style={{ textAlign: 'right' }}>Price (Incl)</th>
-              <th style={{ textAlign: 'center' }}>GST</th>
+              <th style={{ textAlign: 'center' }}>CGST</th>
+              <th style={{ textAlign: 'center' }}>SGST</th>
               <th style={{ textAlign: 'right' }}>Stock</th>
               <th style={{ textAlign: 'right' }}>Cost</th>
               <th style={{ textAlign: 'right' }}>Total Cost</th>
@@ -563,7 +569,8 @@ export default function Inventory() {
                 </td>
                 <td style={{ textAlign: 'right' }}>₹{parseFloat(p.selling_price_excl_gst || 0).toFixed(2)}</td>
                 <td style={{ textAlign: 'right' }}>₹{parseFloat(p.selling_price_incl_gst || 0).toFixed(2)}</td>
-                <td style={{ textAlign: 'center' }}>{p.gst_rate}%</td>
+                <td style={{ textAlign: 'center' }}>{(p.cgst_rate || p.gst_rate / 2 || 0).toFixed(1)}%</td>
+                <td style={{ textAlign: 'center' }}>{(p.sgst_rate || p.gst_rate / 2 || 0).toFixed(1)}%</td>
                 <td style={{ textAlign: 'right' }}>{p.stock_qty}</td>
                 <td style={{ textAlign: 'right' }}>₹{p.cost_price ? parseFloat(p.cost_price).toFixed(2) : '-'}</td>
                 <td style={{ textAlign: 'right' }}>
@@ -664,36 +671,69 @@ export default function Inventory() {
               />
             </div>
 
-            {/* GST Rate */}
+            {/* CGST and SGST Rate */}
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
-                GST Rate (%)
+                CGST & SGST (%)
               </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                value={editForm.gst_rate}
-                onChange={(e) => {
-                  const newGstRate = e.target.value;
-                  setEditForm(prev => {
-                    const updated = { ...prev, gst_rate: newGstRate };
-                    // When GST is 0, make incl = excl
-                    if (newGstRate === '0' || newGstRate === '') {
-                      updated.selling_price_incl_gst = prev.selling_price_excl_gst;
-                    }
-                    return updated;
-                  });
-                }}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '16px'
-                }}
-              />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={editForm.cgst_rate}
+                  onChange={(e) => {
+                    const newCgstRate = e.target.value;
+                    setEditForm(prev => {
+                      const updated = { ...prev, cgst_rate: newCgstRate };
+                      // When both are 0, make incl = excl
+                      if (newCgstRate === '0' || newCgstRate === '') {
+                        if (prev.sgst_rate === '0' || prev.sgst_rate === '') {
+                          updated.selling_price_incl_gst = prev.selling_price_excl_gst;
+                        }
+                      }
+                      return updated;
+                    });
+                  }}
+                  placeholder="CGST"
+                  style={{
+                    width: '50%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '16px'
+                  }}
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={editForm.sgst_rate}
+                  onChange={(e) => {
+                    const newSgstRate = e.target.value;
+                    setEditForm(prev => {
+                      const updated = { ...prev, sgst_rate: newSgstRate };
+                      // When both are 0, make incl = excl
+                      if (newSgstRate === '0' || newSgstRate === '') {
+                        if (prev.cgst_rate === '0' || prev.cgst_rate === '') {
+                          updated.selling_price_incl_gst = prev.selling_price_excl_gst;
+                        }
+                      }
+                      return updated;
+                    });
+                  }}
+                  placeholder="SGST"
+                  style={{
+                    width: '50%',
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '16px'
+                  }}
+                />
+              </div>
             </div>
 
             {/* Price Entry Mode Toggle */}
@@ -789,7 +829,7 @@ export default function Inventory() {
                 <span style={{ fontWeight: '600' }}>₹ {calculatePrices().excl.toFixed(2)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                <span>Incl. GST ({editForm.gst_rate}%):</span>
+                <span>Incl. GST (CGST {editForm.cgst_rate}% + SGST {editForm.sgst_rate}%):</span>
                 <span style={{ fontWeight: '600' }}>₹ {calculatePrices().incl.toFixed(2)}</span>
               </div>
             </div>
