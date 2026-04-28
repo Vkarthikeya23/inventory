@@ -173,11 +173,13 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
         selling_price_excl_gst, 
         selling_price_incl_gst, 
         gst_rate, 
+        cgst_rate,
+        sgst_rate,
         price_entry_mode, 
         stock_qty,
         hsn_code
       )
-      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $price_entry_mode, $stock_qty, $hsn_code)
+      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $cgst_rate, $sgst_rate, $price_entry_mode, $stock_qty, $hsn_code)
       RETURNING 
         id, 
         company_name, 
@@ -185,11 +187,11 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
         cost_price, 
         selling_price_excl_gst, 
         selling_price_incl_gst, 
-        gst_rate, 
-        COALESCE(cgst_rate, gst_rate / 2) as cgst_rate,
-        COALESCE(sgst_rate, gst_rate / 2) as sgst_rate,
-        price_entry_mode,
-        stock_qty, 
+        gst_rate,
+        cgst_rate,
+        sgst_rate,
+        price_entry_mode, 
+        stock_qty,
         hsn_code,
         is_deleted, 
         created_at,
@@ -202,8 +204,10 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
       selling_price_excl_gst: sellingPriceExcl,
       selling_price_incl_gst: sellingPriceIncl,
       gst_rate: gstRate,
+      cgst_rate: cgstRate,
+      sgst_rate: sgstRate,
       price_entry_mode,
-      stock_qty,
+      stock_qty: stockQty,
       hsn_code: hsn_code || ''
     });
     
@@ -232,15 +236,23 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
       return res.status(404).json({ error: 'Product not found' });
     }
     
-    // Handle GST rate update
-    let gstRate;
-    if (updates.gst_rate !== undefined) {
+    // Handle CGST and SGST rate update
+    let cgstRate, sgstRate;
+    if (updates.cgst_rate !== undefined && updates.sgst_rate !== undefined) {
+      cgstRate = parseFloat(updates.cgst_rate);
+      sgstRate = parseFloat(updates.sgst_rate);
+    } else if (updates.gst_rate !== undefined) {
+      // Fallback to gst_rate split equally
       const parsedGstRate = parseFloat(updates.gst_rate);
-      // Use parsed value only if it's a valid number (including 0), otherwise fallback
-      gstRate = !isNaN(parsedGstRate) ? parsedGstRate : (currentProduct.gst_rate || 12);
+      cgstRate = !isNaN(parsedGstRate) ? parsedGstRate / 2 : (currentProduct.gst_rate || 12) / 2;
+      sgstRate = cgstRate;
     } else {
-      gstRate = currentProduct.gst_rate || 12;
+      cgstRate = currentProduct.cgst_rate || currentProduct.gst_rate / 2 || 6;
+      sgstRate = currentProduct.sgst_rate || currentProduct.gst_rate / 2 || 6;
     }
+    
+    // Calculate total GST rate for price calculations
+    let gstRate = cgstRate + sgstRate;
     
     // Handle selling price updates with the GST rate (either updated or current)
     if ('selling_price_excl_gst' in updates) {
@@ -253,7 +265,12 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
       updates.selling_price_incl_gst = sellingPriceIncl;
     }
     
-    const allowedFields = ['company_name', 'size_spec', 'cost_price', 'selling_price_excl_gst', 'selling_price_incl_gst', 'stock_qty', 'gst_rate'];
+    // Always update cgst_rate, sgst_rate, and gst_rate (total)
+    updates.cgst_rate = cgstRate;
+    updates.sgst_rate = sgstRate;
+    updates.gst_rate = gstRate;
+    
+    const allowedFields = ['company_name', 'size_spec', 'cost_price', 'selling_price_excl_gst', 'selling_price_incl_gst', 'stock_qty', 'gst_rate', 'cgst_rate', 'sgst_rate'];
     const fields = [];
     const values = {};
     
@@ -274,7 +291,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
       UPDATE products SET ${fields.join(', ')} WHERE id = $id
       RETURNING 
         id, company_name, size_spec, cost_price, 
-        selling_price_excl_gst, selling_price_incl_gst, gst_rate, 
+        selling_price_excl_gst, selling_price_incl_gst, gst_rate, cgst_rate, sgst_rate,
         stock_qty, is_deleted, created_at,
         COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '') as display_name
     `, values);
