@@ -173,13 +173,11 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
         selling_price_excl_gst, 
         selling_price_incl_gst, 
         gst_rate, 
-        cgst_rate,
-        sgst_rate,
         price_entry_mode, 
         stock_qty,
         hsn_code
       )
-      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $cgst_rate, $sgst_rate, $price_entry_mode, $stock_qty, $hsn_code)
+      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $price_entry_mode, $stock_qty, $hsn_code)
       RETURNING 
         id, 
         company_name, 
@@ -187,9 +185,9 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
         cost_price, 
         selling_price_excl_gst, 
         selling_price_incl_gst, 
-        gst_rate,
-        cgst_rate,
-        sgst_rate,
+        gst_rate, 
+        COALESCE(cgst_rate, gst_rate / 2) as cgst_rate,
+        COALESCE(sgst_rate, gst_rate / 2) as sgst_rate,
         price_entry_mode,
         stock_qty, 
         hsn_code,
@@ -204,8 +202,6 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (re
       selling_price_excl_gst: sellingPriceExcl,
       selling_price_incl_gst: sellingPriceIncl,
       gst_rate: gstRate,
-      cgst_rate: cgstRate,
-      sgst_rate: sgstRate,
       price_entry_mode,
       stock_qty,
       hsn_code: hsn_code || ''
