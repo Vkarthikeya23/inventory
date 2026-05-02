@@ -286,6 +286,10 @@ router.post('/', verifyToken, async (req, res) => {
           qty: i.qty,
           unit_price: i.unitPrice,
           unit_cost: i.unitCost,
+          cgst_rate: i.cgstPercent,
+          sgst_rate: i.sgstPercent,
+          cgst_amount: i.cgstAmount,
+          sgst_amount: i.sgstAmount,
           gst_rate: i.gstRate,
           gst_amount: i.gstAmount,
           amount: i.amount

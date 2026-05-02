@@ -419,8 +419,8 @@ export default async function handler(req, res) {
                   <td class="text-center">${item.qty}</td>
                   <td class="text-right">${formatIndianNumber(item.unit_price)}</td>
                   <td class="text-center">${item.hsn_code || '-'}</td>
-                  <td class="text-right">${formatIndianNumber(item.gst_amount / 2)}</td>
-                  <td class="text-right">${formatIndianNumber(item.gst_amount / 2)}</td>
+                  <td class="text-right">${formatIndianNumber(item.cgst_amount)}</td>
+                  <td class="text-right">${formatIndianNumber(item.sgst_amount)}</td>
                   <td class="text-right" style="font-weight: 600;">${formatIndianNumber(item.amount)}</td>
                 </tr>
               `).join('')}
