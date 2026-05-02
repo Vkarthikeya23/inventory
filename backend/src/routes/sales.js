@@ -48,6 +48,7 @@ router.post('/', verifyToken, async (req, res) => {
   const {
     customer_name,
     customer_phone,
+    customer_gstin,
     vehicle_reg,
     vehicle_type,
     km_reading,
@@ -273,6 +274,7 @@ router.post('/', verifyToken, async (req, res) => {
         customer: {
           name: customer.name,
           phone: customer.phone,
+          gstin: customer_gstin || '',
           vehicle_reg: vehicle_reg ?? '',
           vehicle_type: vehicle_type || '',
           km_reading: km_reading || ''

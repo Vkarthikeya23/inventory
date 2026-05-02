@@ -385,6 +385,7 @@ export default async function handler(req, res) {
             <div class="column">
               <div class="column-label">Bill To</div>
               <div class="customer-name">${data.customer.name.toUpperCase()}</div>
+              ${data.customer.gstin ? `<div class="detail-row">GSTIN: ${data.customer.gstin}</div>` : ''}
               <div class="detail-row">Contact No.: ${data.customer.phone}</div>
               ${data.customer.vehicle_reg ? `<div class="detail-row">Vehicle No.: ${data.customer.vehicle_reg}</div>` : ''}
               ${data.customer.vehicle_type ? `<div class="detail-row">Vehicle Type: ${data.customer.vehicle_type}</div>` : ''}
