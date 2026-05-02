@@ -22,6 +22,7 @@ export default function Navbar() {
           <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 'clamp(14px, 3vw, 18px)' }}>SRI MAHALAKSHMI TYRES</span>
           <Link to="/new-sale" style={{ color: '#fff', textDecoration: 'none', backgroundColor: '#4CAF50', padding: '8px 12px', borderRadius: '4px', fontWeight: '600' }}>+ New Sale</Link>
           <Link to="/inventory" style={{ color: '#fff', textDecoration: 'none', padding: '8px 12px', borderRadius: '4px', fontSize: '14px' }}>Inventory</Link>
+          <Link to="/daily-report" style={{ color: '#fff', textDecoration: 'none', padding: '8px 12px', borderRadius: '4px', fontSize: '14px' }}>Daily Report</Link>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <span style={{ color: '#fff', fontSize: '14px' }}>{user?.name}</span>
