@@ -70,6 +70,14 @@ function AppRoutes() {
           </PrivateRoute>
         } 
       />
+      <Route 
+        path="/inventory" 
+        element={
+          <PrivateRoute>
+            <Inventory />
+          </PrivateRoute>
+        } 
+      />
       
       {/* Owner/Manager routes */}
       <Route 
@@ -77,14 +85,6 @@ function AppRoutes() {
         element={
           <PrivateRoute>
             <FullAccess><Dashboard /></FullAccess>
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/inventory" 
-        element={
-          <PrivateRoute>
-            <FullAccess><Inventory /></FullAccess>
           </PrivateRoute>
         } 
       />
