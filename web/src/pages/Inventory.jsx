@@ -232,12 +232,7 @@ export default function Inventory() {
   function openPoModal() {
     setPoModalOpen(true);
     setPoSelectedProducts({});
-    // Initialize quantities to 10 for all products
-    const initialQuantities = {};
-    products.forEach(p => {
-      initialQuantities[p.id] = 10;
-    });
-    setPoQuantities(initialQuantities);
+    setPoQuantities({});
   }
 
   function closePoModal() {
