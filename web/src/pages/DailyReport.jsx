@@ -61,24 +61,26 @@ export default function DailyReport() {
   }
 
   function exportCSV() {
-    const headers = [
-      'Invoice No',
+const headers = [
+      'S.No',
       'Date',
       'Time',
       'Customer Name',
       'Phone',
       'Vehicle Reg',
+      'Vehicle Type',
       'Items Bought',
       'Total'
     ];
     
-    const rows = filteredSales.map(s => [
-      s.invoice_number || '',
+    const rows = filteredSales.map((s, index) => [
+      index + 1,
       s.created_at ? new Date(s.created_at).toLocaleDateString('en-GB') : '',
       s.created_at ? new Date(s.created_at).toLocaleTimeString('en-IN') : '',
       s.customer_name || '',
       s.customer_phone || '',
       s.vehicle_reg || '-',
+      s.vehicle_type || '-',
       s.items_bought || '-',
       (s.total || 0).toFixed(2)
     ]);
@@ -163,8 +165,9 @@ export default function DailyReport() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid #ddd' }}>
-              <th style={{ textAlign: 'left', padding: '10px' }}>Invoice</th>
+              <th style={{ textAlign: 'left', padding: '10px' }}>S.No</th>
               <th>Vehicle No.</th>
+              <th>Vehicle Type</th>
               <th>Items Bought</th>
               <th>Total</th>
               <th>Time</th>
@@ -173,10 +176,11 @@ export default function DailyReport() {
             </tr>
           </thead>
           <tbody>
-            {filteredSales.map(s => (
+            {filteredSales.map((s, index) => (
               <tr key={s.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '10px' }}>{s.invoice_number}</td>
+                <td style={{ padding: '10px' }}>{index + 1}</td>
                 <td>{s.vehicle_reg || '-'}</td>
+                <td>{s.vehicle_type || '-'}</td>
                 <td>{s.items_bought || '-'}</td>
                 <td>₹{s.total?.toFixed(2)}</td>
                 <td>{new Date(s.created_at).toLocaleString()}</td>

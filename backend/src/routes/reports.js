@@ -48,6 +48,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         s.customer_name,
         s.customer_phone,
         s.vehicle_reg,
+        s.vehicle_type,
         s.created_at,
         s.sale_date
       FROM sales s
@@ -135,6 +136,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         customer_name: sale.customer_name,
         customer_phone: sale.customer_phone,
         vehicle_reg: sale.vehicle_reg || '-',
+        vehicle_type: sale.vehicle_type || '-',
         items_bought: itemsBoughtStr
       });
     }
