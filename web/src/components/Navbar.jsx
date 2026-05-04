@@ -15,14 +15,16 @@ export default function Navbar() {
   }
 
   // Cashier sees New Sale and Daily Report
-  if (isCashier) {
+if (isCashier) {
     return (
       <nav style={{ backgroundColor: '#2196F3', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 'clamp(14px, 3vw, 18px)' }}>SRI MAHALAKSHMI TYRES</span>
+          <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 'clamp(14px, 3vw, 18px)' }}>SRI MAHOLAKSHMI TYRES</span>
           <Link to="/new-sale" style={{ color: '#fff', textDecoration: 'none', backgroundColor: '#4CAF50', padding: '8px 12px', borderRadius: '4px', fontWeight: '600' }}>+ New Sale</Link>
           <Link to="/inventory" style={{ color: '#fff', textDecoration: 'none', padding: '8px 12px', borderRadius: '4px', fontSize: '14px' }}>Inventory</Link>
           <Link to="/daily-report" style={{ color: '#fff', textDecoration: 'none', padding: '8px 12px', borderRadius: '4px', fontSize: '14px' }}>Daily Report</Link>
+          <button onClick={() => navigate('/products/new')} style={{ backgroundColor: '#e53e3e', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>+ Add Product</button>
+          <button onClick={() => navigate('/services/new')} style={{ backgroundColor: '#e53e3e', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>+ Add Service</button>
         </div>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <span style={{ color: '#fff', fontSize: '14px' }}>{user?.name}</span>

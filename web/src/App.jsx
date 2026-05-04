@@ -78,6 +78,22 @@ function AppRoutes() {
           </PrivateRoute>
         } 
       />
+      <Route 
+        path="/products/new" 
+        element={
+          <PrivateRoute>
+            <AddProduct />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/services/new" 
+        element={
+          <PrivateRoute>
+            <AddService />
+          </PrivateRoute>
+        } 
+      />
       
       {/* Owner/Manager routes */}
       <Route 
