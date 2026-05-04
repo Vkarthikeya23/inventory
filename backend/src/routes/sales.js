@@ -211,13 +211,14 @@ router.post('/', verifyToken, async (req, res) => {
 
       // 3d. insert sale
       const sale = await txGet(client, `
-        INSERT INTO sales (id, customer_name, customer_phone, vehicle_reg, user_id, invoice_number, subtotal, cgst_amount, sgst_amount, total_amount, received_amount, balance_amount, sale_date, notes)
-        VALUES (gen_random_uuid(), $customer_name, $customer_phone, $vehicle_reg, $user_id, $invoice_number, $subtotal, $cgst_amount, $sgst_amount, $total_amount, $received_amount, $balance_amount, $sale_date, $notes)
+        INSERT INTO sales (id, customer_name, customer_phone, vehicle_reg, vehicle_type, user_id, invoice_number, subtotal, cgst_amount, sgst_amount, total_amount, received_amount, balance_amount, sale_date, notes)
+        VALUES (gen_random_uuid(), $customer_name, $customer_phone, $vehicle_reg, $vehicle_type, $user_id, $invoice_number, $subtotal, $cgst_amount, $sgst_amount, $total_amount, $received_amount, $balance_amount, $sale_date, $notes)
         RETURNING id
       `, {
         customer_name: customer.name,
         customer_phone: customer.phone,
         vehicle_reg: vehicle_reg || null,
+        vehicle_type: vehicle_type || null,
         user_id: req.user.id,
         invoice_number: invoiceNumber,
         subtotal,
