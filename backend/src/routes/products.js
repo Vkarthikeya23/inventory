@@ -101,7 +101,7 @@ gst_rate,
   }
 });
 
-router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
+router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASHIER), async (req, res) => {
   try {
     console.log('POST /products - Request body:', req.body);
     
