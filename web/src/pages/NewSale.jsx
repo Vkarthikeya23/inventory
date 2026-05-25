@@ -17,6 +17,8 @@ export default function NewSale() {
     vehicle_reg: '',
     vehicle_type: '',
     km_reading: '',
+    next_alignment_km: '',
+    next_service_km: '',
     sale_date: new Date().toISOString().split('T')[0]
   });
   
@@ -457,6 +459,32 @@ export default function NewSale() {
               placeholder="KM reading (optional)"
               value={invoiceHeader.km_reading || ''}
               onChange={(e) => setInvoiceHeader({...invoiceHeader, km_reading: e.target.value})}
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginTop: '10px',
+                border: '1px solid #ddd',
+                borderRadius: '4px'
+              }}
+            />
+            <input
+              type="number"
+              placeholder="Next alignment KM (optional)"
+              value={invoiceHeader.next_alignment_km || ''}
+              onChange={(e) => setInvoiceHeader({...invoiceHeader, next_alignment_km: e.target.value})}
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginTop: '10px',
+                border: '1px solid #ddd',
+                borderRadius: '4px'
+              }}
+            />
+            <input
+              type="number"
+              placeholder="Next service in ___ KM (optional)"
+              value={invoiceHeader.next_service_km || ''}
+              onChange={(e) => setInvoiceHeader({...invoiceHeader, next_service_km: e.target.value})}
               style={{
                 width: '100%',
                 padding: '10px',
