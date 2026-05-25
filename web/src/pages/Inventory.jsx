@@ -268,6 +268,14 @@ export default function Inventory() {
     setPoSelectedProducts(selected);
   }
 
+  function selectAll() {
+    const selected = {};
+    products.forEach(p => {
+      selected[p.id] = true;
+    });
+    setPoSelectedProducts(selected);
+  }
+
   async function generatePoPdf() {
     console.log('generatePoPdf called');
     console.log('jsPDF available:', typeof jsPDF);
@@ -926,6 +934,20 @@ export default function Inventory() {
 
             {/* Actions Bar */}
             <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+              <button
+                onClick={selectAll}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#4CAF50',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Select All
+              </button>
               <button
                 onClick={selectLowStock}
                 style={{
