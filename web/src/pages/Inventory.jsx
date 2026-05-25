@@ -30,6 +30,11 @@ export default function Inventory() {
   const [poModalOpen, setPoModalOpen] = useState(false);
   const [poSelectedProducts, setPoSelectedProducts] = useState({});
   const [poQuantities, setPoQuantities] = useState({});
+  const [poColumns, setPoColumns] = useState({
+    current_stock: true,
+    cost_price: true,
+    quantity: true
+  });
 
   const isOwner = user?.role === 'owner';
   const isManager = user?.role === 'manager';
@@ -319,17 +324,35 @@ export default function Inventory() {
       const tableData = selectedProducts.map(p => {
         const qty = parseInt(poQuantities[p.id]) || 0;
         const cost = parseFloat(p.cost_price) || 0;
-        return [
-          p.display_name,
-          qty,
-          `Rs.${cost.toFixed(2)}`,
-          `Rs.${(qty * cost).toFixed(2)}`
-        ];
+        const row = [p.display_name];
+        if (poColumns.quantity) row.push(qty);
+        if (poColumns.cost_price) row.push(`Rs.${cost.toFixed(2)}`);
+        if (poColumns.quantity && poColumns.cost_price) row.push(`Rs.${(qty * cost).toFixed(2)}`);
+        return row;
       });
+
+      const head = ['Product'];
+      if (poColumns.quantity) head.push('Quantity');
+      if (poColumns.cost_price) head.push('Cost Price');
+      if (poColumns.quantity && poColumns.cost_price) head.push('Total');
+
+      const columnStyles = { 0: { cellWidth: 'auto' } };
+      let colIndex = 1;
+      if (poColumns.quantity) {
+        columnStyles[colIndex] = { halign: 'center' };
+        colIndex++;
+      }
+      if (poColumns.cost_price) {
+        columnStyles[colIndex] = { halign: 'right' };
+        colIndex++;
+      }
+      if (poColumns.quantity && poColumns.cost_price) {
+        columnStyles[colIndex] = { halign: 'right' };
+      }
 
       doc.autoTable({
         startY: 78,
-        head: [['Product', 'Quantity', 'Cost Price', 'Total']],
+        head: [head],
         body: tableData,
         theme: 'grid',
         headStyles: {
@@ -337,12 +360,7 @@ export default function Inventory() {
           textColor: 255,
           fontStyle: 'bold'
         },
-        columnStyles: {
-          0: { cellWidth: 'auto' },
-          1: { halign: 'center' },
-          2: { halign: 'right' },
-          3: { halign: 'right' }
-        },
+        columnStyles: columnStyles,
         margin: { left: 20, right: 20 }
       });
 
@@ -352,16 +370,20 @@ export default function Inventory() {
       }, 0);
 
       const finalY = doc.lastAutoTable.finalY + 10;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`Total Amount: Rs.${totalAmount.toFixed(2)}`, pageWidth - 20, finalY, { align: 'right' });
+      
+      if (poColumns.quantity && poColumns.cost_price) {
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Total Amount: Rs.${totalAmount.toFixed(2)}`, pageWidth - 20, finalY, { align: 'right' });
+      }
       
       // Footer note
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      doc.text('This is a purchase order for stock replenishment.', 20, finalY + 20);
-      doc.text('Please confirm availability and delivery schedule.', 20, finalY + 28);
+      const footerY = poColumns.quantity && poColumns.cost_price ? finalY + 20 : finalY + 10;
+      doc.text('This is a purchase order for stock replenishment.', 20, footerY);
+      doc.text('Please confirm availability and delivery schedule.', 20, footerY + 8);
 
       doc.save(`Purchase_Order_${new Date().toISOString().slice(0, 10)}.pdf`);
       closePoModal();
@@ -933,7 +955,7 @@ export default function Inventory() {
             </h2>
 
             {/* Actions Bar */}
-            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
               <button
                 onClick={selectAll}
                 style={{
@@ -967,6 +989,38 @@ export default function Inventory() {
               </span>
             </div>
 
+            {/* Column Toggles */}
+            <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <span style={{ fontWeight: '600', fontSize: '14px', color: '#333' }}>Show columns:</span>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                <input
+                  type="checkbox"
+                  checked={poColumns.current_stock}
+                  onChange={(e) => setPoColumns({...poColumns, current_stock: e.target.checked})}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                Current Stock
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                <input
+                  type="checkbox"
+                  checked={poColumns.cost_price}
+                  onChange={(e) => setPoColumns({...poColumns, cost_price: e.target.checked})}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                Cost Price
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                <input
+                  type="checkbox"
+                  checked={poColumns.quantity}
+                  onChange={(e) => setPoColumns({...poColumns, quantity: e.target.checked})}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                Quantity
+              </label>
+            </div>
+
             {/* Products Table */}
             <div style={{ maxHeight: '50vh', overflow: 'auto', marginBottom: '20px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -974,9 +1028,9 @@ export default function Inventory() {
                   <tr style={{ borderBottom: '2px solid #ddd', backgroundColor: '#f5f5f5' }}>
                     <th style={{ textAlign: 'left', padding: '10px', width: '40px' }}>Select</th>
                     <th style={{ textAlign: 'left', padding: '10px' }}>Product</th>
-                    <th style={{ textAlign: 'right', padding: '10px' }}>Current Stock</th>
-                    <th style={{ textAlign: 'right', padding: '10px' }}>Cost Price</th>
-                    <th style={{ textAlign: 'center', padding: '10px', width: '120px' }}>Quantity</th>
+                    {poColumns.current_stock && <th style={{ textAlign: 'right', padding: '10px' }}>Current Stock</th>}
+                    {poColumns.cost_price && <th style={{ textAlign: 'right', padding: '10px' }}>Cost Price</th>}
+                    {poColumns.quantity && <th style={{ textAlign: 'center', padding: '10px', width: '120px' }}>Quantity</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -1010,18 +1064,23 @@ export default function Inventory() {
                             </span>
                           )}
                         </td>
-                        <td style={{ padding: '10px', textAlign: 'right' }}>
-                          {p.stock_qty || 0}
-                        </td>
-                        <td style={{ padding: '10px', textAlign: 'right' }}>
-                          ₹{parseFloat(p.cost_price || 0).toFixed(2)}
-                        </td>
-                        <td style={{ padding: '10px', textAlign: 'center' }}>
-                          <input
-                            type="number"
-                            min="1"
-                            value={poQuantities[p.id] || ''}
-                            onChange={(e) => updatePoQuantity(p.id, e.target.value)}
+                        {poColumns.current_stock && (
+                          <td style={{ padding: '10px', textAlign: 'right' }}>
+                            {p.stock_qty || 0}
+                          </td>
+                        )}
+                        {poColumns.cost_price && (
+                          <td style={{ padding: '10px', textAlign: 'right' }}>
+                            ₹{parseFloat(p.cost_price || 0).toFixed(2)}
+                          </td>
+                        )}
+                        {poColumns.quantity && (
+                          <td style={{ padding: '10px', textAlign: 'center' }}>
+                            <input
+                              type="number"
+                              min="1"
+                              value={poQuantities[p.id] || ''}
+                              onChange={(e) => updatePoQuantity(p.id, e.target.value)}
                             disabled={!poSelectedProducts[p.id]}
                             style={{
                               width: '80px',
@@ -1053,12 +1112,14 @@ export default function Inventory() {
               <span style={{ fontSize: '14px', color: '#666' }}>
                 Total Items: {Object.values(poSelectedProducts).filter(Boolean).length}
               </span>
-              <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1976d2' }}>
-                Total: ₹{products
-                  .filter(p => poSelectedProducts[p.id])
-                  .reduce((sum, p) => sum + ((poQuantities[p.id] || 0) * (p.cost_price || 0)), 0)
-                  .toFixed(2)}
-              </span>
+              {poColumns.quantity && poColumns.cost_price && (
+                <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1976d2' }}>
+                  Total: ₹{products
+                    .filter(p => poSelectedProducts[p.id])
+                    .reduce((sum, p) => sum + ((poQuantities[p.id] || 0) * (p.cost_price || 0)), 0)
+                    .toFixed(2)}
+                </span>
+              )}
             </div>
 
             {/* Action Buttons */}
