@@ -237,6 +237,8 @@ export default function NewSale() {
         vehicle_reg: invoiceHeader.vehicle_reg,
         vehicle_type: invoiceHeader.vehicle_type || null,
         km_reading: invoiceHeader.km_reading || null,
+        next_alignment_km: invoiceHeader.next_alignment_km || null,
+        next_service_km: invoiceHeader.next_service_km || null,
         sale_date: invoiceHeader.sale_date,
         received_amount: receivedAmount || total,
         items: saleItems
