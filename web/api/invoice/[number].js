@@ -390,7 +390,7 @@ export default async function handler(req, res) {
               ${data.customer.vehicle_reg ? `<div class="detail-row">Vehicle No.: ${data.customer.vehicle_reg}</div>` : ''}
               ${data.customer.vehicle_type ? `<div class="detail-row">Vehicle Type: ${data.customer.vehicle_type}</div>` : ''}
               ${data.customer.km_reading ? `<div class="detail-row">KM Reading: ${data.customer.km_reading}</div>` : ''}
-              ${data.customer.next_service_km ? `<div class="detail-row">Next Service in: ${data.customer.next_service_km} KM</div>` : ''}
+              ${data.customer.next_service_km ? `<div class="detail-row">Next Service: ${data.customer.next_service_km} KM</div>` : ''}
             </div>
             <div class="column invoice-details">
               <div class="column-label">Invoice Details</div>
