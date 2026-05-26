@@ -24,7 +24,7 @@ export default function Dashboard() {
       setWeeklyData(weeklyRes.data);
       
       const productsRes = await api.get('/products?low_stock=true');
-      setLowStock(productsRes.data.slice(0, 5));
+      setLowStock(productsRes.data.products?.slice(0, 5) || []);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
     }
@@ -123,7 +123,7 @@ export default function Dashboard() {
             <tbody>
               {lowStock.map(p => (
                 <tr key={p.id} style={{ borderBottom: '1px solid #D4D0C8', backgroundColor: '#F7F5F0' }}>
-                  <td style={{ padding: '10px', color: '#2E2C27' }}>{p.name}</td>
+                  <td style={{ padding: '10px', color: '#2E2C27' }}>{p.display_name}</td>
                   <td style={{ padding: '10px', color: '#2E2C27' }}>{p.stock_qty}</td>
                   <td style={{ padding: '10px', color: '#2E2C27' }}>{p.low_stock_threshold}</td>
                   <td style={{ padding: '10px', color: p.stock_qty <= p.low_stock_threshold ? '#B85C5C' : '#4A8A62', fontWeight: '600' }}>

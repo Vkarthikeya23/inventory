@@ -26,7 +26,7 @@ function calculatePrices(price, gstRate, mode) {
 
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, low_stock } = req.query;
     
     let query = `
       SELECT 
@@ -36,11 +36,12 @@ router.get('/', verifyToken, async (req, res) => {
         cost_price,
         selling_price_excl_gst,
         selling_price_incl_gst,
-gst_rate,
+        gst_rate,
         cgst_rate,
         sgst_rate,
         price_entry_mode,
         stock_qty,
+        low_stock_threshold,
         hsn_code,
         mfg_date,
         is_deleted,
@@ -51,6 +52,10 @@ gst_rate,
     `;
     
     const params = {};
+    
+    if (low_stock === 'true') {
+      query += ` AND stock_qty <= low_stock_threshold`;
+    }
     
     if (search) {
       query += ` AND (company_name ILIKE $search OR size_spec ILIKE $search OR display_name ILIKE $search)`;
