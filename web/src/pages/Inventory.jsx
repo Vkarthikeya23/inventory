@@ -649,14 +649,17 @@ export default function Inventory() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1000
+          zIndex: 1000,
+          padding: '10px'
         }}>
           <div style={{
             backgroundColor: '#fff',
-            padding: '30px',
+            padding: '20px',
             borderRadius: '8px',
-            width: '90%',
+            width: '100%',
             maxWidth: '500px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
             boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
           }}>
             <h2 style={{ marginBottom: '8px' }}>
@@ -764,7 +767,7 @@ export default function Inventory() {
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
                 CGST & SGST (%)
               </label>
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <input
                   type="number"
                   step="0.01"
@@ -786,7 +789,8 @@ export default function Inventory() {
                   }}
                   placeholder="CGST"
                   style={{
-                    width: '50%',
+                    flex: '1 1 45%',
+                    minWidth: '120px',
                     padding: '10px',
                     border: '1px solid #ddd',
                     borderRadius: '4px',
@@ -814,7 +818,8 @@ export default function Inventory() {
                   }}
                   placeholder="SGST"
                   style={{
-                    width: '50%',
+                    flex: '1 1 45%',
+                    minWidth: '120px',
                     padding: '10px',
                     border: '1px solid #ddd',
                     borderRadius: '4px',
@@ -936,18 +941,25 @@ export default function Inventory() {
             )}
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <div style={{ 
+              display: 'flex', 
+              gap: '10px', 
+              justifyContent: 'flex-end',
+              flexWrap: 'wrap'
+            }}>
               <button
                 onClick={closeEditModal}
                 disabled={saving}
                 style={{
-                  padding: '10px 24px',
+                  padding: '10px 20px',
                   backgroundColor: '#999',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  flex: '1 1 auto',
+                  minWidth: '100px'
                 }}
               >
                 Cancel
@@ -958,13 +970,15 @@ export default function Inventory() {
                 onClick={handleDeleteProduct}
                 disabled={saving}
                 style={{
-                  padding: '10px 24px',
+                  padding: '10px 20px',
                   backgroundColor: '#f44336',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  flex: '1 1 auto',
+                  minWidth: '100px'
                 }}
               >
                 Delete
@@ -974,13 +988,15 @@ export default function Inventory() {
                 onClick={handleSaveEdit}
                 disabled={saving}
                 style={{
-                  padding: '10px 24px',
+                  padding: '10px 20px',
                   backgroundColor: saving ? '#81c784' : '#4CAF50',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
                   cursor: saving ? 'not-allowed' : 'pointer',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  flex: '1 1 auto',
+                  minWidth: '100px'
                 }}
               >
                 {saving ? 'Saving...' : 'Save'}
