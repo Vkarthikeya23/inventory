@@ -561,6 +561,7 @@ export default function NewSale() {
                     {item.product ? (
                       <div>
                         <div style={{ fontWeight: '500' }}>{item.product.display_name}</div>
+                        {item.product.mfg_date && <div style={{ fontSize: '12px', color: '#2196F3' }}>MFG: {item.product.mfg_date}</div>}
                       </div>
                     ) : item.service_name ? (
                       <div>
@@ -805,6 +806,7 @@ export default function NewSale() {
                   <div style={{ fontWeight: '500' }}>{product.display_name}</div>
                   <div style={{ fontSize: '14px', color: '#666' }}>
                     ₹{product.selling_price_excl_gst} (Stock: {product.stock_qty})
+                    {product.mfg_date && <span style={{ marginLeft: '10px', color: '#2196F3' }}>MFG: {product.mfg_date}</span>}
                   </div>
                 </div>
               ))}
