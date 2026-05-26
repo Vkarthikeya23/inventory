@@ -74,7 +74,6 @@ export default function Navbar() {
         </>
       ) : (
         <>
-          <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '18px', marginRight: '10px' }}>SRI MAHALAKSHMI TYRES</span>
           <Link to="/dashboard" style={linkStyle}>Dashboard</Link>
           <Link to="/inventory" style={linkStyle}>Inventory</Link>
           <Link to="/new-sale" style={primaryBtnStyle}>+ New Sale</Link>
