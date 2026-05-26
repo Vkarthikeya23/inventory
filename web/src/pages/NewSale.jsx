@@ -24,7 +24,7 @@ export default function NewSale() {
   
   // Line items
   const [items, setItems] = useState([
-    { id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', product: null }
+    { id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', mfg_date: '', product: null }
   ]);
   
   // Totals
@@ -101,7 +101,7 @@ export default function NewSale() {
 
   const addItem = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', product: null }]);
+    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', mfg_date: '', product: null }]);
   };
 
   const removeItem = (id) => {
@@ -164,6 +164,7 @@ export default function NewSale() {
           updated.cgst_percent = gstRate / 2;
           updated.sgst_percent = gstRate / 2;
           updated.hsn_code = product.hsn_code || '';
+          updated.mfg_date = product.mfg_date || '';
           return updated;
         }
         return it;
@@ -223,6 +224,7 @@ export default function NewSale() {
         product_id: item.product_id || null,
         service_name: item.service_name || null,
         hsn_code: item.hsn_code || null,
+        mfg_date: item.mfg_date || null,
         qty: parseInt(item.qty) || 1,
         unit_price: parseFloat(item.unit_price) || 0,
         gst_rate: parseFloat(item.gst_rate) || 0,
@@ -545,6 +547,7 @@ export default function NewSale() {
               <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '60px' }}>Qty</th>
               <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '80px' }}>Price/Unit</th>
               <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '70px' }}>HSN</th>
+              <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #6c63ff', width: '90px' }}>MFG Date</th>
               <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '80px' }}>CGST</th>
               <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '80px' }}>SGST</th>
               <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #6c63ff', width: '100px' }}>Amount</th>
@@ -625,6 +628,15 @@ export default function NewSale() {
                       value={item.hsn_code || ''}
                       onChange={(e) => updateItem(item.id, 'hsn_code', e.target.value)}
                       style={{ width: '70px', padding: '5px', textAlign: 'center' }}
+                    />
+                  </td>
+                  <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'center' }}>
+                    <input
+                      type="text"
+                      placeholder="MM/YYYY"
+                      value={item.mfg_date || ''}
+                      onChange={(e) => updateItem(item.id, 'mfg_date', e.target.value)}
+                      style={{ width: '80px', padding: '5px', textAlign: 'center' }}
                     />
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'right' }}>
