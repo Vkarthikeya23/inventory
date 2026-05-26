@@ -52,6 +52,7 @@ router.post('/', verifyToken, async (req, res) => {
     vehicle_reg,
     vehicle_type,
     km_reading,
+    next_alignment_km,
     next_service_km,
     sale_date,
     received_amount,
@@ -212,8 +213,8 @@ router.post('/', verifyToken, async (req, res) => {
 
       // 3d. insert sale
       const sale = await txGet(client, `
-        INSERT INTO sales (id, customer_name, customer_phone, vehicle_reg, vehicle_type, km_reading, next_service_km, user_id, invoice_number, subtotal, cgst_amount, sgst_amount, total_amount, received_amount, balance_amount, sale_date, notes)
-        VALUES (gen_random_uuid(), $customer_name, $customer_phone, $vehicle_reg, $vehicle_type, $km_reading, $next_service_km, $user_id, $invoice_number, $subtotal, $cgst_amount, $sgst_amount, $total_amount, $received_amount, $balance_amount, $sale_date, $notes)
+        INSERT INTO sales (id, customer_name, customer_phone, vehicle_reg, vehicle_type, km_reading, next_alignment_km, next_service_km, user_id, invoice_number, subtotal, cgst_amount, sgst_amount, total_amount, received_amount, balance_amount, sale_date, notes)
+        VALUES (gen_random_uuid(), $customer_name, $customer_phone, $vehicle_reg, $vehicle_type, $km_reading, $next_alignment_km, $next_service_km, $user_id, $invoice_number, $subtotal, $cgst_amount, $sgst_amount, $total_amount, $received_amount, $balance_amount, $sale_date, $notes)
         RETURNING id
       `, {
         customer_name: customer.name,
@@ -221,6 +222,7 @@ router.post('/', verifyToken, async (req, res) => {
         vehicle_reg: vehicle_reg || null,
         vehicle_type: vehicle_type || null,
         km_reading: km_reading || null,
+        next_alignment_km: next_alignment_km || null,
         next_service_km: next_service_km || null,
         user_id: req.user.id,
         invoice_number: invoiceNumber,
@@ -283,6 +285,7 @@ router.post('/', verifyToken, async (req, res) => {
           vehicle_reg: vehicle_reg ?? '',
           vehicle_type: vehicle_type || '',
           km_reading: km_reading || '',
+          next_alignment_km: next_alignment_km || '',
           next_service_km: next_service_km || ''
         },
         items: parsedItems.map(i => ({
