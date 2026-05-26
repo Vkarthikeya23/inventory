@@ -1081,45 +1081,23 @@ export default function Inventory() {
                               min="1"
                               value={poQuantities[p.id] || ''}
                               onChange={(e) => updatePoQuantity(p.id, e.target.value)}
-                            disabled={!poSelectedProducts[p.id]}
-                            style={{
-                              width: '80px',
-                              padding: '6px',
-                              border: '1px solid #ddd',
-                              borderRadius: '4px',
-                              textAlign: 'center',
-                              opacity: poSelectedProducts[p.id] ? 1 : 0.5
-                            }}
-                          />
-                        </td>
+                              disabled={!poSelectedProducts[p.id]}
+                              style={{
+                                width: '80px',
+                                padding: '6px',
+                                border: '1px solid #ddd',
+                                borderRadius: '4px',
+                                textAlign: 'center',
+                                opacity: poSelectedProducts[p.id] ? 1 : 0.5
+                              }}
+                            />
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
                 </tbody>
-              </table>
-            </div>
-
-            {/* Summary */}
-            <div style={{
-              marginBottom: '20px',
-              padding: '15px',
-              backgroundColor: '#e3f2fd',
-              borderRadius: '4px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <span style={{ fontSize: '14px', color: '#666' }}>
-                Total Items: {Object.values(poSelectedProducts).filter(Boolean).length}
-              </span>
-              {poColumns.quantity && poColumns.cost_price && (
-                <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1976d2' }}>
-                  Total: ₹{products
-                    .filter(p => poSelectedProducts[p.id])
-                    .reduce((sum, p) => sum + ((poQuantities[p.id] || 0) * (p.cost_price || 0)), 0)
-                    .toFixed(2)}
-                </span>
-              )}
+                </table>
             </div>
 
             {/* Action Buttons */}
