@@ -85,6 +85,8 @@ export default function Inventory() {
   function openEditModal(product) {
     setEditingProduct(product);
     setEditForm({
+      company_name: product.company_name || '',
+      size_spec: product.size_spec || '',
       stock_qty: product.stock_qty.toString(),
       cost_price: product.cost_price?.toString() || '',
       selling_price_excl_gst: product.selling_price_excl_gst?.toString() || '',
@@ -98,7 +100,7 @@ export default function Inventory() {
 
   function closeEditModal() {
     setEditingProduct(null);
-    setEditForm({ stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', cgst_rate: '6', sgst_rate: '6', price_entry_mode: 'excl' });
+    setEditForm({ company_name: '', size_spec: '', stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', cgst_rate: '6', sgst_rate: '6', price_entry_mode: 'excl' });
     setEditError(null);
   }
 
@@ -174,6 +176,8 @@ export default function Inventory() {
       console.log('Frontend - Editing product:', editingProduct);
       
       const payload = {
+        company_name: editForm.company_name,
+        size_spec: editForm.size_spec,
         stock_qty: stockQty,
         cost_price: costPrice,
         selling_price_excl_gst: sellingPriceExcl,
@@ -654,6 +658,43 @@ export default function Inventory() {
             <h2 style={{ marginBottom: '8px' }}>
               Update — {editingProduct.company_name} {editingProduct.size_spec}
             </h2>
+
+            {/* Product Name */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
+                Company Name
+              </label>
+              <input
+                type="text"
+                value={editForm.company_name}
+                onChange={(e) => setEditForm({ ...editForm, company_name: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
+                Size Spec
+              </label>
+              <input
+                type="text"
+                value={editForm.size_spec}
+                onChange={(e) => setEditForm({ ...editForm, size_spec: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
             
             {/* Stock Quantity */}
             <div style={{ marginBottom: '15px' }}>
