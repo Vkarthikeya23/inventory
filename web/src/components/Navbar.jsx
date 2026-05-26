@@ -130,7 +130,7 @@ export default function Navbar() {
   );
 
   return (
-    <nav style={baseNavStyle, { position: 'relative', flexWrap: 'wrap' }}>
+    <nav style={{ ...baseNavStyle, position: 'relative', flexWrap: 'wrap' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
         {/* Mobile hamburger */}
         <button
