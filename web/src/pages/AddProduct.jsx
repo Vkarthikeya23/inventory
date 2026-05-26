@@ -93,42 +93,42 @@ export default function AddProduct() {
   };
 
   return (
-    <div>
+    <div style={{ backgroundColor: '#F7F5F0', minHeight: '100vh' }}>
       <Navbar />
       <div style={{ padding: '30px', maxWidth: '800px', margin: '0 auto' }}>
-        <h1 style={{ marginBottom: '30px' }}>Add New Product</h1>
+        <h1 style={{ marginBottom: '30px', color: '#2E2C27' }}>Add New Product</h1>
         
-        <form onSubmit={handleSubmit} style={{ backgroundColor: '#f5f5f5', padding: '30px', borderRadius: '8px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+        <form onSubmit={handleSubmit} style={{ backgroundColor: '#E8E4DA', padding: '30px', borderRadius: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '20px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Company Name *</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>Company Name *</label>
               <input
                 type="text"
                 name="company_name"
                 value={formData.company_name}
                 onChange={handleChange}
                 placeholder="e.g., MRF"
-                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
                 required
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Tyre Size *</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>Tyre Size *</label>
               <input
                 type="text"
                 name="size_spec"
                 value={formData.size_spec}
                 onChange={handleChange}
                 placeholder="e.g., 215/55/16E"
-                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
                 required
               />
             </div>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>MFG Date * (MM/YYYY)</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>MFG Date * (MM/YYYY)</label>
             <input
               type="text"
               name="mfg_date"
@@ -136,14 +136,14 @@ export default function AddProduct() {
               onChange={handleChange}
               placeholder="e.g., 03/2025"
               pattern="\d{2}/\d{4}"
-              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+              style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
               required
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '20px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Cost Price (₹)</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>Cost Price (₹)</label>
               <input
                 type="number"
                 name="cost_price"
@@ -151,13 +151,13 @@ export default function AddProduct() {
                 onChange={handleChange}
                 placeholder="What you paid"
                 step="0.01"
-                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>CGST (%)</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>CGST (%)</label>
               <input
                 type="number"
                 name="cgst_rate"
@@ -165,11 +165,11 @@ export default function AddProduct() {
                 onChange={handleChange}
                 placeholder="6"
                 step="0.01"
-                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
               />
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>SGST (%)</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>SGST (%)</label>
               <input
                 type="number"
                 name="sgst_rate"
@@ -177,31 +177,31 @@ export default function AddProduct() {
                 onChange={handleChange}
                 placeholder="6"
                 step="0.01"
-                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
               />
             </div>
           </div>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>HSN Code</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>HSN Code</label>
             <input
               type="text"
               name="hsn_code"
               value={formData.hsn_code}
               onChange={handleChange}
               placeholder="e.g., 4011"
-              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+              style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
             />
-            <p style={{ fontSize: '13px', color: '#666', marginTop: '5px' }}>
+            <p style={{ fontSize: '13px', color: '#6B6860', marginTop: '5px' }}>
               GST HSN code for tyres (typically 4011 for tyres)
             </p>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '10px', fontWeight: '600' }}>Price Entry Mode</label>
-            <div style={{ display: 'flex', gap: '20px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <label style={{ display: 'block', marginBottom: '10px', fontWeight: '600', color: '#2E2C27' }}>Price Entry Mode</label>
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#2E2C27' }}>
                 <input
                   type="radio"
                   name="price_entry_mode"
@@ -211,7 +211,7 @@ export default function AddProduct() {
                 />
                 Enter price excluding GST
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: '#2E2C27' }}>
                 <input
                   type="radio"
                   name="price_entry_mode"
@@ -225,7 +225,7 @@ export default function AddProduct() {
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>
               Selling Price {formData.price_entry_mode === 'excl' ? 'excl.' : 'incl.'} GST *
             </label>
             <input
@@ -236,7 +236,7 @@ export default function AddProduct() {
               placeholder={formData.price_entry_mode === 'excl' ? 'Price before GST' : 'Price after GST'}
               step="0.01"
               required
-              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+              style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
             />
             
             {formData.selling_price && (
@@ -261,27 +261,27 @@ export default function AddProduct() {
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Stock Quantity</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>Stock Quantity</label>
             <input
               type="number"
               name="stock_qty"
               value={formData.stock_qty}
               onChange={handleChange}
               placeholder="0"
-              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+              style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <button
               type="submit"
               disabled={loading}
               style={{
                 padding: '12px 24px',
-                backgroundColor: loading ? '#999' : '#4CAF50',
+                backgroundColor: loading ? '#7BAF8A' : '#4A8A62',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 fontSize: '16px',
                 fontWeight: '600'
@@ -294,10 +294,10 @@ export default function AddProduct() {
               onClick={() => navigate('/inventory')}
               style={{
                 padding: '12px 24px',
-                backgroundColor: '#f44336',
+                backgroundColor: '#6B6860',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '16px'
               }}

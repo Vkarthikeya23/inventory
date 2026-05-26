@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+@theme {
+  /* Sage & Cream Color Palette */
+  --color-sage-bg: #F7F5F0;
+  --color-sage-surface: #E8E4DA;
+  --color-sage-primary: #7BAF8A;
+  --color-sage-action: #4A8A62;
+  --color-sage-accent: #C4956A;
+  --color-sage-text: #2E2C27;
+  --color-sage-muted: #6B6860;
+  --color-sage-border: #D4D0C8;
+  --color-sage-error: #B85C5C;
+  --color-sage-success: #4A8A62;
+  --color-sage-warning: #C4956A;
+}
+
+/* Base styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--color-sage-bg);
+  color: var(--color-sage-text);
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Headings */
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-sage-text);
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-sage-text);
+  margin-bottom: 16px;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-sage-text);
+  margin-bottom: 12px;
+}
+
+/* Custom component classes */
+.card {
+  background-color: var(--color-sage-surface);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+  background-color: var(--color-sage-action);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn:hover {
+  background-color: #3d7a52;
+}
+
+.btn-secondary {
+  background-color: var(--color-sage-surface);
+  color: var(--color-sage-text);
+  border: 1px solid var(--color-sage-border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-sage-border);
+}
+
+.btn-danger {
+  background-color: var(--color-sage-error);
+}
+
+.btn-danger:hover {
+  background-color: #a34d4d;
+}
+
+.btn-warning {
+  background-color: var(--color-sage-accent);
+}
+
+.btn-warning:hover {
+  background-color: #b3845b;
+}
+
+.input {
+  background-color: var(--color-sage-surface);
+  border: 1px solid var(--color-sage-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 16px;
+  width: 100%;
+  color: var(--color-sage-text);
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-sage-action);
+}
+
+.input::placeholder {
+  color: var(--color-sage-muted);
+}
+
+/* Table styles */
+.table-header {
+  background-color: var(--color-sage-primary);
+  color: white;
+  font-weight: 600;
+}
+
+.table-row:hover {
+  background-color: rgba(123, 175, 138, 0.1);
+}
+
+/* Badge/Tag styles */
+.badge {
+  background-color: var(--color-sage-accent);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-success {
+  background-color: var(--color-sage-success);
+}
+
+.badge-warning {
+  background-color: var(--color-sage-warning);
+}
+
+.badge-error {
+  background-color: var(--color-sage-error);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-sage-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-sage-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sage-muted);
+}
