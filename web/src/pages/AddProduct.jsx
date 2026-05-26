@@ -9,6 +9,7 @@ export default function AddProduct() {
   const [formData, setFormData] = useState({
     company_name: '',
     size_spec: '',
+    mfg_date: '',
     cost_price: '',
     cgst_rate: '6',
     sgst_rate: '6',
@@ -51,6 +52,17 @@ export default function AddProduct() {
       return;
     }
 
+    if (!formData.mfg_date) {
+      alert('Manufacturing date is required');
+      return;
+    }
+
+    const mfgDateRegex = /^\d{2}\/\d{4}$/;
+    if (!mfgDateRegex.test(formData.mfg_date)) {
+      alert('Manufacturing date must be in MM/YYYY format');
+      return;
+    }
+
     setLoading(true);
     
     try {
@@ -59,6 +71,7 @@ export default function AddProduct() {
       const payload = {
         company_name: formData.company_name,
         size_spec: formData.size_spec,
+        mfg_date: formData.mfg_date,
         cost_price: parseFloat(formData.cost_price) || 0,
         selling_price_excl_gst: excl,
         selling_price_incl_gst: incl,
@@ -112,6 +125,20 @@ export default function AddProduct() {
                 required
               />
             </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>MFG Date * (MM/YYYY)</label>
+            <input
+              type="text"
+              name="mfg_date"
+              value={formData.mfg_date}
+              onChange={handleChange}
+              placeholder="e.g., 03/2025"
+              pattern="\d{2}/\d{4}"
+              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
+              required
+            />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>

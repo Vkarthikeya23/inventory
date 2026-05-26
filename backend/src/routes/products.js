@@ -42,6 +42,7 @@ gst_rate,
         price_entry_mode,
         stock_qty,
         hsn_code,
+        mfg_date,
         is_deleted,
         created_at,
         COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '') as display_name
@@ -116,11 +117,22 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASH
       sgst_rate,
       price_entry_mode = 'excl',
       stock_qty = 0,
-      hsn_code = ''
+      hsn_code = '',
+      mfg_date
     } = req.body;
     
     if (!company_name || !size_spec) {
       return res.status(400).json({ error: 'Company name and size specification are required' });
+    }
+
+    if (!mfg_date) {
+      return res.status(400).json({ error: 'Manufacturing date is required' });
+    }
+
+    // Validate mfg_date format (MM/YYYY)
+    const mfgDateRegex = /^\d{2}\/\d{4}$/;
+    if (!mfgDateRegex.test(mfg_date)) {
+      return res.status(400).json({ error: 'Manufacturing date must be in MM/YYYY format' });
     }
     
     // Validate that at least one price is provided
@@ -179,9 +191,10 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASH
         sgst_rate,
         price_entry_mode, 
         stock_qty,
-        hsn_code
+        hsn_code,
+        mfg_date
       )
-      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $cgst_rate, $sgst_rate, $price_entry_mode, $stock_qty, $hsn_code)
+      VALUES ($id, $company_name, $size_spec, $cost_price, $selling_price_excl_gst, $selling_price_incl_gst, $gst_rate, $cgst_rate, $sgst_rate, $price_entry_mode, $stock_qty, $hsn_code, $mfg_date)
       RETURNING 
         id, 
         company_name, 
@@ -195,6 +208,7 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASH
         price_entry_mode, 
         stock_qty,
         hsn_code,
+        mfg_date,
         is_deleted, 
         created_at,
         COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '') as display_name
@@ -210,7 +224,8 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASH
       sgst_rate: sgstRate,
       price_entry_mode,
       stock_qty: stockQty,
-      hsn_code: hsn_code || ''
+      hsn_code: hsn_code || '',
+      mfg_date: mfg_date
     });
     
     res.status(201).json(result);
@@ -277,7 +292,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
     updates.sgst_rate = sgstRate;
     updates.gst_rate = gstRate;
     
-    const allowedFields = ['company_name', 'size_spec', 'cost_price', 'selling_price_excl_gst', 'selling_price_incl_gst', 'stock_qty', 'gst_rate', 'cgst_rate', 'sgst_rate'];
+    const allowedFields = ['company_name', 'size_spec', 'cost_price', 'selling_price_excl_gst', 'selling_price_incl_gst', 'stock_qty', 'gst_rate', 'cgst_rate', 'sgst_rate', 'mfg_date'];
     const fields = [];
     const values = {};
     
@@ -299,7 +314,7 @@ router.put('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (
       RETURNING 
         id, company_name, size_spec, cost_price, 
         selling_price_excl_gst, selling_price_incl_gst, gst_rate, cgst_rate, sgst_rate,
-        stock_qty, is_deleted, created_at,
+        stock_qty, mfg_date, is_deleted, created_at,
         COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '') as display_name
     `, values);
     

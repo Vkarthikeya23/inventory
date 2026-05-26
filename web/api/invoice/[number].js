@@ -417,7 +417,10 @@ export default async function handler(req, res) {
               ${data.items.map((item, idx) => `
                 <tr class="data-row">
                   <td class="text-center">${idx + 1}</td>
-                  <td class="${item.is_service ? 'item-name item-service' : 'item-name'}">${item.name}</td>
+                  <td class="${item.is_service ? 'item-name item-service' : 'item-name'}">
+                    ${item.name}
+                    ${!item.is_service && item.mfg_date ? `<div style="font-size: 9px; color: #666; margin-top: 2px;">MFG date: ${item.mfg_date}</div>` : ''}
+                  </td>
                   <td class="text-center">${item.qty}</td>
                   <td class="text-right">${formatIndianNumber(item.unit_price)}</td>
                   <td class="text-center">${item.hsn_code || '-'}</td>

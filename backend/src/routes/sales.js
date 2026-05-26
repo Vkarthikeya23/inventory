@@ -290,6 +290,7 @@ router.post('/', verifyToken, async (req, res) => {
           company_name: i.service_name ? 'Service' : (productMap[i.product_id]?.company_name ?? ''),
           size_spec: i.service_name ? '' : (productMap[i.product_id]?.size_spec ?? ''),
           hsn_code: i.service_name ? '' : (productMap[i.product_id]?.hsn_code ?? ''),
+          mfg_date: i.service_name ? '' : (productMap[i.product_id]?.mfg_date ?? ''),
           is_service: !!i.service_name,
           qty: i.qty,
           unit_price: i.unitPrice,

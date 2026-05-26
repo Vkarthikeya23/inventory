@@ -87,6 +87,7 @@ export default function Inventory() {
     setEditForm({
       company_name: product.company_name || '',
       size_spec: product.size_spec || '',
+      mfg_date: product.mfg_date || '',
       stock_qty: product.stock_qty.toString(),
       cost_price: product.cost_price?.toString() || '',
       selling_price_excl_gst: product.selling_price_excl_gst?.toString() || '',
@@ -100,7 +101,7 @@ export default function Inventory() {
 
   function closeEditModal() {
     setEditingProduct(null);
-    setEditForm({ company_name: '', size_spec: '', stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', cgst_rate: '6', sgst_rate: '6', price_entry_mode: 'excl' });
+    setEditForm({ company_name: '', size_spec: '', mfg_date: '', stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', cgst_rate: '6', sgst_rate: '6', price_entry_mode: 'excl' });
     setEditError(null);
   }
 
@@ -178,6 +179,7 @@ export default function Inventory() {
       const payload = {
         company_name: editForm.company_name,
         size_spec: editForm.size_spec,
+        mfg_date: editForm.mfg_date,
         stock_qty: stockQty,
         cost_price: costPrice,
         selling_price_excl_gst: sellingPriceExcl,
@@ -559,6 +561,7 @@ export default function Inventory() {
           <thead>
             <tr style={{ borderBottom: '2px solid #ddd', backgroundColor: '#f5f5f5' }}>
               <th style={{ textAlign: 'left', padding: '10px' }}>Product</th>
+              <th style={{ textAlign: 'center' }}>MFG Date</th>
               <th style={{ textAlign: 'right' }}>Price (Excl)</th>
               <th style={{ textAlign: 'right' }}>Price (Incl)</th>
               <th style={{ textAlign: 'center' }}>CGST</th>
@@ -595,6 +598,7 @@ export default function Inventory() {
                 <td style={{ padding: '10px' }}>
                   <div style={{ fontWeight: '500' }}>{p.display_name}</div>
                 </td>
+                <td style={{ textAlign: 'center' }}>{p.mfg_date || '-'}</td>
                 <td style={{ textAlign: 'right' }}>₹{parseFloat(p.selling_price_excl_gst || 0).toFixed(2)}</td>
                 <td style={{ textAlign: 'right' }}>₹{parseFloat(p.selling_price_incl_gst || 0).toFixed(2)}</td>
                 <td style={{ textAlign: 'center' }}>{parseFloat(p.cgst_rate !== null && p.cgst_rate !== undefined ? p.cgst_rate : (p.gst_rate ? p.gst_rate / 2 : 0)).toFixed(1)}%</td>
@@ -686,6 +690,25 @@ export default function Inventory() {
                 type="text"
                 value={editForm.size_spec}
                 onChange={(e) => setEditForm({ ...editForm, size_spec: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600' }}>
+                MFG Date (MM/YYYY)
+              </label>
+              <input
+                type="text"
+                value={editForm.mfg_date}
+                onChange={(e) => setEditForm({ ...editForm, mfg_date: e.target.value })}
+                placeholder="e.g., 03/2025"
                 style={{
                   width: '100%',
                   padding: '10px',
