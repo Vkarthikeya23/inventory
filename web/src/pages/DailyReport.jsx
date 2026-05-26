@@ -108,95 +108,95 @@ const headers = [
     URL.revokeObjectURL(url);
   }
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#6B6860' }}>Loading...</div>;
 
   return (
     <div>
       <Navbar />
       <div style={{ padding: '20px' }}>
-        <h1>Daily Report</h1>
-        <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <h1 style={{ marginBottom: '20px', color: '#2E2C27' }}>Daily Report</h1>
+        <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center', backgroundColor: '#E8E4DA', padding: '15px', borderRadius: '12px' }}>
           <div>
-            <label>From: </label>
-            <input type="date" value={fromDate || date} onChange={(e) => { setFromDate(e.target.value); setDate(''); }} />
+            <label style={{ marginRight: '8px', color: '#6B6860' }}>From: </label>
+            <input type="date" value={fromDate || date} onChange={(e) => { setFromDate(e.target.value); setDate(''); }} style={{ padding: '8px 12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '14px', backgroundColor: '#F7F5F0' }} />
           </div>
           <div>
-            <label>To: </label>
-            <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+            <label style={{ marginRight: '8px', color: '#6B6860' }}>To: </label>
+            <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '14px', backgroundColor: '#F7F5F0' }} />
           </div>
           <button 
             onClick={() => { setDate(new Date().toISOString().split('T')[0]); setFromDate(''); setToDate(''); }}
-            style={{ padding: '8px 15px', backgroundColor: '#666', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            style={{ padding: '8px 15px', backgroundColor: '#6B6860', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}
           >
             Today
           </button>
-          <button onClick={exportCSV} style={{ marginLeft: '20px', padding: '8px 15px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Export CSV</button>
+          <button onClick={exportCSV} style={{ marginLeft: '20px', padding: '8px 15px', backgroundColor: '#4A8A62', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}>Export CSV</button>
         </div>
         
         <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
-          <div style={{ padding: '20px', backgroundColor: '#e8f5e9', borderRadius: '8px', flex: 1, minWidth: '200px' }}>
-            <h3>Revenue</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{data?.total_revenue?.toFixed(2) || 0}</p>
+          <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '200px' }}>
+            <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Revenue</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#4A8A62' }}>₹{data?.total_revenue?.toFixed(2) || 0}</p>
           </div>
-          <div style={{ padding: '20px', backgroundColor: '#e3f2fd', borderRadius: '8px', flex: 1, minWidth: '200px' }}>
-            <h3>Profit</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{data?.total_profit?.toFixed(2) || 0}</p>
+          <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '200px' }}>
+            <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Profit</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#7BAF8A' }}>₹{data?.total_profit?.toFixed(2) || 0}</p>
           </div>
-          <div style={{ padding: '20px', backgroundColor: '#fff3e0', borderRadius: '8px', flex: 1, minWidth: '200px' }}>
-            <h3>Transactions</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{data?.total_transactions || 0}</p>
+          <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '200px' }}>
+            <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Transactions</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#C4956A' }}>{data?.total_transactions || 0}</p>
           </div>
-          <div style={{ padding: '20px', backgroundColor: '#fce4ec', borderRadius: '8px', flex: 1, minWidth: '200px' }}>
-            <h3>Profit (Incl GST)</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{data?.profit_incl_gst?.toFixed(2) || 0}</p>
+          <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '200px' }}>
+            <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Profit (Incl GST)</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#4A8A62' }}>₹{data?.profit_incl_gst?.toFixed(2) || 0}</p>
           </div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <h2>Sales Details</h2>
+          <h2 style={{ color: '#2E2C27' }}>Sales Details</h2>
           <input
             type="text"
             placeholder="Search by vehicle number..."
             value={vehicleSearch}
             onChange={(e) => setVehicleSearch(e.target.value)}
-            style={{ padding: '8px 15px', border: '1px solid #ddd', borderRadius: '4px', width: '250px' }}
+            style={{ padding: '10px 15px', border: '1px solid #D4D0C8', borderRadius: '8px', width: '250px', fontSize: '14px', backgroundColor: '#F7F5F0' }}
           />
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#E8E4DA', borderRadius: '12px', overflow: 'hidden' }}>
           <thead>
-            <tr style={{ borderBottom: '2px solid #ddd' }}>
-              <th style={{ textAlign: 'left', padding: '10px' }}>S.No</th>
-              <th>Vehicle No.</th>
-              <th>Vehicle Type</th>
-              <th>Items Bought</th>
-              <th>Total</th>
-              <th>Time</th>
-              <th>Action</th>
-              {isOwner && <th>Delete</th>}
+            <tr style={{ backgroundColor: '#7BAF8A', color: 'white' }}>
+              <th style={{ textAlign: 'left', padding: '12px', borderBottom: '2px solid #7BAF8A' }}>S.No</th>
+              <th style={{ padding: '12px', borderBottom: '2px solid #7BAF8A' }}>Vehicle No.</th>
+              <th style={{ padding: '12px', borderBottom: '2px solid #7BAF8A' }}>Vehicle Type</th>
+              <th style={{ padding: '12px', borderBottom: '2px solid #7BAF8A' }}>Items Bought</th>
+              <th style={{ padding: '12px', borderBottom: '2px solid #7BAF8A' }}>Total</th>
+              <th style={{ padding: '12px', borderBottom: '2px solid #7BAF8A' }}>Time</th>
+              <th style={{ padding: '12px', borderBottom: '2px solid #7BAF8A' }}>Action</th>
+              {isOwner && <th style={{ padding: '12px', borderBottom: '2px solid #7BAF8A' }}>Delete</th>}
             </tr>
           </thead>
           <tbody>
             {filteredSales.map((s, index) => (
-              <tr key={s.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '10px' }}>{index + 1}</td>
-                <td>{s.vehicle_reg || '-'}</td>
-                <td>{s.vehicle_type || '-'}</td>
-                <td>{s.items_bought || '-'}</td>
-                <td>₹{s.total?.toFixed(2)}</td>
-                <td>{new Date(s.created_at).toLocaleString()}</td>
+              <tr key={s.id} style={{ borderBottom: '1px solid #D4D0C8', backgroundColor: '#F7F5F0' }}>
+                <td style={{ padding: '10px', color: '#2E2C27' }}>{index + 1}</td>
+                <td style={{ padding: '10px', color: '#2E2C27' }}>{s.vehicle_reg || '-'}</td>
+                <td style={{ padding: '10px', color: '#2E2C27' }}>{s.vehicle_type || '-'}</td>
+                <td style={{ padding: '10px', color: '#2E2C27' }}>{s.items_bought || '-'}</td>
+                <td style={{ padding: '10px', color: '#2E2C27', fontWeight: '500' }}>₹{s.total?.toFixed(2)}</td>
+                <td style={{ padding: '10px', color: '#6B6860' }}>{new Date(s.created_at).toLocaleString()}</td>
                 <td>
-                  <a href={`/invoice/${s.invoice_number}`} onClick={(e) => { e.preventDefault(); window.open(`${INVOICE_URL}/api/invoice/${s.invoice_number}`, '_blank'); }} style={{ color: '#2196F3', textDecoration: 'none', cursor: 'pointer' }}>View Invoice</a>
+                  <a href={`/invoice/${s.invoice_number}`} onClick={(e) => { e.preventDefault(); window.open(`${INVOICE_URL}/api/invoice/${s.invoice_number}`, '_blank'); }} style={{ color: '#4A8A62', textDecoration: 'none', cursor: 'pointer', fontWeight: '500' }}>View Invoice</a>
                 </td>
                 {isOwner && (
                   <td>
                     <button 
                       onClick={() => deleteSale(s.id)}
                       style={{
-                        backgroundColor: '#f44336',
+                        backgroundColor: '#B85C5C',
                         color: '#fff',
                         border: 'none',
                         padding: '5px 10px',
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
                         fontSize: '12px'
                       }}
