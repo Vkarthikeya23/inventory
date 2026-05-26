@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
-import { BarChart, XAxis, YAxis, Bar, Tooltip } from 'recharts';
+import { BarChart, XAxis, YAxis, Bar, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -34,70 +34,106 @@ export default function Dashboard() {
   const isOwner = user?.role === 'owner';
   const isManager = user?.role === 'manager';
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#6B6860' }}>Loading...</div>;
 
   return (
-    <div>
+    <div style={{ backgroundColor: '#F7F5F0', minHeight: '100vh' }}>
       <Navbar />
-      <div style={{ padding: '20px' }}>
-        <h1>Dashboard</h1>
-        <p>Welcome, {user?.name}</p>
+      <div style={{ padding: '30px', maxWidth: '1200px', margin: '0 auto' }}>
+        <h1 style={{ color: '#2E2C27', marginBottom: '10px' }}>Dashboard</h1>
+        <p style={{ color: '#6B6860', marginBottom: '25px' }}>Welcome, {user?.name}</p>
         
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
-          <div style={{ padding: '20px', backgroundColor: '#e8f5e9', borderRadius: '8px', flex: 1 }}>
-            <h3>Today's Revenue</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{dailyData?.total_revenue || 0}</p>
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
+          <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '180px' }}>
+            <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Today's Revenue</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#4A8A62' }}>₹{(dailyData?.total_revenue || 0).toLocaleString()}</p>
           </div>
           {isManager || isOwner ? (
-            <div style={{ padding: '20px', backgroundColor: '#e3f2fd', borderRadius: '8px', flex: 1 }}>
-              <h3>Today's Profit</h3>
-              <p style={{ fontSize: '24px', fontWeight: 'bold' }}>₹{dailyData?.total_profit || 0}</p>
+            <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '180px' }}>
+              <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Today's Profit</h3>
+              <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#7BAF8A' }}>₹{(dailyData?.total_profit || 0).toLocaleString()}</p>
             </div>
           ) : null}
-          <div style={{ padding: '20px', backgroundColor: '#fff3e0', borderRadius: '8px', flex: 1 }}>
-            <h3>Transactions</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{dailyData?.total_transactions || 0}</p>
+          <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '180px' }}>
+            <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Transactions</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#C4956A' }}>{dailyData?.total_transactions || 0}</p>
           </div>
-          <div style={{ padding: '20px', backgroundColor: '#fce4ec', borderRadius: '8px', flex: 1 }}>
-            <h3>Units Sold</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{dailyData?.units_sold || 0}</p>
+          <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '180px' }}>
+            <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Units Sold</h3>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#4A8A62' }}>{dailyData?.units_sold || 0}</p>
           </div>
         </div>
 
-        <h2>Last 7 Days Revenue</h2>
+        <h2 style={{ color: '#2E2C27', marginBottom: '15px' }}>Last 7 Days Revenue</h2>
         {weeklyData && (
-          <BarChart width={800} height={300} data={weeklyData}>
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Bar dataKey="revenue" fill="#2196F3" />
-          </BarChart>
+          <div style={{ width: '100%', height: '350px', backgroundColor: '#E8E4DA', padding: '20px', borderRadius: '12px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData} margin={{ top: 10, right: 30, left: 0, bottom: 40 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#D4D0C8" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={(date) => {
+                    const d = new Date(date);
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  }}
+                  angle={-30}
+                  textAnchor="end"
+                  interval={0}
+                  height={60}
+                  tick={{ fill: '#2E2C27', fontSize: 13 }}
+                  axisLine={{ stroke: '#6B6860' }}
+                  tickLine={{ stroke: '#6B6860' }}
+                />
+                <YAxis 
+                  tick={{ fill: '#2E2C27', fontSize: 13 }}
+                  axisLine={{ stroke: '#6B6860' }}
+                  tickLine={{ stroke: '#6B6860' }}
+                  tickFormatter={(value) => `₹${value.toLocaleString()}`}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#F7F5F0', 
+                    border: '1px solid #D4D0C8', 
+                    borderRadius: '8px',
+                    color: '#2E2C27'
+                  }}
+                  formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
+                  labelFormatter={(date) => {
+                    const d = new Date(date);
+                    return d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
+                  }}
+                />
+                <Bar dataKey="revenue" fill="#7BAF8A" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         )}
 
-        <h2>Low Stock Products</h2>
+        <h2 style={{ color: '#2E2C27', marginBottom: '15px' }}>Low Stock Products</h2>
         {lowStock.length > 0 ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#E8E4DA', borderRadius: '12px', overflow: 'hidden' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid #ddd' }}>
-                <th style={{ textAlign: 'left', padding: '10px' }}>Product</th>
-                <th>Stock</th>
-                <th>Threshold</th>
-                <th>Status</th>
+              <tr style={{ backgroundColor: '#7BAF8A', color: 'white' }}>
+                <th style={{ textAlign: 'left', padding: '12px' }}>Product</th>
+                <th style={{ padding: '12px' }}>Stock</th>
+                <th style={{ padding: '12px' }}>Threshold</th>
+                <th style={{ padding: '12px' }}>Status</th>
               </tr>
             </thead>
             <tbody>
               {lowStock.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '10px' }}>{p.name}</td>
-                  <td>{p.stock_qty}</td>
-                  <td>{p.low_stock_threshold}</td>
-                  <td style={{ color: p.stock_qty <= p.low_stock_threshold ? '#f44336' : '#4caf50' }}>
+                <tr key={p.id} style={{ borderBottom: '1px solid #D4D0C8', backgroundColor: '#F7F5F0' }}>
+                  <td style={{ padding: '10px', color: '#2E2C27' }}>{p.name}</td>
+                  <td style={{ padding: '10px', color: '#2E2C27' }}>{p.stock_qty}</td>
+                  <td style={{ padding: '10px', color: '#2E2C27' }}>{p.low_stock_threshold}</td>
+                  <td style={{ padding: '10px', color: p.stock_qty <= p.low_stock_threshold ? '#B85C5C' : '#4A8A62', fontWeight: '600' }}>
                     {p.stock_qty <= p.low_stock_threshold ? 'Low Stock' : 'OK'}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : <p>All products are well stocked.</p>}
+        ) : <p style={{ color: '#6B6860' }}>All products are well stocked.</p>}
       </div>
     </div>
   );
