@@ -420,7 +420,7 @@ export default async function handler(req, res) {
                   <td class="text-center">${idx + 1}</td>
                   <td class="${item.is_service ? 'item-name item-service' : 'item-name'}">
                     ${item.name}
-                    ${!item.is_service && item.mfg_date ? `<div style="font-size: 9px; color: #666; margin-top: 2px;">MFG date: ${item.mfg_date}</div>` : ''}
+                    ${!item.is_service && item.mfg_date ? item.mfg_date.split(',').map(d => `<div style="font-size: 9px; color: #666; margin-top: 2px;">${d.trim()}</div>`).join('') : ''}
                   </td>
                   <td class="text-center">${item.qty}</td>
                   <td class="text-right">${formatIndianNumber(item.unit_price)}</td>
