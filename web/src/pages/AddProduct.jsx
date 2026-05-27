@@ -52,16 +52,7 @@ export default function AddProduct() {
       return;
     }
 
-    if (!formData.mfg_date) {
-      alert('Manufacturing date is required');
-      return;
-    }
-
-    const mfgDateRegex = /^\d{2}\/\d{4}$/;
-    if (!mfgDateRegex.test(formData.mfg_date)) {
-      alert('Manufacturing date must be in MM/YYYY format');
-      return;
-    }
+    // mfg_date is optional free text
 
     setLoading(true);
     
@@ -128,14 +119,13 @@ export default function AddProduct() {
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>MFG Date * (MM/YYYY)</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>MFG Date</label>
             <input
               type="text"
               name="mfg_date"
               value={formData.mfg_date}
               onChange={handleChange}
-              placeholder="e.g., 03/2025"
-              pattern="\d{2}/\d{4}"
+              placeholder="e.g., KBE1 1226"
               style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
               required
             />

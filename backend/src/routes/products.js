@@ -130,15 +130,7 @@ router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASH
       return res.status(400).json({ error: 'Company name and size specification are required' });
     }
 
-    if (!mfg_date) {
-      return res.status(400).json({ error: 'Manufacturing date is required' });
-    }
-
-    // Validate mfg_date format (MM/YYYY)
-    const mfgDateRegex = /^\d{2}\/\d{4}$/;
-    if (!mfgDateRegex.test(mfg_date)) {
-      return res.status(400).json({ error: 'Manufacturing date must be in MM/YYYY format' });
-    }
+    // mfg_date is optional free text (e.g., KBE1 1226)
     
     // Validate that at least one price is provided
     if (!selling_price_excl_gst && !selling_price_incl_gst) {

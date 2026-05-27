@@ -31,7 +31,6 @@ export default function Inventory() {
   const [poSelectedProducts, setPoSelectedProducts] = useState({});
   const [poQuantities, setPoQuantities] = useState({});
   const [poColumns, setPoColumns] = useState({
-    current_stock: true,
     cost_price: true,
     quantity: true
   });
@@ -87,7 +86,6 @@ export default function Inventory() {
     setEditForm({
       company_name: product.company_name || '',
       size_spec: product.size_spec || '',
-      mfg_date: product.mfg_date || '',
       stock_qty: product.stock_qty.toString(),
       cost_price: product.cost_price?.toString() || '',
       selling_price_excl_gst: product.selling_price_excl_gst?.toString() || '',
@@ -101,7 +99,7 @@ export default function Inventory() {
 
   function closeEditModal() {
     setEditingProduct(null);
-    setEditForm({ company_name: '', size_spec: '', mfg_date: '', stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', cgst_rate: '6', sgst_rate: '6', price_entry_mode: 'excl' });
+    setEditForm({ company_name: '', size_spec: '', stock_qty: '', cost_price: '', selling_price_excl_gst: '', selling_price_incl_gst: '', cgst_rate: '6', sgst_rate: '6', price_entry_mode: 'excl' });
     setEditError(null);
   }
 
@@ -179,7 +177,6 @@ export default function Inventory() {
       const payload = {
         company_name: editForm.company_name,
         size_spec: editForm.size_spec,
-        mfg_date: editForm.mfg_date,
         stock_qty: stockQty,
         cost_price: costPrice,
         selling_price_excl_gst: sellingPriceExcl,
@@ -565,7 +562,6 @@ export default function Inventory() {
             <thead>
               <tr style={{ backgroundColor: '#7BAF8A' }}>
                 <th style={{ textAlign: 'left', padding: '12px 15px', color: '#fff', fontSize: '14px' }}>Product</th>
-                <th style={{ textAlign: 'center', padding: '12px', color: '#fff', fontSize: '14px' }}>MFG Date</th>
                 <th style={{ textAlign: 'right', padding: '12px', color: '#fff', fontSize: '14px' }}>Price (Excl)</th>
                 <th style={{ textAlign: 'right', padding: '12px', color: '#fff', fontSize: '14px' }}>Price (Incl)</th>
                 <th style={{ textAlign: 'center', padding: '12px', color: '#fff', fontSize: '14px' }}>CGST</th>
@@ -580,7 +576,6 @@ export default function Inventory() {
               {/* Total row for columns */}
               <tr style={{ backgroundColor: '#D4D0C8' }}>
                 <td style={{ padding: '10px 15px', fontWeight: 'bold', color: '#2E2C27', fontSize: '14px' }}>Total</td>
-                <td></td>
                 <td style={{ textAlign: 'right', padding: '10px 12px', fontWeight: 'bold', color: '#4A8A62', fontSize: '14px' }}>
                   ₹{products.reduce((sum, p) => sum + ((p.selling_price_excl_gst || 0) * (p.stock_qty || 0)), 0).toFixed(2)}
                 </td>
@@ -598,12 +593,11 @@ export default function Inventory() {
               </td>
               {canEdit && <td></td>}
             </tr>
-            {displayProducts.map(p => (
+              {displayProducts.map(p => (
               <tr key={p.id} style={{ borderBottom: '1px solid #D4D0C8' }}>
                 <td style={{ padding: '12px 15px' }}>
                   <div style={{ fontWeight: '500', color: '#2E2C27', fontSize: '15px' }}>{p.display_name}</div>
                 </td>
-                <td style={{ textAlign: 'center', color: '#6B6860', fontSize: '14px' }}>{p.mfg_date || '-'}</td>
                 <td style={{ textAlign: 'right', color: '#2E2C27', fontSize: '14px' }}>₹{parseFloat(p.selling_price_excl_gst || 0).toFixed(2)}</td>
                 <td style={{ textAlign: 'right', color: '#2E2C27', fontSize: '14px' }}>₹{parseFloat(p.selling_price_incl_gst || 0).toFixed(2)}</td>
                 <td style={{ textAlign: 'center', color: '#6B6860', fontSize: '14px' }}>{parseFloat(p.cgst_rate !== null && p.cgst_rate !== undefined ? p.cgst_rate : (p.gst_rate ? p.gst_rate / 2 : 0)).toFixed(1)}%</td>
@@ -711,27 +705,6 @@ export default function Inventory() {
               />
             </div>
 
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#2E2C27' }}>
-                MFG Date (MM/YYYY)
-              </label>
-              <input
-                type="text"
-                value={editForm.mfg_date}
-                onChange={(e) => setEditForm({ ...editForm, mfg_date: e.target.value })}
-                placeholder="e.g., 03/2025"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid #D4D0C8',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  backgroundColor: '#F7F5F0',
-                  color: '#2E2C27',
-                }}
-              />
-            </div>
-            
             {/* Stock Quantity */}
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#2E2C27' }}>
@@ -1091,15 +1064,6 @@ export default function Inventory() {
               <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
                 <input
                   type="checkbox"
-                  checked={poColumns.current_stock}
-                  onChange={(e) => setPoColumns({...poColumns, current_stock: e.target.checked})}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                />
-                Current Stock
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
-                <input
-                  type="checkbox"
                   checked={poColumns.cost_price}
                   onChange={(e) => setPoColumns({...poColumns, cost_price: e.target.checked})}
                   style={{ width: '16px', height: '16px', cursor: 'pointer' }}
@@ -1124,7 +1088,6 @@ export default function Inventory() {
                   <tr style={{ borderBottom: '2px solid #ddd', backgroundColor: '#f5f5f5' }}>
                     <th style={{ textAlign: 'left', padding: '10px', width: '40px' }}>Select</th>
                     <th style={{ textAlign: 'left', padding: '10px' }}>Product</th>
-                    {poColumns.current_stock && <th style={{ textAlign: 'right', padding: '10px' }}>Current Stock</th>}
                     {poColumns.cost_price && <th style={{ textAlign: 'right', padding: '10px' }}>Cost Price</th>}
                     {poColumns.quantity && <th style={{ textAlign: 'center', padding: '10px', width: '120px' }}>Quantity</th>}
                   </tr>
@@ -1160,11 +1123,6 @@ export default function Inventory() {
                             </span>
                           )}
                         </td>
-                        {poColumns.current_stock && (
-                          <td style={{ padding: '10px', textAlign: 'right' }}>
-                            {p.stock_qty || 0}
-                          </td>
-                        )}
                         {poColumns.cost_price && (
                           <td style={{ padding: '10px', textAlign: 'right' }}>
                             ₹{parseFloat(p.cost_price || 0).toFixed(2)}

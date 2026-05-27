@@ -24,7 +24,7 @@ export default function NewSale() {
   
   // Line items
   const [items, setItems] = useState([
-    { id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', mfg_date: '', product: null }
+    { id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', mfg_dates: [''], product: null }
   ]);
   
   // Totals
@@ -101,7 +101,7 @@ export default function NewSale() {
 
   const addItem = () => {
     const newId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', mfg_date: '', product: null }]);
+    setItems([...items, { id: newId, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', mfg_dates: [''], product: null }]);
   };
 
   const removeItem = (id) => {
@@ -127,6 +127,19 @@ export default function NewSale() {
             updated.cgst_percent = gstRate / 2;
             updated.sgst_percent = gstRate / 2;
             updated.hsn_code = product.hsn_code || '';
+          }
+        }
+        
+        // If quantity changed, resize mfg_dates array
+        if (field === 'qty') {
+          const qty = parseInt(value) || 1;
+          const currentDates = updated.mfg_dates || [];
+          if (qty > currentDates.length) {
+            // Add empty strings for additional tyres
+            updated.mfg_dates = [...currentDates, ...Array(qty - currentDates.length).fill('')];
+          } else if (qty < currentDates.length) {
+            // Remove extra dates
+            updated.mfg_dates = currentDates.slice(0, qty);
           }
         }
         
@@ -164,7 +177,9 @@ export default function NewSale() {
           updated.cgst_percent = gstRate / 2;
           updated.sgst_percent = gstRate / 2;
           updated.hsn_code = product.hsn_code || '';
-          updated.mfg_date = product.mfg_date || '';
+          // Set first MFG date from product, keep rest empty based on qty
+          const qty = parseInt(updated.qty) || 1;
+          updated.mfg_dates = [product.mfg_date || '', ...Array(Math.max(0, qty - 1)).fill('')];
           return updated;
         }
         return it;
@@ -187,7 +202,8 @@ export default function NewSale() {
             gst_rate: 0,
             cgst_percent: 0,
             sgst_percent: 0,
-            product: null
+            product: null,
+            mfg_dates: []
           };
         }
         return it;
@@ -224,7 +240,7 @@ export default function NewSale() {
         product_id: item.product_id || null,
         service_name: item.service_name || null,
         hsn_code: item.hsn_code || null,
-        mfg_date: item.mfg_date || null,
+        mfg_date: item.mfg_dates ? item.mfg_dates.filter(d => d).join(', ') : null,
         qty: parseInt(item.qty) || 1,
         unit_price: parseFloat(item.unit_price) || 0,
         gst_rate: parseFloat(item.gst_rate) || 0,
@@ -273,7 +289,7 @@ export default function NewSale() {
       vehicle_reg: '',
       sale_date: new Date().toISOString().split('T')[0]
     });
-    setItems([{ id: 1, product_id: '', qty: 1, unit_price: 0, cgst_amount: 0, sgst_amount: 0, hsn_code: '', product: null }]);
+    setItems([{ id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', mfg_dates: [''], product: null }]);
     setReceivedAmount(0);
   }
 
@@ -583,7 +599,7 @@ export default function NewSale() {
               <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #7BAF8A', width: '60px' }}>Qty</th>
               <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #7BAF8A', width: '80px' }}>Price/Unit</th>
               <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #7BAF8A', width: '70px' }}>HSN</th>
-              <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #7BAF8A', width: '90px' }}>MFG Date</th>
+              <th style={{ padding: '12px', textAlign: 'center', border: '1px solid #7BAF8A', width: '120px' }}>MFG Date</th>
               <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #7BAF8A', width: '80px' }}>CGST</th>
               <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #7BAF8A', width: '80px' }}>SGST</th>
               <th style={{ padding: '12px', textAlign: 'right', border: '1px solid #7BAF8A', width: '100px' }}>Amount</th>
@@ -669,13 +685,22 @@ export default function NewSale() {
                     />
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #D4D0C8', textAlign: 'center' }}>
-                    <input
-                      type="text"
-                      placeholder="MM/YYYY"
-                      value={item.mfg_date || ''}
-                      onChange={(e) => updateItem(item.id, 'mfg_date', e.target.value)}
-                      style={{ width: '80px', padding: '8px', textAlign: 'center', border: '1px solid #D4D0C8', borderRadius: '8px', backgroundColor: '#fff', fontSize: '14px' }}
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      {(item.mfg_dates || []).map((date, idx) => (
+                        <input
+                          key={idx}
+                          type="text"
+                          placeholder={`#${idx + 1}`}
+                          value={date}
+                          onChange={(e) => {
+                            const newDates = [...(item.mfg_dates || [])];
+                            newDates[idx] = e.target.value;
+                            updateItem(item.id, 'mfg_dates', newDates);
+                          }}
+                          style={{ width: '100px', padding: '6px', textAlign: 'center', border: '1px solid #D4D0C8', borderRadius: '8px', backgroundColor: '#fff', fontSize: '13px' }}
+                        />
+                      ))}
+                    </div>
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #D4D0C8', textAlign: 'right' }}>
                     <div style={{ fontSize: '11px', color: '#6B6860' }}>{item.cgst_percent || 0}%</div>
