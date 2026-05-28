@@ -110,6 +110,25 @@ export default function Dashboard() {
         )}
 
         <h2 style={{ color: '#2E2C27', marginBottom: '15px' }}>Last 30 Days Tyres Sales</h2>
+        
+        {/* 30-Day Summary Cards */}
+        {monthlyData && monthlyData.length > 0 && (
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '180px' }}>
+              <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Total Tyres Sold</h3>
+              <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#C4956A' }}>
+                {monthlyData.reduce((sum, d) => sum + (d.qty || 0), 0).toLocaleString()}
+              </p>
+            </div>
+            <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '180px' }}>
+              <h3 style={{ color: '#2E2C27', marginBottom: '5px' }}>Total Revenue</h3>
+              <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#4A8A62' }}>
+                ₹{monthlyData.reduce((sum, d) => sum + (d.revenue || 0), 0).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        )}
+        
         {monthlyData && monthlyData.length > 0 && (
           <div style={{ width: '100%', height: '400px', backgroundColor: '#E8E4DA', padding: '20px', borderRadius: '12px' }}>
             <ResponsiveContainer width="100%" height="100%">

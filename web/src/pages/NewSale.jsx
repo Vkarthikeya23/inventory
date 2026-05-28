@@ -429,7 +429,8 @@ export default function NewSale() {
                 fontWeight: 'bold',
                 fontSize: '16px',
                 backgroundColor: '#F7F5F0',
-                color: '#2E2C27'
+                color: '#2E2C27',
+                textTransform: 'uppercase'
               }}
             />
             <input
@@ -445,7 +446,8 @@ export default function NewSale() {
                 borderRadius: '8px',
                 fontSize: '16px',
                 backgroundColor: '#F7F5F0',
-                color: '#2E2C27'
+                color: '#2E2C27',
+                textTransform: 'uppercase'
               }}
             />
             <input
@@ -461,7 +463,8 @@ export default function NewSale() {
                 borderRadius: '8px',
                 fontSize: '16px',
                 backgroundColor: '#F7F5F0',
-                color: '#2E2C27'
+                color: '#2E2C27',
+                textTransform: 'uppercase'
               }}
             />
             <input
@@ -476,7 +479,8 @@ export default function NewSale() {
                 borderRadius: '8px',
                 fontSize: '16px',
                 backgroundColor: '#F7F5F0',
-                color: '#2E2C27'
+                color: '#2E2C27',
+                textTransform: 'uppercase'
               }}
             />
             <input
@@ -492,7 +496,8 @@ export default function NewSale() {
                 borderRadius: '8px',
                 fontSize: '16px',
                 backgroundColor: '#F7F5F0',
-                color: '#2E2C27'
+                color: '#2E2C27',
+                textTransform: 'uppercase'
               }}
             />
             <input
@@ -681,7 +686,7 @@ export default function NewSale() {
                       placeholder="HSN"
                       value={item.hsn_code || ''}
                       onChange={(e) => updateItem(item.id, 'hsn_code', e.target.value)}
-                      style={{ width: '70px', padding: '8px', textAlign: 'center', border: '1px solid #D4D0C8', borderRadius: '8px', backgroundColor: '#fff', fontSize: '14px' }}
+                      style={{ width: '70px', padding: '8px', textAlign: 'center', border: '1px solid #D4D0C8', borderRadius: '8px', backgroundColor: '#fff', fontSize: '14px', textTransform: 'uppercase' }}
                     />
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #D4D0C8', textAlign: 'center' }}>
@@ -697,7 +702,7 @@ export default function NewSale() {
                             newDates[idx] = e.target.value;
                             updateItem(item.id, 'mfg_dates', newDates);
                           }}
-                          style={{ width: '100px', padding: '6px', textAlign: 'center', border: '1px solid #D4D0C8', borderRadius: '8px', backgroundColor: '#fff', fontSize: '13px' }}
+                          style={{ width: '100px', padding: '6px', textAlign: 'center', border: '1px solid #D4D0C8', borderRadius: '8px', backgroundColor: '#fff', fontSize: '13px', textTransform: 'uppercase' }}
                         />
                       ))}
                     </div>
@@ -870,7 +875,8 @@ export default function NewSale() {
                 border: '1px solid #D4D0C8',
                 borderRadius: '8px',
                 fontSize: '14px',
-                backgroundColor: '#F7F5F0'
+                backgroundColor: '#F7F5F0',
+                textTransform: 'uppercase'
               }}
             />
             <div style={{ maxHeight: '300px', overflow: 'auto', backgroundColor: '#F7F5F0', borderRadius: '8px' }}>
@@ -963,7 +969,8 @@ export default function NewSale() {
                 border: '1px solid #D4D0C8',
                 borderRadius: '8px',
                 fontSize: '14px',
-                backgroundColor: '#F7F5F0'
+                backgroundColor: '#F7F5F0',
+                textTransform: 'uppercase'
               }}
             />
             <div style={{ maxHeight: '300px', overflow: 'auto', backgroundColor: '#F7F5F0', borderRadius: '8px' }}>
