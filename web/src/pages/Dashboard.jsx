@@ -110,7 +110,7 @@ export default function Dashboard() {
         )}
 
         <h2 style={{ color: '#2E2C27', marginBottom: '15px' }}>Last 30 Days Tyres Sales</h2>
-        {monthlyData && (
+        {monthlyData && monthlyData.length > 0 && (
           <div style={{ width: '100%', height: '400px', backgroundColor: '#E8E4DA', padding: '20px', borderRadius: '12px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={monthlyData} margin={{ top: 10, right: 30, left: 0, bottom: 40 }}>
@@ -161,6 +161,9 @@ export default function Dashboard() {
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+        )}
+        {(!monthlyData || monthlyData.length === 0) && (
+          <p style={{ color: '#6B6860', textAlign: 'center', padding: '20px' }}>No tyre sales data for the last 30 days</p>
         )}
       </div>
     </div>
