@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
-import { BarChart, XAxis, YAxis, Bar, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { BarChart, XAxis, YAxis, Bar, Tooltip, ResponsiveContainer, CartesianGrid, ComposedChart, Line, Legend } from 'recharts';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [dailyData, setDailyData] = useState(null);
   const [weeklyData, setWeeklyData] = useState(null);
-  const [lowStock, setLowStock] = useState([]);
+  const [monthlyData, setMonthlyData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,8 +23,8 @@ export default function Dashboard() {
       const weeklyRes = await api.get('/reports/weekly');
       setWeeklyData(weeklyRes.data);
       
-      const productsRes = await api.get('/products?low_stock=true');
-      setLowStock(productsRes.data.products?.slice(0, 5) || []);
+      const monthlyRes = await api.get('/reports/monthly');
+      setMonthlyData(monthlyRes.data);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
     }
@@ -109,31 +109,59 @@ export default function Dashboard() {
           </div>
         )}
 
-        <h2 style={{ color: '#2E2C27', marginBottom: '15px' }}>Low Stock Products</h2>
-        {lowStock.length > 0 ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#E8E4DA', borderRadius: '12px', overflow: 'hidden' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#7BAF8A', color: 'white' }}>
-                <th style={{ textAlign: 'left', padding: '12px' }}>Product</th>
-                <th style={{ padding: '12px' }}>Stock</th>
-                <th style={{ padding: '12px' }}>Threshold</th>
-                <th style={{ padding: '12px' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lowStock.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid #D4D0C8', backgroundColor: '#F7F5F0' }}>
-                  <td style={{ padding: '10px', color: '#2E2C27' }}>{p.display_name}</td>
-                  <td style={{ padding: '10px', color: '#2E2C27' }}>{p.stock_qty}</td>
-                  <td style={{ padding: '10px', color: '#2E2C27' }}>{p.low_stock_threshold}</td>
-                  <td style={{ padding: '10px', color: p.stock_qty <= p.low_stock_threshold ? '#B85C5C' : '#4A8A62', fontWeight: '600' }}>
-                    {p.stock_qty <= p.low_stock_threshold ? 'Low Stock' : 'OK'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : <p style={{ color: '#6B6860' }}>All products are well stocked.</p>}
+        <h2 style={{ color: '#2E2C27', marginBottom: '15px' }}>Last 30 Days Tyres Sales</h2>
+        {monthlyData && (
+          <div style={{ width: '100%', height: '400px', backgroundColor: '#E8E4DA', padding: '20px', borderRadius: '12px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={monthlyData} margin={{ top: 10, right: 30, left: 0, bottom: 40 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#D4D0C8" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={(date) => {
+                    const d = new Date(date);
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  }}
+                  angle={-45}
+                  textAnchor="end"
+                  interval={2}
+                  height={60}
+                  tick={{ fill: '#2E2C27', fontSize: 12 }}
+                  axisLine={{ stroke: '#6B6860' }}
+                  tickLine={{ stroke: '#6B6860' }}
+                />
+                <YAxis 
+                  yAxisId="left"
+                  tick={{ fill: '#2E2C27', fontSize: 13 }}
+                  axisLine={{ stroke: '#6B6860' }}
+                  tickLine={{ stroke: '#6B6860' }}
+                  tickFormatter={(value) => `₹${value.toLocaleString()}`}
+                />
+                <YAxis 
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fill: '#2E2C27', fontSize: 13 }}
+                  axisLine={{ stroke: '#6B6860' }}
+                  tickLine={{ stroke: '#6B6860' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#F7F5F0', 
+                    border: '1px solid #D4D0C8', 
+                    borderRadius: '8px',
+                    color: '#2E2C27'
+                  }}
+                  labelFormatter={(date) => {
+                    const d = new Date(date);
+                    return d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
+                  }}
+                />
+                <Legend />
+                <Bar yAxisId="left" dataKey="revenue" name="Revenue (₹)" fill="#7BAF8A" radius={[6, 6, 0, 0]} />
+                <Bar yAxisId="right" dataKey="qty" name="Tyres Sold" fill="#C4956A" radius={[6, 6, 0, 0]} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   );

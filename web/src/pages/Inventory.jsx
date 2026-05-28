@@ -565,7 +565,8 @@ export default function Inventory() {
         </div>
 
         <div style={{ backgroundColor: '#E8E4DA', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#7BAF8A' }}>
                 <th style={{ textAlign: 'left', padding: '12px 15px', color: '#fff', fontSize: '14px' }}>Product</th>
@@ -637,6 +638,7 @@ export default function Inventory() {
             ))}
           </tbody>
         </table>
+        </div>
         </div>
         
         {displayProducts.length === 0 && (

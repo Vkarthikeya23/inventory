@@ -195,4 +195,36 @@ router.get('/weekly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), asyn
   }
 });
 
+router.get('/monthly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASHIER), async (req, res) => {
+  try {
+    const query = `
+      SELECT
+        DATE(s.sale_date) AS date,
+        COALESCE(SUM(si.total_amount), 0) AS revenue,
+        COALESCE(SUM(si.qty), 0) AS qty,
+        COUNT(DISTINCT s.id) AS transactions
+      FROM sales s
+      JOIN sale_items si ON si.sale_id = s.id
+      WHERE s.sale_date >= CURRENT_DATE - INTERVAL '29 days'
+        AND si.product_id IS NOT NULL
+      GROUP BY DATE(s.sale_date)
+      ORDER BY DATE(s.sale_date) ASC
+    `;
+    
+    const data = await all(query);
+    
+    const result = data.map(row => ({
+      date: row.date,
+      revenue: parseFloat(row.revenue || 0),
+      qty: parseInt(row.qty || 0),
+      transactions: parseInt(row.transactions || 0)
+    }));
+    
+    res.json(result);
+  } catch (err) {
+    console.error('Monthly report error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
