@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [dailyData, setDailyData] = useState(null);
   const [weeklyData, setWeeklyData] = useState(null);
   const [monthlyData, setMonthlyData] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function Dashboard() {
       setMonthlyData(monthlyRes.data);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
+      setError('Failed to load dashboard data. Please try again later.');
     }
     setLoading(false);
   }
@@ -35,6 +37,25 @@ export default function Dashboard() {
   const isManager = user?.role === 'manager';
 
   if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: '#6B6860' }}>Loading...</div>;
+  if (error) return (
+    <div style={{ padding: '40px', textAlign: 'center' }}>
+      <p style={{ color: '#B85C5C', fontSize: '18px', marginBottom: '20px' }}>{error}</p>
+      <button 
+        onClick={() => { setError(null); setLoading(true); fetchDashboardData(); }}
+        style={{
+          padding: '10px 20px',
+          backgroundColor: '#4A8A62',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          fontSize: '14px'
+        }}
+      >
+        Retry
+      </button>
+    </div>
+  );
 
   return (
     <div style={{ backgroundColor: '#F7F5F0', minHeight: '100vh' }}>

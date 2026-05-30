@@ -64,6 +64,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
     let total_profit = 0;
     let profit_incl_gst = 0;
     let units_sold = 0;
+    let total_tyres_sold = 0;
     
     // Get sale items for each sale with product/service names
     const salesWithDetails = [];
@@ -97,6 +98,9 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
         saleTotal += itemTotal;
         saleProfitInclGst += itemTotal - cost;
         units_sold += parseInt(item.qty) || 0;
+        if (item.product_id) {
+          total_tyres_sold += parseInt(item.qty) || 0;
+        }
         
         let revenueExclGst = itemTotal;
         if (gstRate > 0) {
@@ -150,6 +154,7 @@ router.get('/daily', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.
       profit_incl_gst: profit_incl_gst,
       total_transactions: total_transactions,
       units_sold: units_sold,
+      total_tyres_sold: total_tyres_sold,
       sales_details: salesWithDetails
     };
     

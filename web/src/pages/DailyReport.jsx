@@ -6,7 +6,10 @@ import { useAuth } from '../context/AuthContext';
 const INVOICE_URL = (import.meta.env.VITE_INVOICE_URL || import.meta.env.VITE_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
 
 function formatDateInput(d) {
-  return d.toISOString().split('T')[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function getDaysDiff(from, to) {

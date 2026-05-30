@@ -287,6 +287,10 @@ export default function NewSale() {
       customer_phone: '',
       customer_gstin: '',
       vehicle_reg: '',
+      vehicle_type: '',
+      km_reading: '',
+      next_alignment_km: '',
+      next_service_km: '',
       sale_date: new Date().toISOString().split('T')[0]
     });
     setItems([{ id: 1, product_id: '', qty: 1, unit_price: 0, gst_rate: 12, cgst_percent: 6, sgst_percent: 6, hsn_code: '', mfg_dates: [''], product: null }]);
