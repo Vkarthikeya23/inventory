@@ -26,6 +26,16 @@ export default function Inventory() {
   const [saving, setSaving] = useState(false);
   const [deleteNotification, setDeleteNotification] = useState(null);
 
+  // Notes Modal State
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [notes, setNotes] = useState(() => {
+    try {
+      return localStorage.getItem('tyreshop_notes') || '';
+    } catch {
+      return '';
+    }
+  });
+
   // Purchase Order Modal States
   const [poModalOpen, setPoModalOpen] = useState(false);
   const [poSelectedProducts, setPoSelectedProducts] = useState({});
@@ -562,6 +572,27 @@ export default function Inventory() {
             <span>📥</span>
             Download PO
           </button>
+          {isOwner && (
+            <button
+              onClick={() => setNotesModalOpen(true)}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#C4956A',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <span>📝</span>
+              Notes
+            </button>
+          )}
         </div>
 
         <div style={{ backgroundColor: '#E8E4DA', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
@@ -1210,6 +1241,82 @@ export default function Inventory() {
                 📄 Download PDF
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notes Modal */}
+      {notesModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(46, 44, 39, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#F7F5F0',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '700px',
+            height: '80vh',
+            maxHeight: '600px',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            overflow: 'hidden'
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '16px 20px',
+              backgroundColor: '#4A8A62',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h2 style={{ margin: 0, color: '#fff', fontSize: '18px' }}>Notes</h2>
+              <button
+                onClick={() => setNotesModalOpen(false)}
+                style={{
+                  backgroundColor: 'transparent',
+                  color: '#fff',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  lineHeight: 1
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Textarea */}
+            <textarea
+              value={notes}
+              onChange={(e) => {
+                setNotes(e.target.value);
+                localStorage.setItem('tyreshop_notes', e.target.value);
+              }}
+              placeholder="Type your notes here..."
+              style={{
+                flex: 1,
+                padding: '20px',
+                border: 'none',
+                fontSize: '16px',
+                lineHeight: 1.6,
+                color: '#2E2C27',
+                backgroundColor: '#fff',
+                resize: 'none',
+                outline: 'none',
+                fontFamily: 'inherit'
+              }}
+            />
           </div>
         </div>
       )}
