@@ -714,13 +714,14 @@ export default function Inventory() {
               <input
                 type="text"
                 value={editForm.company_name}
-                onChange={(e) => setEditForm({ ...editForm, company_name: e.target.value })}
+                onChange={(e) => setEditForm({ ...editForm, company_name: e.target.value.toUpperCase() })}
                 style={{
                   width: '100%',
                   padding: '10px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  textTransform: 'uppercase'
                 }}
               />
             </div>
@@ -732,7 +733,7 @@ export default function Inventory() {
               <input
                 type="text"
                 value={editForm.size_spec}
-                onChange={(e) => setEditForm({ ...editForm, size_spec: e.target.value })}
+                onChange={(e) => setEditForm({ ...editForm, size_spec: e.target.value.toUpperCase() })}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -741,6 +742,7 @@ export default function Inventory() {
                   fontSize: '16px',
                   backgroundColor: '#F7F5F0',
                   color: '#2E2C27',
+                  textTransform: 'uppercase'
                 }}
               />
             </div>

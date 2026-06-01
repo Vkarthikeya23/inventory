@@ -41,7 +41,9 @@ export default function AddProduct() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const upperFields = ['company_name', 'size_spec', 'hsn_code'];
+    const finalValue = upperFields.includes(name) ? value.toUpperCase() : value;
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
 
   const handleSubmit = async (e) => {
@@ -99,7 +101,7 @@ export default function AddProduct() {
                 value={formData.company_name}
                 onChange={handleChange}
                 placeholder="e.g., MRF"
-                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
+                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27', textTransform: 'uppercase' }}
                 required
               />
             </div>
@@ -112,7 +114,7 @@ export default function AddProduct() {
                 value={formData.size_spec}
                 onChange={handleChange}
                 placeholder="e.g., 215/55/16E"
-                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
+                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27', textTransform: 'uppercase' }}
                 required
               />
             </div>
@@ -126,7 +128,7 @@ export default function AddProduct() {
               value={formData.mfg_date}
               onChange={handleChange}
               placeholder="e.g., KBE1 1226"
-              style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
+              style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27', textTransform: 'uppercase' }}
               required
             />
           </div>
@@ -175,14 +177,14 @@ export default function AddProduct() {
 
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2E2C27' }}>HSN Code</label>
-            <input
-              type="text"
-              name="hsn_code"
-              value={formData.hsn_code}
-              onChange={handleChange}
-              placeholder="e.g., 4011"
-              style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27' }}
-            />
+              <input
+                type="text"
+                name="hsn_code"
+                value={formData.hsn_code}
+                onChange={handleChange}
+                placeholder="e.g., 4011"
+                style={{ width: '100%', padding: '12px', border: '1px solid #D4D0C8', borderRadius: '8px', fontSize: '16px', backgroundColor: '#F7F5F0', color: '#2E2C27', textTransform: 'uppercase' }}
+              />
             <p style={{ fontSize: '13px', color: '#6B6860', marginTop: '5px' }}>
               GST HSN code for tyres (typically 4011 for tyres)
             </p>

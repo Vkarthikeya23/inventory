@@ -384,11 +384,11 @@ export default async function handler(req, res) {
           <div class="two-column">
             <div class="column">
               <div class="column-label">Bill To</div>
-              <div class="customer-name">${data.customer.name.toUpperCase()}</div>
-              ${data.customer.gstin ? `<div class="detail-row">GSTIN: ${data.customer.gstin}</div>` : ''}
-              <div class="detail-row">Contact No.: ${data.customer.phone}</div>
-              ${data.customer.vehicle_reg ? `<div class="detail-row">Vehicle No.: ${data.customer.vehicle_reg}</div>` : ''}
-              ${data.customer.vehicle_type ? `<div class="detail-row">Vehicle Type: ${data.customer.vehicle_type}</div>` : ''}
+              <div class="customer-name" style="text-transform: uppercase;">${(data.customer.name || '').toUpperCase()}</div>
+              ${data.customer.gstin ? `<div class="detail-row" style="text-transform: uppercase;">GSTIN: ${data.customer.gstin.toUpperCase()}</div>` : ''}
+              <div class="detail-row" style="text-transform: uppercase;">Contact No.: ${data.customer.phone}</div>
+              ${data.customer.vehicle_reg ? `<div class="detail-row" style="text-transform: uppercase;">Vehicle No.: ${data.customer.vehicle_reg.toUpperCase()}</div>` : ''}
+              ${data.customer.vehicle_type ? `<div class="detail-row" style="text-transform: uppercase;">Vehicle Type: ${data.customer.vehicle_type.toUpperCase()}</div>` : ''}
               ${data.customer.km_reading ? `<div class="detail-row">KM Reading: ${data.customer.km_reading}</div>` : ''}
               ${data.customer.next_alignment_km ? `<div class="detail-row">Next Alignment: ${data.customer.next_alignment_km} KM</div>` : ''}
               ${data.customer.next_service_km ? `<div class="detail-row">Next Service: ${data.customer.next_service_km} KM</div>` : ''}
@@ -418,13 +418,13 @@ export default async function handler(req, res) {
               ${data.items.map((item, idx) => `
                 <tr class="data-row">
                   <td class="text-center">${idx + 1}</td>
-                  <td class="${item.is_service ? 'item-name item-service' : 'item-name'}">
-                    ${item.name}
+                  <td class="${item.is_service ? 'item-name item-service' : 'item-name'}" style="text-transform: uppercase;">
+                    ${(item.name || '').toUpperCase()}
                     ${!item.is_service && item.mfg_date ? `<div style="font-size: 9px; color: #666; margin-top: 4px;">${item.mfg_date.split(',').map(d => d.trim()).filter(d => d).map(d => `<div style="display: block; line-height: 1.5;">${d}</div>`).join('')}</div>` : ''}
                   </td>
                   <td class="text-center">${item.qty}</td>
                   <td class="text-right">${formatIndianNumber(item.unit_price)}</td>
-                  <td class="text-center">${item.hsn_code || '-'}</td>
+                  <td class="text-center" style="text-transform: uppercase;">${(item.hsn_code || '-').toUpperCase()}</td>
                   <td class="text-right">${formatIndianNumber(item.cgst_amount !== undefined ? item.cgst_amount : (item.gst_amount / 2))}</td>
                   <td class="text-right">${formatIndianNumber(item.sgst_amount !== undefined ? item.sgst_amount : (item.gst_amount / 2))}</td>
                   <td class="text-right" style="font-weight: 600;">${formatIndianNumber(item.amount)}</td>
