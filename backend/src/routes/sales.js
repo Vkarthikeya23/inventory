@@ -97,6 +97,7 @@ router.post('/', verifyToken, async (req, res) => {
     return { 
       product_id: item.product_id, 
       service_name: item.service_name,
+      hsn_code: item.hsn_code || '',
       mfg_date: item.mfg_date,
       qty, 
       unitPrice, 
