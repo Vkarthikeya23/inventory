@@ -202,6 +202,24 @@ router.get('/weekly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), asyn
 
 router.get('/monthly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLES.CASHIER), async (req, res) => {
   try {
+    let { month } = req.query;
+    let firstDay, lastDay;
+    
+    if (month && /^\d{4}-\d{2}$/.test(month)) {
+      const [year, mon] = month.split('-').map(Number);
+      firstDay = `${month}-01`;
+      const lastDayNum = new Date(year, mon, 0).getDate();
+      lastDay = `${month}-${String(lastDayNum).padStart(2, '0')}`;
+    } else {
+      const now = new Date();
+      const year = now.getFullYear();
+      const mon = now.getMonth() + 1;
+      const monthStr = `${year}-${String(mon).padStart(2, '0')}`;
+      firstDay = `${monthStr}-01`;
+      const lastDayNum = new Date(year, mon, 0).getDate();
+      lastDay = `${monthStr}-${String(lastDayNum).padStart(2, '0')}`;
+    }
+    
     const query = `
       SELECT
         DATE(s.sale_date) AS date,
@@ -210,13 +228,14 @@ router.get('/monthly', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER, ROLE
         COUNT(DISTINCT s.id) AS transactions
       FROM sales s
       JOIN sale_items si ON si.sale_id = s.id
-      WHERE s.sale_date >= CURRENT_DATE - INTERVAL '29 days'
+      WHERE s.sale_date >= DATE($firstDay)
+        AND s.sale_date <= DATE($lastDay)
         AND si.product_id IS NOT NULL
       GROUP BY DATE(s.sale_date)
       ORDER BY DATE(s.sale_date) ASC
     `;
     
-    const data = await all(query);
+    const data = await all(query, { firstDay, lastDay });
     
     const result = data.map(row => ({
       date: row.date,

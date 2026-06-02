@@ -4,11 +4,24 @@ import Navbar from '../components/Navbar';
 import api from '../services/api';
 import { BarChart, XAxis, YAxis, Bar, Tooltip, ResponsiveContainer, CartesianGrid, ComposedChart, Line, Legend } from 'recharts';
 
+function getCurrentMonthValue() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function formatMonthLabel(monthStr) {
+  if (!monthStr) return '';
+  const [year, mon] = monthStr.split('-').map(Number);
+  const d = new Date(year, mon - 1, 1);
+  return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [dailyData, setDailyData] = useState(null);
   const [weeklyData, setWeeklyData] = useState(null);
   const [monthlyData, setMonthlyData] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthValue());
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -16,15 +29,28 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
+  useEffect(() => {
+    fetchMonthlyData();
+  }, [selectedMonth]);
+
+  async function fetchMonthlyData() {
+    try {
+      const res = await api.get(`/reports/monthly?month=${selectedMonth}`);
+      setMonthlyData(res.data);
+    } catch (err) {
+      console.error('Monthly fetch error:', err);
+    }
+  }
+
   async function fetchDashboardData() {
     try {
       const dailyRes = await api.get('/reports/daily');
       setDailyData(dailyRes.data);
-      
+
       const weeklyRes = await api.get('/reports/weekly');
       setWeeklyData(weeklyRes.data);
-      
-      const monthlyRes = await api.get('/reports/monthly');
+
+      const monthlyRes = await api.get(`/reports/monthly?month=${selectedMonth}`);
       setMonthlyData(monthlyRes.data);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
@@ -130,9 +156,25 @@ export default function Dashboard() {
           </div>
         )}
 
-        <h2 style={{ color: '#2E2C27', marginBottom: '15px' }}>Last 30 Days Tyres Sales</h2>
-        
-        {/* 30-Day Summary Cards */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
+          <h2 style={{ color: '#2E2C27', margin: 0 }}>Tyre Sales: {formatMonthLabel(selectedMonth)}</h2>
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #D4D0C8',
+              borderRadius: '8px',
+              fontSize: '14px',
+              backgroundColor: '#F7F5F0',
+              color: '#2E2C27',
+              cursor: 'pointer'
+            }}
+          />
+        </div>
+
+        {/* Monthly Summary Cards */}
         {monthlyData && monthlyData.length > 0 && (
           <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
             <div style={{ padding: '20px', backgroundColor: '#E8E4DA', borderRadius: '12px', flex: 1, minWidth: '180px' }}>
@@ -203,7 +245,7 @@ export default function Dashboard() {
           </div>
         )}
         {(!monthlyData || monthlyData.length === 0) && (
-          <p style={{ color: '#6B6860', textAlign: 'center', padding: '20px' }}>No tyre sales data for the last 30 days</p>
+          <p style={{ color: '#6B6860', textAlign: 'center', padding: '20px' }}>No tyre sales data for {formatMonthLabel(selectedMonth)}</p>
         )}
       </div>
     </div>
