@@ -330,7 +330,7 @@ export default function DailyReport() {
             {filteredSales.map((s, index) => (
               <tr key={s.id} style={{ borderBottom: '1px solid #D4D0C8', backgroundColor: '#F7F5F0' }}>
                 <td style={{ padding: '10px', color: '#2E2C27' }}>{index + 1}</td>
-                <td style={{ padding: '10px', color: '#2E2C27' }}>{s.vehicle_reg || '-'}</td>
+                <td style={{ padding: '10px', color: '#2E2C27', textTransform: 'uppercase' }}>{s.vehicle_reg || '-'}</td>
                 <td style={{ padding: '10px', color: '#2E2C27' }}>{s.vehicle_type || '-'}</td>
                 <td style={{ padding: '10px', color: '#2E2C27' }}>{s.items_bought || '-'}</td>
                 <td style={{ padding: '10px', color: '#2E2C27', fontWeight: '500' }}>₹{s.total?.toFixed(2)}</td>
