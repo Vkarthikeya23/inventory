@@ -1,317 +1,227 @@
 /**
  * Purchase Orders Route Tests
- * 
- * Tests purchase order management:
- * - GET /purchase-orders - List purchase orders
- * - GET /purchase-orders/:id - Get PO details
- * - POST /purchase-orders - Create PO
- * - PUT /purchase-orders/:id/receive - Mark as received
+ *
+ * Tests the saved PO API:
+ * - POST /purchase-orders - Save a generated PO
+ * - GET /purchase-orders - List saved POs
+ * - DELETE /purchase-orders/:id - Delete a saved PO
+ * - GET /po/:po_number - Public PO page
  */
 
+import { jest } from '@jest/globals';
 import request from 'supertest';
-import app from '../../src/app.js';
-import { 
-  initTestDatabase, 
-  clearTestDatabase, 
-  createTestUser,
-  createTestCategory,
-  createTestProduct,
-  createTestSupplier,
-  getTestDb
-} from '../setup.js';
+import jwt from 'jsonwebtoken';
 
-jest.mock('../../src/db/pool.js', () =>> ({
-  getDb: jest.fn()
-}));
+process.env.JWT_SECRET = 'test-secret';
 
-describe('Purchase Orders Routes', () => {
-  let ownerToken;
-  let managerToken;
-  let cashierToken;
-  let supplierId;
-  let productId;
+// In-memory mock of the PostgreSQL helpers
+const mockDb = {
+  all: jest.fn(),
+  get: jest.fn(),
+  run: jest.fn(),
+  transaction: jest.fn()
+};
 
-  beforeAll(async () => {
-    await initTestDatabase();
+jest.unstable_mockModule('../../src/db/db.js', () => mockDb);
+
+const { default: app } = await import('../../src/app.js');
+
+const makeToken = (role, id = 'user-1') =>
+  jwt.sign({ id, email: `${role}@test.com`, role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+const currentPeriod = () => {
+  const now = new Date();
+  return String(now.getFullYear()).slice(-2) + String(now.getMonth() + 1).padStart(2, '0');
+};
+
+const samplePoData = () => ({
+  date: new Date().toISOString(),
+  columns: { current_stock: true, cost_price: true, quantity: true },
+  items: [
+    { product_id: 'p1', name: 'MRF ZAPPER 165/65 R15', current_stock: 3, qty: 10, cost_price: 1800, line_total: 18000 },
+    { product_id: 'p2', name: 'APOLLO AMPLIFY 205/55 R16', current_stock: 1, qty: 4, cost_price: 3200, line_total: 12800 }
+  ],
+  total_amount: 30800
+});
+
+beforeEach(() => {
+  mockDb.all.mockReset();
+  mockDb.get.mockReset();
+  mockDb.run.mockReset();
+  mockDb.transaction.mockReset();
+  mockDb.get.mockResolvedValue(null);
+  mockDb.run.mockResolvedValue(undefined);
+  mockDb.all.mockResolvedValue([]);
+});
+
+describe('POST /purchase-orders', () => {
+  test('should save a PO and return po_number and po_url', async () => {
+    const response = await request(app)
+      .post('/purchase-orders')
+      .set('Authorization', `Bearer ${makeToken('owner')}`)
+      .send({ po_data: samplePoData(), supplier_phone: '9876543210' });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.po_number).toMatch(new RegExp(`^PO-${currentPeriod()}-\\d{5}$`));
+    expect(response.body.po_url).toContain(`/po/${response.body.po_number}`);
+    expect(mockDb.run).toHaveBeenCalledTimes(1);
+    const insertSql = mockDb.run.mock.calls[0][0];
+    expect(insertSql).toContain('INSERT INTO purchase_orders');
   });
 
-  afterEach(() => {
-    clearTestDatabase();
+  test('should allow cashier to save (matches Download PO button visibility)', async () => {
+    const response = await request(app)
+      .post('/purchase-orders')
+      .set('Authorization', `Bearer ${makeToken('cashier')}`)
+      .send({ po_data: samplePoData() });
+
+    expect(response.statusCode).toBe(201);
   });
 
-  beforeEach(async () => {
-    const { getDb } = await import('../../src/db/pool.js');
-    getDb.mockReturnValue(getTestDb());
-    
-    createTestUser({ name: 'Owner', email: 'owner@test.com', password: 'password', role: 'owner' });
-    createTestUser({ name: 'Manager', email: 'manager@test.com', password: 'password', role: 'manager' });
-    createTestUser({ name: 'Cashier', email: 'cashier@test.com', password: 'password', role: 'cashier' });
-    
-    const ownerRes = await request(app).post('/auth/login').send({ email: 'owner@test.com', password: 'password' });
-    ownerToken = ownerRes.body.token;
-    
-    const managerRes = await request(app).post('/auth/login').send({ email: 'manager@test.com', password: 'password' });
-    managerToken = managerRes.body.token;
-    
-    const cashierRes = await request(app).post('/auth/login').send({ email: 'cashier@test.com', password: 'password' });
-    cashierToken = cashierRes.body.token;
-    
-    // Create supplier and product
-    const supplier = createTestSupplier({ name: 'MRF Ltd', phone: '9999999999', gstin: '27AABCM1234L1Z5' });
-    supplierId = supplier.id;
-    
-    const cat = createTestCategory('Tyres');
-    const product = createTestProduct({ name: 'MRF Zapper', category_id: cat.id, unit_price: 2500, cost_price: 1800, stock_qty: 50 });
-    productId = product.id;
+  test('should increment sequence when a PO already exists this period', async () => {
+    mockDb.get.mockResolvedValue({ po_number: `PO-${currentPeriod()}-00004` });
+
+    const response = await request(app)
+      .post('/purchase-orders')
+      .set('Authorization', `Bearer ${makeToken('owner')}`)
+      .send({ po_data: samplePoData() });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.po_number).toBe(`PO-${currentPeriod()}-00005`);
   });
 
-  describe('GET /purchase-orders', () => {
-    test('should return 200 and list POs as owner', async () => {
-      // Act
-      const response = await request(app)
-        .get('/purchase-orders')
-        .set('Authorization', `Bearer ${ownerToken}`);
+  test('should return 400 when items are missing', async () => {
+    const response = await request(app)
+      .post('/purchase-orders')
+      .set('Authorization', `Bearer ${makeToken('owner')}`)
+      .send({ po_data: { items: [] } });
 
-      // Assert
-      expect(response.statusCode).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-    });
-
-    test('should return 200 and list POs as manager', async () => {
-      // Act
-      const response = await request(app)
-        .get('/purchase-orders')
-        .set('Authorization', `Bearer ${managerToken}`);
-
-      // Assert
-      expect(response.statusCode).toBe(200);
-    });
-
-    test('should return 403 for cashier', async () => {
-      // Act
-      const response = await request(app)
-        .get('/purchase-orders')
-        .set('Authorization', `Bearer ${cashierToken}`);
-
-      // Assert
-      expect(response.statusCode).toBe(403);
-    });
-
-    test('should return 401 for unauthenticated request', async () => {
-      // Act
-      const response = await request(app).get('/purchase-orders');
-
-      // Assert
-      expect(response.statusCode).toBe(401);
-    });
+    expect(response.statusCode).toBe(400);
+    expect(response.body.error).toBe('PO items required');
+    expect(mockDb.run).not.toHaveBeenCalled();
   });
 
-  describe('GET /purchase-orders/:id', () => {
-    test('should return 200 and PO details as owner', async () => {
-      // Arrange - Create a PO first
-      const createRes = await request(app)
-        .post('/purchase-orders')
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({
-          supplier_id: supplierId,
-          items: [{ product_id: productId, qty_ordered: 10, unit_cost: 1800 }]
-        });
-      const poId = createRes.body.id;
+  test('should return 401 without a token', async () => {
+    const response = await request(app)
+      .post('/purchase-orders')
+      .send({ po_data: samplePoData() });
 
-      // Act
-      const response = await request(app)
-        .get(`/purchase-orders/${poId}`)
-        .set('Authorization', `Bearer ${ownerToken}`);
+    expect(response.statusCode).toBe(401);
+  });
+});
 
-      // Assert
-      expect(response.statusCode).toBe(200);
-      expect(response.body.id).toBe(poId);
-      expect(response.body.items).toBeDefined();
-      expect(Array.isArray(response.body.items)).toBe(true);
-    });
+describe('GET /purchase-orders', () => {
+  test('should return list with po_url as owner', async () => {
+    mockDb.all.mockResolvedValue([{
+      id: 'po-1',
+      po_number: `PO-${currentPeriod()}-00001`,
+      supplier_phone: '9876543210',
+      total_amount: '30800.00',
+      item_count: '2',
+      created_by: 'user-1',
+      created_at: new Date().toISOString()
+    }]);
 
-    test('should return 404 for non-existent PO', async () => {
-      // Act
-      const response = await request(app)
-        .get('/purchase-orders/nonexistent-id')
-        .set('Authorization', `Bearer ${ownerToken}`);
+    const response = await request(app)
+      .get('/purchase-orders')
+      .set('Authorization', `Bearer ${makeToken('owner')}`);
 
-      // Assert
-      expect(response.statusCode).toBe(404);
-    });
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].po_number).toBe(`PO-${currentPeriod()}-00001`);
+    expect(response.body[0].total_amount).toBe(30800);
+    expect(response.body[0].item_count).toBe(2);
+    expect(response.body[0].po_url).toContain('/po/');
   });
 
-  describe('POST /purchase-orders', () => {
-    test('should return 201 and create PO as owner', async () => {
-      // Act
-      const response = await request(app)
-        .post('/purchase-orders')
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({
-          supplier_id: supplierId,
-          items: [{ product_id: productId, qty_ordered: 10, unit_cost: 1800 }],
-          notes: 'Urgent order'
-        });
+  test('should return 200 as manager', async () => {
+    const response = await request(app)
+      .get('/purchase-orders')
+      .set('Authorization', `Bearer ${makeToken('manager')}`);
 
-      // Assert
-      expect(response.statusCode).toBe(201);
-      expect(response.body.id).toBeDefined();
-      expect(response.body.status).toBe('draft');
-    });
-
-    test('should return 201 and create PO as manager', async () => {
-      // Act
-      const response = await request(app)
-        .post('/purchase-orders')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .send({
-          supplier_id: supplierId,
-          items: [{ product_id: productId, qty_ordered: 5, unit_cost: 1800 }]
-        });
-
-      // Assert
-      expect(response.statusCode).toBe(201);
-    });
-
-    test('should return 403 for cashier', async () => {
-      // Act
-      const response = await request(app)
-        .post('/purchase-orders')
-        .set('Authorization', `Bearer ${cashierToken}`)
-        .send({
-          supplier_id: supplierId,
-          items: [{ product_id: productId, qty_ordered: 5 }]
-        });
-
-      // Assert
-      expect(response.statusCode).toBe(403);
-    });
-
-    test('should return 400 when supplier_id is missing', async () => {
-      // Act
-      const response = await request(app)
-        .post('/purchase-orders')
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({
-          items: [{ product_id: productId, qty_ordered: 5 }]
-        });
-
-      // Assert
-      expect(response.statusCode).toBe(400);
-      expect(response.body.error).toBe('Supplier and items required');
-    });
-
-    test('should return 400 when items are empty', async () => {
-      // Act
-      const response = await request(app)
-        .post('/purchase-orders')
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({
-          supplier_id: supplierId,
-          items: []
-        });
-
-      // Assert
-      expect(response.statusCode).toBe(400);
-    });
+    expect(response.statusCode).toBe(200);
   });
 
-  describe('PUT /purchase-orders/:id/receive', () => {
-    let poId;
-    let poItemId;
+  test('should return 403 for cashier', async () => {
+    const response = await request(app)
+      .get('/purchase-orders')
+      .set('Authorization', `Bearer ${makeToken('cashier')}`);
 
-    beforeEach(async () => {
-      // Create a PO first
-      const createRes = await request(app)
-        .post('/purchase-orders')
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({
-          supplier_id: supplierId,
-          items: [{ product_id: productId, qty_ordered: 10, unit_cost: 1800 }]
-        });
-      poId = createRes.body.id;
-      
-      // Get the PO to find the item ID
-      const getRes = await request(app)
-        .get(`/purchase-orders/${poId}`)
-        .set('Authorization', `Bearer ${ownerToken}`);
-      poItemId = getRes.body.items[0]?.id;
+    expect(response.statusCode).toBe(403);
+  });
+
+  test('should return 401 without a token', async () => {
+    const response = await request(app).get('/purchase-orders');
+
+    expect(response.statusCode).toBe(401);
+  });
+});
+
+describe('DELETE /purchase-orders/:id', () => {
+  test('should delete as owner', async () => {
+    mockDb.get.mockResolvedValue({ id: 'po-1' });
+
+    const response = await request(app)
+      .delete('/purchase-orders/po-1')
+      .set('Authorization', `Bearer ${makeToken('owner')}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.success).toBe(true);
+  });
+
+  test('should return 404 when PO does not exist', async () => {
+    mockDb.get.mockResolvedValue(null);
+
+    const response = await request(app)
+      .delete('/purchase-orders/missing-id')
+      .set('Authorization', `Bearer ${makeToken('owner')}`);
+
+    expect(response.statusCode).toBe(404);
+  });
+
+  test('should return 403 for manager (owner only)', async () => {
+    const response = await request(app)
+      .delete('/purchase-orders/po-1')
+      .set('Authorization', `Bearer ${makeToken('manager')}`);
+
+    expect(response.statusCode).toBe(403);
+  });
+});
+
+describe('GET /po/:po_number (public page)', () => {
+  test('should render the saved PO', async () => {
+    mockDb.get.mockResolvedValue({
+      po_number: `PO-${currentPeriod()}-00001`,
+      po_data: JSON.stringify(samplePoData()),
+      supplier_phone: '9876543210',
+      total_amount: '30800.00',
+      item_count: 2,
+      created_at: new Date().toISOString()
     });
 
-    test('should return 200 and mark as received as owner', async () => {
-      // Act
-      const response = await request(app)
-        .put(`/purchase-orders/${poId}/receive`)
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({
-          items: [{ po_item_id: poItemId, qty_received: 10 }]
-        });
+    const response = await request(app).get(`/po/PO-${currentPeriod()}-00001`);
 
-      // Assert
-      expect(response.statusCode).toBe(200);
-      expect(response.body.status).toBe('received');
-    });
+    expect(response.statusCode).toBe(200);
+    expect(response.text).toContain('SRI MAHALAKSHMI TYRES');
+    expect(response.text).toContain(`PO-${currentPeriod()}-00001`);
+    expect(response.text).toContain('MRF ZAPPER 165/65 R15');
+    expect(response.text).toContain('30800');
+  });
 
-    test('should return 200 and mark as received as manager', async () => {
-      // Act
-      const response = await request(app)
-        .put(`/purchase-orders/${poId}/receive`)
-        .set('Authorization', `Bearer ${managerToken}`)
-        .send({
-          items: [{ po_item_id: poItemId, qty_received: 10 }]
-        });
+  test('should return 404 for unknown PO', async () => {
+    mockDb.get.mockResolvedValue(null);
 
-      // Assert
-      expect(response.statusCode).toBe(200);
-    });
+    const response = await request(app).get('/po/PO-0000-99999');
 
-    test('should increase stock after receiving', async () => {
-      // Arrange
-      const initialStock = 50;
+    expect(response.statusCode).toBe(404);
+    expect(response.text).toContain('Purchase Order Not Found');
+  });
 
-      // Act
-      await request(app)
-        .put(`/purchase-orders/${poId}/receive`)
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({
-          items: [{ po_item_id: poItemId, qty_received: 10 }]
-        });
+  test('should not require authentication', async () => {
+    mockDb.get.mockResolvedValue(null);
 
-      // Assert
-      const { getDb } = await import('../../src/db/pool.js');
-      const db = getDb();
-      const stmt = db.prepare('SELECT stock_qty FROM products WHERE id = ?');
-      stmt.bind([productId]);
-      stmt.step();
-      const result = stmt.getAsObject();
-      stmt.free();
-      
-      expect(result.stock_qty).toBe(initialStock + 10);
-    });
+    const response = await request(app).get('/po/PO-0000-99999');
 
-    test('should return 403 for cashier', async () => {
-      // Act
-      const response = await request(app)
-        .put(`/purchase-orders/${poId}/receive`)
-        .set('Authorization', `Bearer ${cashierToken}`)
-        .send({
-          items: [{ po_item_id: poItemId, qty_received: 10 }]
-        });
-
-      // Assert
-      expect(response.statusCode).toBe(403);
-    });
-
-    test('should return 400 when items are missing', async () => {
-      // Act
-      const response = await request(app)
-        .put(`/purchase-orders/${poId}/receive`)
-        .set('Authorization', `Bearer ${ownerToken}`)
-        .send({});
-
-      // Assert
-      expect(response.statusCode).toBe(400);
-      expect(response.body.error).toBe('Items required');
-    });
+    expect(response.statusCode).toBe(404);
   });
 });

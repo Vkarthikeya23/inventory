@@ -75,6 +75,17 @@ CREATE TABLE IF NOT EXISTS invoice_sequences (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS purchase_orders (
+  id TEXT PRIMARY KEY,
+  po_number VARCHAR(30) UNIQUE NOT NULL,
+  po_data TEXT NOT NULL,
+  supplier_phone VARCHAR(20),
+  total_amount NUMERIC(12,2) DEFAULT 0,
+  item_count INTEGER DEFAULT 0,
+  created_by TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_products_stock ON products(stock_qty) WHERE is_deleted = 0;
 CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
 CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items(sale_id);

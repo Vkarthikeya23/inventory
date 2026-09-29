@@ -45,6 +45,13 @@ export default function Inventory() {
     cost_price: true,
     quantity: true
   });
+  const [poPhone, setPoPhone] = useState('');
+  const [poSuccess, setPoSuccess] = useState(null);
+
+  // Past PO's Modal State
+  const [pastPoModalOpen, setPastPoModalOpen] = useState(false);
+  const [pastPos, setPastPos] = useState([]);
+  const [pastPoLoading, setPastPoLoading] = useState(false);
 
   const isOwner = user?.role === 'owner';
   const isManager = user?.role === 'manager';
@@ -258,6 +265,8 @@ export default function Inventory() {
     setPoModalOpen(false);
     setPoSelectedProducts({});
     setPoQuantities({});
+    setPoPhone('');
+    setPoSuccess(null);
   }
 
   function toggleProductSelection(productId) {
@@ -309,6 +318,42 @@ export default function Inventory() {
       return;
     }
 
+    // Build PO snapshot (saved like invoices)
+    const snapshotItems = selectedProducts.map(p => {
+      const qty = parseInt(poQuantities[p.id]) || 0;
+      const cost = parseFloat(p.cost_price) || 0;
+      return {
+        product_id: p.id,
+        name: p.display_name,
+        current_stock: p.stock_qty || 0,
+        qty,
+        cost_price: cost,
+        line_total: parseFloat((qty * cost).toFixed(2))
+      };
+    });
+    const snapshotTotal = parseFloat(snapshotItems.reduce((sum, i) => sum + i.line_total, 0).toFixed(2));
+    const poData = {
+      date: new Date().toISOString(),
+      columns: { ...poColumns },
+      items: snapshotItems,
+      total_amount: snapshotTotal
+    };
+
+    // Save PO to backend first so we get a real PO number
+    let poNumber = `PO-${Date.now().toString().slice(-6)}`;
+    let poUrl = null;
+    try {
+      const saveRes = await api.post('/purchase-orders', {
+        po_data: poData,
+        supplier_phone: poPhone || null
+      });
+      poNumber = saveRes.data.po_number;
+      poUrl = saveRes.data.po_url;
+    } catch (saveErr) {
+      console.error('Failed to save PO:', saveErr);
+      alert("PO could not be saved to Past PO's, but the PDF will still download.");
+    }
+
     try {
       console.log('Creating jsPDF instance...');
       const doc = new jsPDF();
@@ -332,7 +377,7 @@ export default function Inventory() {
       // PO Details
       doc.setFontSize(11);
       doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, 20, 60);
-      doc.text(`PO #: PO-${Date.now().toString().slice(-6)}`, 20, 68);
+      doc.text(`PO #: ${poNumber}`, 20, 68);
       
       // Table data
       const tableData = selectedProducts.map(p => {
@@ -405,12 +450,67 @@ export default function Inventory() {
       doc.text('This is a purchase order for stock replenishment.', 20, footerY);
       doc.text('Please confirm availability and delivery schedule.', 20, footerY + 8);
 
-      doc.save(`Purchase_Order_${new Date().toISOString().slice(0, 10)}.pdf`);
-      closePoModal();
+      doc.save(`${poNumber}.pdf`);
       console.log('PDF generated successfully');
+
+      if (poUrl) {
+        // Show success screen inside the modal (like the sale success screen)
+        setPoSuccess({ po_number: poNumber, po_url: poUrl, phone: poPhone });
+      } else {
+        closePoModal();
+      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF: ' + error.message);
+    }
+  }
+
+  function sendPoWhatsApp() {
+    if (!poSuccess) return;
+    const phone = (poSuccess.phone || '').replace(/\D/g, '');
+    const phoneWithCountry = phone.startsWith('91') && phone.length >= 12 ? phone : `91${phone}`;
+    const message = encodeURIComponent(
+      `Hi, purchase order ${poSuccess.po_number} is ready.\nView & download: ${poSuccess.po_url}`
+    );
+    window.open(`https://wa.me/${phoneWithCountry}?text=${message}`, '_blank');
+  }
+
+  async function copyPoLink() {
+    if (!poSuccess) return;
+    try {
+      await navigator.clipboard.writeText(poSuccess.po_url);
+      alert('PO link copied!');
+    } catch {
+      prompt('Copy the PO link:', poSuccess.po_url);
+    }
+  }
+
+  // Past PO's Functions
+  async function fetchPastPos() {
+    setPastPoLoading(true);
+    try {
+      const res = await api.get('/purchase-orders');
+      setPastPos(res.data || []);
+    } catch (err) {
+      console.error('Failed to load past POs:', err);
+      alert("Failed to load past PO's");
+    }
+    setPastPoLoading(false);
+  }
+
+  function openPastPoModal() {
+    setPastPoModalOpen(true);
+    fetchPastPos();
+  }
+
+  async function deletePo(poId) {
+    if (!window.confirm('Delete this saved PO?')) return;
+    try {
+      await api.delete(`/purchase-orders/${poId}`);
+      fetchPastPos();
+    } catch (err) {
+      console.error('Failed to delete PO:', err);
+      alert('Failed to delete PO');
     }
   }
 
@@ -572,6 +672,27 @@ export default function Inventory() {
             <span>📥</span>
             Download PO
           </button>
+          {(isOwner || isManager) && (
+            <button
+              onClick={openPastPoModal}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#7BAF8A',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <span>📜</span>
+              Past PO's
+            </button>
+          )}
           {isOwner && (
             <button
               onClick={() => setNotesModalOpen(true)}
@@ -1061,6 +1182,68 @@ export default function Inventory() {
             overflow: 'auto',
             boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
           }}>
+            {poSuccess ? (
+              /* PO Saved — success screen (like the sale success screen) */
+              <div style={{ textAlign: 'center', padding: '30px 10px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '10px' }}>✅</div>
+                <h2 style={{ color: '#4A8A62', marginBottom: '8px' }}>PO Saved!</h2>
+                <p style={{ color: '#6B6860', marginBottom: '4px' }}>
+                  Purchase order <strong style={{ color: '#2E2C27' }}>{poSuccess.po_number}</strong> has been saved to Past PO's
+                </p>
+                <p style={{ color: '#6B6860', fontSize: '14px', marginBottom: '24px' }}>PDF downloaded to your device</p>
+
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {poSuccess.phone && (
+                    <button
+                      onClick={sendPoWhatsApp}
+                      style={{
+                        padding: '12px 24px',
+                        backgroundColor: '#25D366',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '16px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Share on WhatsApp
+                    </button>
+                  )}
+                  <button
+                    onClick={copyPoLink}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: '#C4956A',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Copy Link
+                  </button>
+                  <button
+                    onClick={closePoModal}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: '#4A8A62',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+            <>
             <h2 style={{ marginBottom: '20px', color: '#2E2C27' }}>
               Generate Purchase Order
             </h2>
@@ -1211,6 +1394,31 @@ export default function Inventory() {
                 </table>
             </div>
 
+            {/* WhatsApp Phone Number */}
+            <div style={{ marginBottom: '15px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <label style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
+                WhatsApp Phone No.
+              </label>
+              <input
+                type="tel"
+                value={poPhone}
+                onChange={(e) => setPoPhone(e.target.value.replace(/\D/g, ''))}
+                placeholder="e.g., 9876543210"
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #D4D0C8',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  width: '200px',
+                  backgroundColor: '#F7F5F0',
+                  color: '#2E2C27'
+                }}
+              />
+              <span style={{ fontSize: '12px', color: '#6B6860' }}>
+                Optional — share the PO link on WhatsApp after download
+              </span>
+            </div>
+
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button
@@ -1242,6 +1450,131 @@ export default function Inventory() {
               >
                 📄 Download PDF
               </button>
+            </div>
+            </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Past PO's Modal */}
+      {pastPoModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(46, 44, 39, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#F7F5F0',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '850px',
+            maxHeight: '85vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            overflow: 'hidden'
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '16px 20px',
+              backgroundColor: '#4A8A62',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h2 style={{ margin: 0, color: '#fff', fontSize: '18px' }}>Past PO's</h2>
+              <button
+                onClick={() => setPastPoModalOpen(false)}
+                style={{
+                  backgroundColor: 'transparent',
+                  color: '#fff',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  lineHeight: 1
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* List */}
+            <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
+              {pastPoLoading ? (
+                <p style={{ color: '#6B6860', textAlign: 'center', padding: '20px' }}>Loading...</p>
+              ) : pastPos.length === 0 ? (
+                <p style={{ color: '#6B6860', textAlign: 'center', padding: '20px' }}>No saved PO's yet</p>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#E8E4DA' }}>
+                      <th style={{ textAlign: 'left', padding: '12px', fontSize: '13px', color: '#2E2C27' }}>PO Number</th>
+                      <th style={{ textAlign: 'left', padding: '12px', fontSize: '13px', color: '#2E2C27' }}>Date</th>
+                      <th style={{ textAlign: 'left', padding: '12px', fontSize: '13px', color: '#2E2C27' }}>Phone</th>
+                      <th style={{ textAlign: 'center', padding: '12px', fontSize: '13px', color: '#2E2C27' }}>Items</th>
+                      <th style={{ textAlign: 'right', padding: '12px', fontSize: '13px', color: '#2E2C27' }}>Total</th>
+                      <th style={{ textAlign: 'center', padding: '12px', fontSize: '13px', color: '#2E2C27' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pastPos.map(po => (
+                      <tr key={po.id} style={{ borderBottom: '1px solid #D4D0C8' }}>
+                        <td style={{ padding: '12px', fontWeight: '600', color: '#2E2C27' }}>{po.po_number}</td>
+                        <td style={{ padding: '12px', color: '#6B6860' }}>
+                          {new Date(po.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </td>
+                        <td style={{ padding: '12px', color: '#6B6860' }}>{po.supplier_phone || '-'}</td>
+                        <td style={{ padding: '12px', textAlign: 'center', color: '#2E2C27' }}>{po.item_count}</td>
+                        <td style={{ padding: '12px', textAlign: 'right', color: '#4A8A62', fontWeight: '500' }}>
+                          ₹{parseFloat(po.total_amount || 0).toFixed(2)}
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <button
+                            onClick={() => window.open(po.po_url, '_blank')}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: '#4A8A62',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                              marginRight: '6px'
+                            }}
+                          >
+                            View
+                          </button>
+                          {isOwner && (
+                            <button
+                              onClick={() => deletePo(po.id)}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#B85C5C',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '13px'
+                              }}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>

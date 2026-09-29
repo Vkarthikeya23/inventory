@@ -183,7 +183,6 @@ export default function DailyReport() {
                   style={{
                     padding: '8px 16px',
                     borderRadius: '8px',
-                    border: 'none',
                     fontSize: '14px',
                     fontWeight: '500',
                     cursor: 'pointer',

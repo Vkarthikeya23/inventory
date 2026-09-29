@@ -1,125 +1,103 @@
 import express from 'express';
-import { get, all, run, transaction } from '../db/db.js';
+import { get, all, run } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
 import { requireRole } from '../middleware/requireRole.js';
 import { ROLES } from '../../../shared/constants.js';
 
 const router = express.Router();
 
-router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
-  try {
-    const result = await all(`
-      SELECT po.id, po.supplier_id, s.name as supplier_name, po.status, po.notes,
-             po.created_by, u.name as created_by_name, po.created_at,
-             COUNT(poi.id) as item_count
-      FROM purchase_orders po
-      LEFT JOIN suppliers s ON po.supplier_id = s.id
-      LEFT JOIN users u ON po.created_by = u.id
-      LEFT JOIN purchase_order_items poi ON po.id = poi.po_id
-      GROUP BY po.id, s.name, u.name
-      ORDER BY po.created_at DESC
-    `);
-    res.json(result);
-  } catch (err) {
-    console.error('Get purchase orders error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+function buildPoUrl(poNumber) {
+  const base = (process.env.APP_BASE_URL || 'http://localhost:4000').replace(/\/+$/g, '');
+  return `${base}/po/${poNumber}`;
+}
 
-router.get('/:id', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
+// POST /purchase-orders — save a generated PO (any logged-in role)
+router.post('/', verifyToken, async (req, res) => {
   try {
-    const { id } = req.params;
-    
-    const po = await get(`
-      SELECT po.id, po.supplier_id, s.name as supplier_name, po.status, po.notes,
-             po.created_by, u.name as created_by_name, po.created_at
-      FROM purchase_orders po
-      LEFT JOIN suppliers s ON po.supplier_id = s.id
-      LEFT JOIN users u ON po.created_by = u.id
-      WHERE po.id = $id
-    `, { id });
-    
-    if (!po) {
-      return res.status(404).json({ error: 'Purchase order not found' });
-    }
-    
-    const items = await all(`
-      SELECT poi.id, poi.product_id, p.name as product_name, poi.qty_ordered,
-             poi.qty_received, poi.unit_cost
-      FROM purchase_order_items poi
-      LEFT JOIN products p ON poi.product_id = p.id
-      WHERE poi.po_id = $po_id
-    `, { po_id: id });
-    
-    res.json({ ...po, items });
-  } catch (err) {
-    console.error('Get purchase order error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+    const { po_data, supplier_phone } = req.body;
 
-router.post('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
-  try {
-    const { supplier_id, items, notes } = req.body;
-    
-    if (!supplier_id || !items || items.length === 0) {
-      return res.status(400).json({ error: 'Supplier and items required' });
+    if (!po_data || !Array.isArray(po_data.items) || po_data.items.length === 0) {
+      return res.status(400).json({ error: 'PO items required' });
     }
-    
-    const insertPO = await transaction(async (client) => {
-      const po = await get(`
-        INSERT INTO purchase_orders (supplier_id, status, notes, created_by)
-        VALUES ($supplier_id, 'draft', $notes, $created_by)
-        RETURNING id
-      `, { supplier_id, notes, created_by: req.user.id });
-      
-      const poId = po.id;
-      
-      for (const item of items) {
-        await run(`
-          INSERT INTO purchase_order_items (po_id, product_id, qty_ordered, unit_cost)
-          VALUES ($po_id, $product_id, $qty_ordered, $unit_cost)
-        `, {
-          po_id: poId,
-          product_id: item.product_id,
-          qty_ordered: item.qty_ordered,
-          unit_cost: item.unit_cost
-        });
+
+    // Generate PO number: PO-YYMM-NNNNN (same pattern as invoice numbers)
+    const now = new Date();
+    const period = String(now.getFullYear()).slice(-2) + String(now.getMonth() + 1).padStart(2, '0');
+    const existing = await get(`
+      SELECT po_number FROM purchase_orders
+      WHERE po_number LIKE $pattern
+      ORDER BY po_number DESC
+      LIMIT 1
+    `, { pattern: `PO-${period}-%` });
+
+    let nextSeq = 1;
+    if (existing) {
+      const parts = existing.po_number.split('-');
+      if (parts.length === 3) {
+        nextSeq = parseInt(parts[2], 10) + 1 || 1;
       }
-      
-      return poId;
+    }
+    const poNumber = `PO-${period}-${String(nextSeq).padStart(5, '0')}`;
+
+    const totalAmount = parseFloat(po_data.total_amount) || 0;
+    const itemCount = po_data.items.length;
+
+    await run(`
+      INSERT INTO purchase_orders (po_number, po_data, supplier_phone, total_amount, item_count, created_by)
+      VALUES ($po_number, $po_data, $supplier_phone, $total_amount, $item_count, $created_by)
+    `, {
+      po_number: poNumber,
+      po_data: JSON.stringify(po_data),
+      supplier_phone: supplier_phone || null,
+      total_amount: totalAmount,
+      item_count: itemCount,
+      created_by: req.user.id || null
     });
-    
-    res.status(201).json({ id: insertPO, status: 'draft' });
+
+    res.status(201).json({ po_number: poNumber, po_url: buildPoUrl(poNumber) });
   } catch (err) {
     console.error('Create purchase order error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.put('/:id/receive', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
+// GET /purchase-orders — list saved POs (owner + manager)
+router.get('/', verifyToken, requireRole(ROLES.OWNER, ROLES.MANAGER), async (req, res) => {
   try {
-    const { id } = req.params;
-    const { items } = req.body;
-    
-    if (!items || items.length === 0) {
-      return res.status(400).json({ error: 'Items required' });
-    }
-    
-    await transaction(async (client) => {
-      for (const item of items) {
-        await run('UPDATE purchase_order_items SET qty_received = $qty_received WHERE id = $id', { qty_received: item.qty_received, id: item.po_item_id });
-        
-        const poItem = await get('SELECT product_id, qty_received FROM purchase_order_items WHERE id = $id', { id: item.po_item_id });
-        await run('UPDATE products SET stock_qty = stock_qty + $qty WHERE id = $id', { qty: poItem.qty_received, id: poItem.product_id });
-      }
-      
-      await run("UPDATE purchase_orders SET status = 'received' WHERE id = $id", { id });
-    });
-    
-    res.json({ status: 'received' });
+    const rows = await all(`
+      SELECT id, po_number, supplier_phone, total_amount, item_count, created_by, created_at
+      FROM purchase_orders
+      ORDER BY created_at DESC
+      LIMIT 200
+    `);
+
+    res.json(rows.map(row => ({
+      ...row,
+      total_amount: parseFloat(row.total_amount || 0),
+      item_count: parseInt(row.item_count || 0, 10),
+      po_url: buildPoUrl(row.po_number)
+    })));
   } catch (err) {
-    console.error('Receive purchase order error:', err);
+    console.error('Get purchase orders error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /purchase-orders/:id — remove a saved PO (owner only)
+router.delete('/:id', verifyToken, requireRole(ROLES.OWNER), async (req, res) => {
+  try {
+    const deleted = await get(
+      'DELETE FROM purchase_orders WHERE id = $id RETURNING id',
+      { id: req.params.id }
+    );
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'Purchase order not found' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete purchase order error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

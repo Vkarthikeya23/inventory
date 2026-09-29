@@ -9,6 +9,8 @@ import servicesRoutes from './routes/services.js';
 import salesRoutes from './routes/sales.js';
 import reportsRoutes from './routes/reports.js';
 import invoicesRoutes from './routes/invoices.js';
+import purchaseOrderRoutes from './routes/purchaseOrders.js';
+import publicPoRoutes from './routes/publicPo.js';
 
 dotenv.config();
 
@@ -39,6 +41,7 @@ app.use('/assets', express.static('public/assets'));
 
 // Public routes (no auth required)
 app.use('/', publicInvoiceRoutes);
+app.use('/', publicPoRoutes);
 
 app.use('/auth', authRoutes);
 app.use('/products', productsRoutes);
@@ -46,6 +49,7 @@ app.use('/services', servicesRoutes);
 app.use('/sales', salesRoutes);
 app.use('/reports', reportsRoutes);
 app.use('/invoices', invoicesRoutes);
+app.use('/purchase-orders', purchaseOrderRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
