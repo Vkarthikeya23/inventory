@@ -304,15 +304,9 @@ export default function Inventory() {
     setPoSelectedProducts(selected);
   }
 
-  async function generatePoPdf() {
-    console.log('generatePoPdf called');
-    console.log('jsPDF available:', typeof jsPDF);
-    console.log('poSelectedProducts:', poSelectedProducts);
-    console.log('products:', products.length, 'items');
-    
+  // Save PO (like a sale saves an invoice) — link is shown, no direct PDF download
+  async function savePo() {
     const selectedProducts = products.filter(p => poSelectedProducts[p.id]);
-    console.log('selectedProducts:', selectedProducts.length, 'items');
-    
     if (selectedProducts.length === 0) {
       alert('Please select at least one product');
       return;
@@ -339,20 +333,24 @@ export default function Inventory() {
       total_amount: snapshotTotal
     };
 
-    // Save PO to backend first so we get a real PO number
-    let poNumber = `PO-${Date.now().toString().slice(-6)}`;
-    let poUrl = null;
     try {
       const saveRes = await api.post('/purchase-orders', {
         po_data: poData,
         supplier_phone: poPhone || null
       });
-      poNumber = saveRes.data.po_number;
-      poUrl = saveRes.data.po_url;
+      // Show success screen with the PO link (like the sale success screen)
+      setPoSuccess({ po_number: saveRes.data.po_number, po_url: saveRes.data.po_url, phone: poPhone });
     } catch (saveErr) {
       console.error('Failed to save PO:', saveErr);
-      alert("PO could not be saved to Past PO's, but the PDF will still download.");
+      alert('Failed to save PO. Please try again.');
     }
+  }
+
+  // Optional PDF download from the success screen
+  function downloadPoPdf() {
+    if (!poSuccess) return;
+    const selectedProducts = products.filter(p => poSelectedProducts[p.id]);
+    const poNumber = poSuccess.po_number;
 
     try {
       console.log('Creating jsPDF instance...');
@@ -451,14 +449,6 @@ export default function Inventory() {
       doc.text('Please confirm availability and delivery schedule.', 20, footerY + 8);
 
       doc.save(`${poNumber}.pdf`);
-      console.log('PDF generated successfully');
-
-      if (poUrl) {
-        // Show success screen inside the modal (like the sale success screen)
-        setPoSuccess({ po_number: poNumber, po_url: poUrl, phone: poPhone });
-      } else {
-        closePoModal();
-      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF: ' + error.message);
@@ -1190,7 +1180,7 @@ export default function Inventory() {
                 <p style={{ color: '#6B6860', marginBottom: '4px' }}>
                   Purchase order <strong style={{ color: '#2E2C27' }}>{poSuccess.po_number}</strong> has been saved to Past PO's
                 </p>
-                <p style={{ color: '#6B6860', fontSize: '14px', marginBottom: '24px' }}>PDF downloaded to your device</p>
+                <p style={{ color: '#6B6860', fontSize: '14px', marginBottom: '24px' }}>Share the PO link or copy it to send on WhatsApp</p>
 
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                   {poSuccess.phone && (
@@ -1207,7 +1197,7 @@ export default function Inventory() {
                         fontWeight: '500'
                       }}
                     >
-                      Share on WhatsApp
+                      Send on WhatsApp
                     </button>
                   )}
                   <button
@@ -1224,6 +1214,21 @@ export default function Inventory() {
                     }}
                   >
                     Copy Link
+                  </button>
+                  <button
+                    onClick={downloadPoPdf}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: '#7BAF8A',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    📄 Download PDF
                   </button>
                   <button
                     onClick={closePoModal}
@@ -1415,7 +1420,7 @@ export default function Inventory() {
                 }}
               />
               <span style={{ fontSize: '12px', color: '#6B6860' }}>
-                Optional — share the PO link on WhatsApp after download
+                Optional — share the PO link on WhatsApp after saving
               </span>
             </div>
 
@@ -1436,11 +1441,11 @@ export default function Inventory() {
                 Cancel
               </button>
               <button
-                onClick={generatePoPdf}
+                onClick={savePo}
                 disabled={Object.values(poSelectedProducts).filter(Boolean).length === 0}
                 style={{
                   padding: '12px 24px',
-                  backgroundColor: Object.values(poSelectedProducts).filter(Boolean).length === 0 ? '#ccc' : '#4CAF50',
+                  backgroundColor: Object.values(poSelectedProducts).filter(Boolean).length === 0 ? '#ccc' : '#4A8A62',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
@@ -1448,7 +1453,7 @@ export default function Inventory() {
                   fontSize: '16px'
                 }}
               >
-                📄 Download PDF
+                💾 Save PO
               </button>
             </div>
             </>
