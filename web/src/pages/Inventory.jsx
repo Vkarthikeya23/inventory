@@ -427,24 +427,37 @@ export default function Inventory() {
         margin: { left: 20, right: 20 }
       });
 
-      // Total
+      // Totals: Total Quantity box (left) + Total Amount (right)
       const totalAmount = selectedProducts.reduce((sum, p) => {
         return sum + ((poQuantities[p.id] || 0) * (p.cost_price || 0));
       }, 0);
+      const totalQuantity = selectedProducts.reduce((sum, p) => {
+        return sum + (parseInt(poQuantities[p.id], 10) || 0);
+      }, 0);
 
       const finalY = doc.lastAutoTable.finalY + 10;
-      
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      const qtyLabel = `Total Quantity: ${totalQuantity}`;
+      const boxWidth = doc.getTextWidth(qtyLabel) + 14;
+      const boxHeight = 14;
+      doc.setFillColor(232, 228, 218);   // #E8E4DA
+      doc.setDrawColor(123, 175, 138);   // #7BAF8A
+      doc.setLineWidth(0.5);
+      doc.rect(20, finalY, boxWidth, boxHeight, 'FD');
+      doc.setTextColor(46, 44, 39);      // #2E2C27
+      doc.text(qtyLabel, 27, finalY + 9.5);
+
       if (poColumns.quantity && poColumns.cost_price) {
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Total Amount: Rs.${totalAmount.toFixed(2)}`, pageWidth - 20, finalY, { align: 'right' });
+        doc.text(`Total Amount: Rs.${totalAmount.toFixed(2)}`, pageWidth - 20, finalY + 9.5, { align: 'right' });
       }
       
       // Footer note
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      const footerY = poColumns.quantity && poColumns.cost_price ? finalY + 20 : finalY + 10;
+      const footerY = finalY + boxHeight + 10;
       doc.text('This is a purchase order for stock replenishment.', 20, footerY);
       doc.text('Please confirm availability and delivery schedule.', 20, footerY + 8);
 
