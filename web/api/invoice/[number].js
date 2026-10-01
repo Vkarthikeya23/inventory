@@ -6,8 +6,9 @@ import pg from 'pg';
 const { Pool } = pg;
 
 // Database connection pool
+// SUPABASE_DATABASE_URL takes precedence when set; otherwise DATABASE_URL (Railway).
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 

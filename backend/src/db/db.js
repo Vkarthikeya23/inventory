@@ -2,18 +2,20 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
-// Get DATABASE_URL from environment
-const databaseUrl = process.env.DATABASE_URL || process.env.PGDATABASE_URL;
+// Get database URL from environment
+// SUPABASE_DATABASE_URL takes precedence when set (preview/staging deployments).
+// Production only sets DATABASE_URL, so it keeps using Railway Postgres unchanged.
+const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || process.env.PGDATABASE_URL;
 
 console.log('Initializing PostgreSQL connection...');
 
 let pool = null;
 
 if (!databaseUrl) {
-  console.error('WARNING: DATABASE_URL environment variable is not set!');
+  console.error('WARNING: No database URL configured (SUPABASE_DATABASE_URL / DATABASE_URL / PGDATABASE_URL)');
   console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('DB') || k.includes('POSTGRES') || k.includes('DATABASE')));
 } else {
-  console.log('DATABASE_URL found, connecting...');
+  console.log(process.env.SUPABASE_DATABASE_URL ? 'SUPABASE_DATABASE_URL found, connecting...' : 'DATABASE_URL found, connecting...');
   
   // PostgreSQL pool configuration
   try {
@@ -55,7 +57,7 @@ if (!databaseUrl) {
 // Fallback functions if pool is not available
 async function ensurePool() {
   if (!pool) {
-    throw new Error('DATABASE_URL not configured or database connection failed');
+    throw new Error('Database URL not configured or database connection failed');
   }
   return pool;
 }

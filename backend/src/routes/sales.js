@@ -404,7 +404,9 @@ router.get('/:id', verifyToken, async (req, res) => {
     }
     
     const items = await all(`
-      SELECT si.*, p.display_name, p.company_name, p.size_spec
+      SELECT si.*,
+             COALESCE(p.company_name, '') || ' ' || COALESCE(p.size_spec, '') AS display_name,
+             p.company_name, p.size_spec
       FROM sale_items si
       JOIN products p ON p.id = si.product_id
       WHERE si.sale_id = $sale_id
