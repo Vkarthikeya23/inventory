@@ -101,6 +101,17 @@ describe('POST /purchase-orders', () => {
     expect(mockDb.run).not.toHaveBeenCalled();
   });
 
+  test('should return 400 when an item has no product name', async () => {
+    const response = await request(app)
+      .post('/purchase-orders')
+      .set('Authorization', `Bearer ${makeToken('owner')}`)
+      .send({ po_data: { items: [{}], total_amount: 0 } });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.error).toBe('Each PO item requires a product name');
+    expect(mockDb.run).not.toHaveBeenCalled();
+  });
+
   test('should return 401 without a token', async () => {
     const response = await request(app)
       .post('/purchase-orders')

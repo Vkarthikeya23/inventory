@@ -1,4 +1,10 @@
 import pg from 'pg';
+import dotenv from 'dotenv';
+
+// Load .env BEFORE reading process.env below.
+// ESM imports are hoisted, so app.js/server.js call dotenv.config() too late
+// for this module to see DATABASE_URL.
+dotenv.config();
 
 const { Pool } = pg;
 

@@ -20,6 +20,13 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'PO items required' });
     }
 
+    const hasInvalidItem = po_data.items.some(
+      item => !item || typeof item !== 'object' || !String(item.name || '').trim()
+    );
+    if (hasInvalidItem) {
+      return res.status(400).json({ error: 'Each PO item requires a product name' });
+    }
+
     // Generate PO number: PO-YYMM-NNNNN (same pattern as invoice numbers)
     const now = new Date();
     const period = String(now.getFullYear()).slice(-2) + String(now.getMonth() + 1).padStart(2, '0');
