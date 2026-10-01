@@ -1,8 +1,37 @@
+/**
+ * LEGACY / DESTRUCTIVE — one-off schema fixer for the old Railway database.
+ * Kept only for reference. The current database is Supabase.
+ *
+ * WARNING: this script creates a display_name trigger. The Supabase schema
+ * intentionally has no display_name column (the API computes it as a SQL
+ * alias), so running this against Supabase would fail and leave a broken
+ * trigger behind. It refuses to run there without ALLOW_SUPABASE_DDL=true.
+ *
+ * The connection string is now read from the environment (never hardcoded).
+ * Set RAILWAY_DATABASE_URL in backend/.env — see .env.example.
+ */
 import pg from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 const { Pool } = pg;
 
+const connectionString = process.env.RAILWAY_DATABASE_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error('No database URL set. Add RAILWAY_DATABASE_URL to backend/.env');
+  process.exit(1);
+}
+
+if (connectionString.includes('supabase') && process.env.ALLOW_SUPABASE_DDL !== 'true') {
+  console.error('Refusing to run this legacy DDL against Supabase.');
+  console.error('Set ALLOW_SUPABASE_DDL=true only if you really mean to.');
+  process.exit(1);
+}
+
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:wWUjsIHXzLzxOdXODAZgDFzdDMjQfFzF@interchange.proxy.rlwy.net:15389/railway',
+  connectionString,
   ssl: { rejectUnauthorized: false }
 });
 
