@@ -41,6 +41,9 @@ app.use('/assets', express.static('public/assets'));
 
 // Public routes (no auth required)
 app.use('/', publicInvoiceRoutes);
+// Same invoice page under /api/invoice/... so the frontend can use a single path
+// shape locally (on Vercel, /api/invoice is served by its own serverless function)
+app.use('/api', publicInvoiceRoutes);
 app.use('/', publicPoRoutes);
 
 app.use('/auth', authRoutes);
