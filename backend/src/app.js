@@ -55,7 +55,25 @@ app.use('/invoices', invoicesRoutes);
 app.use('/purchase-orders', purchaseOrderRoutes);
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+  // Reports WHICH database this instance is actually using, so a cutover to
+  // Supabase can be confirmed without exposing credentials. Only the
+  // classification is returned - never the host, credentials or URL.
+  const databaseUrl = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || process.env.PGDATABASE_URL;
+
+  let db = 'none';
+  if (databaseUrl) {
+    if (databaseUrl.includes('supabase.co')) db = 'supabase';
+    else if (databaseUrl.includes('rlwy.net') || databaseUrl.includes('railway')) db = 'railway';
+    else db = 'other';
+  }
+
+  res.json({
+    status: 'ok',
+    db,
+    via: process.env.SUPABASE_DATABASE_URL
+      ? 'SUPABASE_DATABASE_URL'
+      : (process.env.DATABASE_URL ? 'DATABASE_URL' : (process.env.PGDATABASE_URL ? 'PGDATABASE_URL' : null))
+  });
 });
 
 export default app;
