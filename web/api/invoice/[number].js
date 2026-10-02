@@ -52,7 +52,8 @@ export default async function handler(req, res) {
     });
 
     if (upstream.status === 404) {
-      return res.status(404).type('html').send(notFoundPage(number));
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.status(404).send(notFoundPage(number));
     }
 
     if (!upstream.ok) {
@@ -60,7 +61,8 @@ export default async function handler(req, res) {
     }
 
     const html = await upstream.text();
-    return res.status(200).type('html').send(html);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(200).send(html);
   } catch (err) {
     return res.status(500).send(`
       <!DOCTYPE html>
