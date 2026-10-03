@@ -154,25 +154,6 @@ export async function runChain(handlers: Handler[], req: any, res: any): Promise
     await scheduled[guard];
   }
 }
-    if (i >= handlers.length) {
-      pending = Promise.resolve();
-      return pending;
-    }
-    const handler = handlers[i++];
-    pending = (async () => {
-      await handler(req, res, next);
-    })();
-    return pending;
-  };
-
-  next();
-
-  for (let guard = 0; guard < 100; guard++) {
-    const current = pending;
-    await current;
-    if (pending === current) break;
-  }
-}
 
 /* ---- express default-export shim -------------------------------------- */
 

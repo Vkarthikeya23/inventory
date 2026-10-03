@@ -1,0 +1,7 @@
+project_id = "covfkgjpufbsbcxagkgm"
+
+[functions.api]
+# The app issues its own JWT (signed with JWT_SECRET), which is not a Supabase
+# JWT. Supabase's gateway would reject it with UNAUTHORIZED_LEGACY_JWT, so
+# verification is disabled here and enforced by verifyToken in the function.
+verify_jwt = false

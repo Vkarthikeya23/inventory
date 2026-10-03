@@ -126,10 +126,25 @@ Deno.serve(async (request: Request) => {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
-  // Strip the Supabase function prefix so routes see their normal paths.
-  let path = url.pathname.startsWith(FUNCTION_PREFIX)
-    ? url.pathname.slice(FUNCTION_PREFIX.length)
-    : url.pathname;
+  // Normalise the incoming path to the shape the routers expect.
+  //
+  // The platform only strips `/functions/v1/`, so the function slug stays in the
+  // path: a request to .../functions/v1/api/health arrives as pathname
+  // "/api/health", NOT "/functions/v1/api/health". Stripping the slug is
+  // therefore required, and older builds that only handled the full prefix
+  // 404'd every route except /api/invoice/:n (which is mounted as a real route).
+  //
+  // "/api" is also a genuine route prefix (the Vercel invoice proxy calls
+  // /api/invoice/:n), so try the path as-is first and only fall back to the
+  // slug-stripped form. That keeps both spellings working.
+  let path = url.pathname;
+  const withoutFunctionsPrefix = path.replace(/^\/functions\/v1\/[^/]+/, '');
+  if (withoutFunctionsPrefix !== path) path = withoutFunctionsPrefix;
+
+  const candidates = [path];
+  const withoutSlug = path.replace(/^\/api(?=\/|$)/, '');
+  if (withoutSlug && withoutSlug !== path) candidates.push(withoutSlug);
+
   if (!path.startsWith('/')) path = '/' + path;
   if (path.length > 1 && path.endsWith('/')) path = path.replace(/\/+$/, '');
 
@@ -175,7 +190,16 @@ Deno.serve(async (request: Request) => {
       on() {},
     };
 
-    const match = resolve(ROUTES, method, path);
+    let match = null;
+    let matchedPath = path;
+    for (const candidate of [path, ...candidates.slice(1)]) {
+      match = resolve(ROUTES, method, candidate);
+      if (match) {
+        matchedPath = candidate;
+        break;
+      }
+    }
+    req.path = matchedPath;
 
     if (!match) {
       res.status(404).json({ error: 'Not found' });

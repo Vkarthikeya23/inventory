@@ -1,9 +1,9 @@
-import express from 'express';
+import express from '../../../express-lite.ts';
 import { get, all, run } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
 import { requireRole } from '../middleware/requireRole.js';
 import { ROLES } from '../../../shared/constants.js';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 const router = express.Router();
 

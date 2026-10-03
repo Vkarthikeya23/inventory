@@ -1,6 +1,6 @@
-import express from 'express';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import express from '../../../express-lite.ts';
+import bcrypt from 'npm:bcryptjs@2.4.3';
+import jwt from 'npm:jsonwebtoken@9.0.2';
 import { get } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
 

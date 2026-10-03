@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt from 'npm:jsonwebtoken@9.0.2';
 
 export function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;

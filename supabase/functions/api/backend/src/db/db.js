@@ -1,5 +1,5 @@
-import pg from 'pg';
-import dotenv from 'dotenv';
+import pg from 'npm:pg@8.13.1';
+import dotenv from '../../../dotenv-lite.ts';
 
 // Supabase provides configuration through the runtime environment, so this is a
 // no-op. It is kept so this module stays identical to backend/src/db/db.js.

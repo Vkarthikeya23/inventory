@@ -1,4 +1,4 @@
-import express from 'express';
+import express from '../../../express-lite.ts';
 import { get } from '../db/db.js';
 
 const router = express.Router();
@@ -1173,11 +1173,11 @@ router.get('/invoice/:invoice_number', async (req, res) => {
               </div>
               ${(data.sgst > 0 || data.cgst > 0) ? `
               <div class="amount-row">
-                <span style="color: #000; font-weight: 600;">CGST</span>
+                <span style="color: #000; font-weight: 600;">CGST @ ${data.subtotal > 0 ? ((data.cgst / data.subtotal) * 100).toFixed(1) : 0}%</span>
                 <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.cgst)}</span>
               </div>
               <div class="amount-row">
-                <span style="color: #000; font-weight: 600;">SGST</span>
+                <span style="color: #000; font-weight: 600;">SGST @ ${data.subtotal > 0 ? ((data.sgst / data.subtotal) * 100).toFixed(1) : 0}%</span>
                 <span style="color: #000; font-weight: 600;">${formatIndianNumber(data.sgst)}</span>
               </div>
               ` : ''}
@@ -1186,7 +1186,7 @@ router.get('/invoice/:invoice_number', async (req, res) => {
                 <span style="color: #fff;">${formatIndianNumber(data.total)}</span>
               </div>
               <div style="margin-top: 40px; text-align: center;">
-                <img src="/assets/stamp.png" alt="Stamp" style="width: 120px; height: auto;">
+                <img src="/assets/stamp.png?v=${Date.now()}" alt="Stamp" style="width: 120px; height: auto;">
                 <div style="font-size: 16px; font-weight: 800; margin-top: 10px; color: #000;">Authorized Signature</div>
               </div>
             </div>

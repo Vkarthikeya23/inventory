@@ -1,4 +1,4 @@
-import express from 'express';
+import express from '../../../express-lite.ts';
 import { get } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
 import { requireRole } from '../middleware/requireRole.js';

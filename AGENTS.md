@@ -13,6 +13,14 @@ server. It reuses the Express-style route handlers under
 `supabase/functions/api/backend/src/routes/`.
 
 - URL: `https://<ref>.supabase.co/functions/v1/api`
+- **The incoming `url.pathname` keeps the function slug.** Supabase strips only
+  `/functions/v1/`, so a request for `/health` reaches the function as
+  `/api/health` — *not* `/functions/v1/api/health`. `index.ts` must strip the
+  slug or every route 404s. Note `/api` is also a real route prefix (the Vercel
+  invoice proxy calls `/api/invoice/:n`), so it tries the raw path first and
+  falls back to the slug-stripped form. A build that only handled the full
+  prefix appeared to work, because `/api/invoice/:n` is mounted as a real route
+  and was the only thing still resolving.
 - **Express does not run on Deno.** `supabase/functions/api/express-lite.ts`
   implements the small subset the routes use (nested mount prefixes, `:params`,
   middleware chains). Adding a new route file means matching that subset.
@@ -52,11 +60,19 @@ database in the request path — Railway has been decommissioned.
 ## Build & Test Commands
 
 ### Backend — Supabase Edge Function
-There is no Node server to run. Deploy changes with the Supabase MCP
-(`supabase_deploy_edge_function`, name `api`) or the Supabase CLI:
+There is no Node server to run. Deploy with the bundled script:
 ```bash
-supabase functions deploy api
+SUPABASE_ACCESS_TOKEN=sbp_... node scripts/deploy-edge-function.mjs
 ```
+
+**Do not use `npx supabase functions deploy api`** — it uploads assets as
+`supabase/functions/api/<path>`, which bundles to a layout that registers only
+some route mounts and 404s the rest of the API. The script bundles the function
+with esbuild and sends it as a single `body` module, which is the only shape
+the Management API actually accepts for this function (a `files` array is
+silently ignored; the multipart zip endpoint never extracts the archive).
+
+Token: Supabase -> Account Preferences -> Access Tokens.
 
 ### Web (`cd web`)
 ```bash
@@ -105,11 +121,14 @@ supabase/functions/api/
   express-lite.ts     # Minimal Express shim (Router, :params, middleware chains)
   globals.ts          # Exposes `process` so modules can read env vars
   dotenv-lite.ts      # No-op: Supabase injects the environment
-  deno.json           # Import map (express->shim, pg/bcryptjs/jsonwebtoken via npm:)
+  deno.json           # Import map (kept for local `deno run`; deploys bundle instead)
   backend/src/
     routes/           # Route handlers
     middleware/       # verifyToken, requireRole
     db/db.js          # PostgreSQL pool + get/all/run/transaction helpers
+
+scripts/
+  deploy-edge-function.mjs   # esbuild bundle + Management API deploy (the only supported path)
 
 web/src/
   pages/       # Route components
@@ -168,7 +187,9 @@ try {
 ## Important Notes
 - Never commit `.env` files - use `.env.example`
 - Database is Supabase; verify the applied schema with the Supabase MCP
-- Invoice URL base: `APP_BASE_URL` env variable
+- Invoice URL base: `APP_BASE_URL` env variable. **Set it as a function secret**
+  (`https://<vercel-domain>`) — without it the backend silently falls back to
+  `http://localhost:4000` and every shared invoice link is broken.
 - Mobile requires same WiFi network as backend server
 - CORS is enabled for all origins (`*`) in development
 - When modifying schema, apply a migration with the Supabase MCP
