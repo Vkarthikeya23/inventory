@@ -5,8 +5,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-
-const API_BASE_URL = 'http://192.168.1.100:4000';
+import { INVOICE_URL_BASE } from '../config';
 
 // Simple Indian number to words converter
 function numberToWords(num) {
@@ -183,7 +182,7 @@ export default function NewSaleScreen({ navigation }) {
 
   function handleWhatsAppShare() {
     if (!saleResult) return;
-    const invoiceUrl = `${API_BASE_URL}/invoice/${saleResult.invoice_number}`;
+    const invoiceUrl = `${INVOICE_URL_BASE}/${saleResult.invoice_number}`;
     const message = encodeURIComponent(`Hi, your invoice ${saleResult.invoice_number} is ready. View here: ${invoiceUrl}`);
     const phone = saleResult.customer_phone.replace(/[^0-9]/g, '');
     const waLink = `https://wa.me/91${phone}?text=${message}`;
@@ -192,7 +191,7 @@ export default function NewSaleScreen({ navigation }) {
 
   function handleCopyLink() {
     if (!saleResult) return;
-    const invoiceUrl = `${API_BASE_URL}/invoice/${saleResult.invoice_number}`;
+    const invoiceUrl = `${INVOICE_URL_BASE}/${saleResult.invoice_number}`;
     Clipboard.setString(invoiceUrl);
     Alert.alert('Copied', 'Invoice link copied to clipboard');
   }
