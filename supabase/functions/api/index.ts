@@ -10,15 +10,15 @@ import './globals.ts';
 
 import express, { resolve, runChain, type Route } from './express-lite.ts';
 
-import authRoutes from './src/routes/auth.js';
-import productsRoutes from './src/routes/products.js';
-import servicesRoutes from './src/routes/services.js';
-import salesRoutes from './src/routes/sales.js';
-import reportsRoutes from './src/routes/reports.js';
-import invoicesRoutes from './src/routes/invoices.js';
-import purchaseOrderRoutes from './src/routes/purchaseOrders.js';
-import publicInvoiceRoutes from './src/routes/publicInvoice.js';
-import publicPoRoutes from './src/routes/publicPo.js';
+import authRoutes from './backend/src/routes/auth.js';
+import productsRoutes from './backend/src/routes/products.js';
+import servicesRoutes from './backend/src/routes/services.js';
+import salesRoutes from './backend/src/routes/sales.js';
+import reportsRoutes from './backend/src/routes/reports.js';
+import invoicesRoutes from './backend/src/routes/invoices.js';
+import purchaseOrderRoutes from './backend/src/routes/purchaseOrders.js';
+import publicInvoiceRoutes from './backend/src/routes/publicInvoice.js';
+import publicPoRoutes from './backend/src/routes/publicPo.js';
 
 const FUNCTION_PREFIX = '/functions/v1/api';
 
@@ -30,8 +30,27 @@ const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Max-Age': '86400',
 };
 
+const health = (express as any)();
+
+// Liveness + which database this function is actually talking to.
+health.get('/health', async (_req: any, res: any) => {
+  try {
+    const { get } = await import('./backend/src/db/db.js');
+    const r = await get('SELECT count(*)::int AS n FROM sales');
+    res.status(200).json({
+      status: 'ok',
+      db: 'supabase',
+      runtime: 'deno-edge',
+      sales: r?.n ?? null,
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: String(err).slice(0, 200) });
+  }
+});
+
 // Mounts mirror backend/src/app.js
 const root = (express as any)();
+root.use('/', health);
 root.use('/', publicInvoiceRoutes);      // public: /invoice/:invoice_number
 root.use('/api', publicInvoiceRoutes);   // same page under /api for the Vercel proxy
 root.use('/', publicPoRoutes);           // public: /po/:po_number
@@ -44,23 +63,6 @@ root.use('/invoices', invoicesRoutes);
 root.use('/purchase-orders', purchaseOrderRoutes);
 
 const ROUTES: Route[] = root.flatten('/');
-
-// Liveness + which database this function is actually talking to.
-root.use('/', (express as any)().get('/health', async (_req: any, res: any) => {
-  try {
-    const { get } = await import('./src/db/db.js');
-    const r = await get('SELECT count(*)::int AS n FROM sales');
-    res.status(200).json({
-      status: 'ok',
-      db: 'supabase',
-      runtime: 'deno-edge',
-      sales: r?.n ?? null,
-    });
-  } catch (err) {
-    res.status(500).json({ status: 'error', error: String(err).slice(0, 200) });
-  }
-}));
-ROUTES.push(...root.flatten('/').filter((r) => r.path === '/health'));
 
 function makeRes(): any {
   const res: any = {

@@ -8,6 +8,6 @@
     "pg": "npm:pg@8.13.1",
     "bcrypt": "npm:bcryptjs@2.4.3",
     "jsonwebtoken": "npm:jsonwebtoken@9.0.2",
-    "crypto": "npm:crypto@1.0.1"
+    "crypto": "node:crypto"
   }
 }

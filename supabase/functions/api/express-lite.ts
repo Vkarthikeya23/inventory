@@ -116,20 +116,62 @@ function safeDecode(v: string): string {
 /**
  * Run middleware + handler in order. A middleware that does not call next()
  * (e.g. after sending 401) ends the chain, exactly like Express.
+ *
+ * Two things make this non-obvious:
+ *  1. Middleware calls next() WITHOUT awaiting it, so a single "current
+ *     promise" reference is not enough.
+ *  2. `await handler(...)` runs the handler SYNCHRONOUSLY up to its first
+ *     await. A middleware that calls next() therefore schedules the rest of
+ *     the chain *before* the outer promise variable is assigned - so a single
+ *     variable gets overwritten and the inner work is never awaited.
+ *
+ * Collecting every scheduled promise and draining the list avoids both. The
+ * list ends up innermost-first (the final handler is scheduled during the
+ * synchronous part of the middleware above it), which is exactly the order we
+ * need to await.
  */
-export async function runChain(
-  handlers: Handler[],
-  req: any,
-  res: any
-): Promise<void> {
+export async function runChain(handlers: Handler[], req: any, res: any): Promise<void> {
   let i = 0;
-  const next = async (err?: unknown) => {
-    if (err) throw err;
+  const scheduled: Promise<unknown>[] = [];
+
+  const next = (err?: unknown): void => {
+    if (err) {
+      scheduled.push(Promise.reject(err));
+      return;
+    }
     if (i >= handlers.length) return;
     const handler = handlers[i++];
-    await handler(req, res, next);
+    scheduled.push(
+      (async () => {
+        await handler(req, res, next);
+      })()
+    );
   };
-  await next();
+
+  next();
+
+  for (let guard = 0; guard < scheduled.length; guard++) {
+    await scheduled[guard];
+  }
+}
+    if (i >= handlers.length) {
+      pending = Promise.resolve();
+      return pending;
+    }
+    const handler = handlers[i++];
+    pending = (async () => {
+      await handler(req, res, next);
+    })();
+    return pending;
+  };
+
+  next();
+
+  for (let guard = 0; guard < 100; guard++) {
+    const current = pending;
+    await current;
+    if (pending === current) break;
+  }
 }
 
 /* ---- express default-export shim -------------------------------------- */
