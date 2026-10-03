@@ -4,14 +4,10 @@
   "description": "TyreShop Pro - Inventory Management System (Monorepo)",
   "private": true,
   "scripts": {
-    "start": "cd backend && npm start",
-    "dev": "cd backend && npm run dev",
-    "install:backend": "cd backend && npm install",
     "install:web": "cd web && npm install",
     "install:mobile": "cd mobile && npm install",
-    "postinstall": "npm run install:backend"
+    "build": "cd web && npm run build",
+    "postinstall": "npm run install:web"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "comment": "The backend is a Supabase Edge Function in supabase/functions/api (deployed with the Supabase CLI / MCP). There is no long-running Node backend to start."
 }

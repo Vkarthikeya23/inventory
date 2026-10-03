@@ -2,39 +2,60 @@
 
 ## Project Overview
 TyreShop Pro is a tyre shop inventory management system with three components:
-- **Backend**: Node.js + Express + PostgreSQL on Supabase (ESM modules)
-- **Web**: React + Vite portal
+- **Backend**: Supabase Edge Function (Deno) at `supabase/functions/api`
+- **Web**: React + Vite portal (deployed on Vercel)
 - **Mobile**: React Native + Expo app
 - **Shared**: Common constants and utilities
 
-## Database
-The backend database is **Supabase (PostgreSQL)**. There is no SQLite and no
-Railway database in the request path.
+## Backend
+The backend is a **Supabase Edge Function** — there is no long-running Node
+server. It reuses the Express-style route handlers under
+`supabase/functions/api/backend/src/routes/`.
 
-- Connection: `SUPABASE_DATABASE_URL` (see `backend/.env.example`)
-- Resolution order in `backend/src/db/db.js`:
-  `SUPABASE_DATABASE_URL` → `DATABASE_URL` → `PGDATABASE_URL`
-  `DATABASE_URL` is retained only as a rollback path; Supabase is primary.
-- Use the **session pooler on port 5432**, not the transaction pooler (6543),
-  because sales run inside `pool.connect()` transactions.
-- Reference schema: `backend/src/db/supabase_schema.sql`
+- URL: `https://<ref>.supabase.co/functions/v1/api`
+- **Express does not run on Deno.** `supabase/functions/api/express-lite.ts`
+  implements the small subset the routes use (nested mount prefixes, `:params`,
+  middleware chains). Adding a new route file means matching that subset.
+- `runChain` collects every scheduled promise into a queue. Do not "simplify"
+  it back to a single promise variable: `await handler(...)` runs middleware
+  synchronously up to its first `await`, so `next()` schedules the rest of the
+  chain before the outer promise is assigned and the inner work is dropped.
+- `verify_jwt` is **false** on the function. Supabase's gateway would reject the
+  app's own JWT (it is not a Supabase JWT). Auth is enforced by
+  `verifyToken` using the `JWT_SECRET` secret.
+- Required secrets on the function: `JWT_SECRET`, `JWT_EXPIRES_IN`.
+  `SUPABASE_DB_URL` is injected by Supabase (internal `db.<ref>` connection).
+
+## Database
+The database is **Supabase (PostgreSQL)**. There is no SQLite and no Railway
+database in the request path — Railway has been decommissioned.
+
+- Connection: `SUPABASE_DB_URL` (injected by Supabase), with
+  `SUPABASE_DATABASE_URL` / `DATABASE_URL` as fallbacks
+  (`supabase/functions/api/backend/src/db/db.js`)
+- Prefer Supabase's **internal** connection; the public pooler is not needed.
+- Reference schema: `backend/src/db/supabase_schema.sql` is gone; the applied
+  schema lives in Supabase and is recorded under `backend/src/db/migrations/`
+  history. Verify with `supabase_list_tables` / `supabase_execute_sql`.
 - Tables are **server-side only**: `anon`/`authenticated` grants are revoked and
-  no RLS policies exist. The browser never talks to the DB — it uses the REST
-  API with a JWT.
-- Confirm which DB a deployment is using: `GET /health` returns
-  `{"status":"ok","db":"supabase|railway|none",...}` (never exposes the URL)
-- Schema changes are applied via the Supabase MCP (`supabase_apply_migration`),
-  and recorded in `backend/src/db/migrations/`.
+  no RLS policies exist. The browser never talks to the DB.
+- `GET /health` returns `{"status":"ok","db":"supabase","sales":<n>}`.
+- Schema changes go through `supabase_apply_migration`.
+
+## Web
+- `VITE_BASE_URL` points at the edge function:
+  `https://<ref>.supabase.co/functions/v1/api`
+- `VITE_INVOICE_URL` stays on the Vercel domain — invoice links must remain
+  reachable on networks (e.g. Jio) where the API host is not.
+  `web/api/invoice/[number].js` proxies to `BACKEND_URL || VITE_BASE_URL`.
 
 ## Build & Test Commands
 
-### Backend (`cd backend`)
+### Backend — Supabase Edge Function
+There is no Node server to run. Deploy changes with the Supabase MCP
+(`supabase_deploy_edge_function`, name `api`) or the Supabase CLI:
 ```bash
-npm start              # Production server
-npm run dev            # Development with auto-reload
-npm test               # Run all Jest tests
-npm test -- tests/routes/auth.test.js    # Run single test file
-npm test -- --testNamePattern="login"    # Run specific test
+supabase functions deploy api
 ```
 
 ### Web (`cd web`)
@@ -79,11 +100,16 @@ npm run web            # Web version via Expo
 
 ### File Organization
 ```
-backend/src/
-  routes/       # Express route handlers
-  middleware/   # Auth, validation middleware
-  db/          # Database pool and helpers
-  utils/       # Utilities (invoice numbers, etc.)
+supabase/functions/api/
+  index.ts            # Deno.serve entrypoint: fetch<->Express adapter, CORS, routing
+  express-lite.ts     # Minimal Express shim (Router, :params, middleware chains)
+  globals.ts          # Exposes `process` so modules can read env vars
+  dotenv-lite.ts      # No-op: Supabase injects the environment
+  deno.json           # Import map (express->shim, pg/bcryptjs/jsonwebtoken via npm:)
+  backend/src/
+    routes/           # Route handlers
+    middleware/       # verifyToken, requireRole
+    db/db.js          # PostgreSQL pool + get/all/run/transaction helpers
 
 web/src/
   pages/       # Route components
@@ -141,12 +167,15 @@ try {
 
 ## Important Notes
 - Never commit `.env` files - use `.env.example`
-- Database is Supabase; schema reference is `backend/src/db/supabase_schema.sql`
+- Database is Supabase; verify the applied schema with the Supabase MCP
 - Invoice URL base: `APP_BASE_URL` env variable
 - Mobile requires same WiFi network as backend server
 - CORS is enabled for all origins (`*`) in development
-- When modifying schema, apply a migration via the Supabase MCP and add the
-  matching file to `backend/src/db/migrations/`
-- Railway Postgres is a legacy rollback path only — do not add new data paths
-  that depend on it. `backend/fix-database*.js` are obsolete Railway DDL
-  scripts and should not be run.
+- When modifying schema, apply a migration with the Supabase MCP
+  (`supabase_apply_migration`) and note it in the commit message.
+- Railway is decommissioned. `DATABASE_URL` remains in the env resolution
+  order only as a rollback path — do not add new data paths that depend on it.
+- `web/api/invoice/[number].js` proxies to the backend; it must NOT connect to
+  the database directly (Vercel's runtime cannot reach Supabase).
+- Function secrets live in Supabase (Edge Functions → Secrets): `JWT_SECRET`,
+  `JWT_EXPIRES_IN`. There is no `.env` file in the function runtime.
