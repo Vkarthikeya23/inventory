@@ -8,7 +8,11 @@ const router = express.Router();
 
 function buildPoUrl(poNumber) {
   const base = (process.env.APP_BASE_URL || 'http://localhost:4000').replace(/\/+$/g, '');
-  return `${base}/po/${poNumber}`;
+  // Must be /api/po/<n>, not /po/<n>. The Vercel app has no /po route, so a
+  // bare /po/<n> hits the SPA catch-all rewrite in vercel.json and silently
+  // renders the dashboard instead of the PO. /api/po/<n> resolves to the
+  // proxy in web/api/po/[number].js.
+  return `${base}/api/po/${poNumber}`;
 }
 
 // POST /purchase-orders — save a generated PO (any logged-in role)

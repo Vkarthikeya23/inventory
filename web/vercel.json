@@ -5,6 +5,10 @@
       "destination": "/api/invoice/[number].js?number=$1"
     },
     {
+      "source": "/api/po/([^/]+)",
+      "destination": "/api/po/[number].js?number=$1"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
