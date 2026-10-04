@@ -53,6 +53,7 @@ router.get('/po/:po_number', async (req, res) => {
     const showCost = !!columns.cost_price;
     const showTotal = showQty && showCost;
     const items = Array.isArray(data.items) ? data.items : [];
+    const totalQty = items.reduce((sum, item) => sum + (parseInt(item.qty, 10) || 0), 0);
     const poDate = data.date ? new Date(data.date) : new Date(result.created_at);
 
     const headCells = [
@@ -75,6 +76,21 @@ router.get('/po/:po_number', async (req, res) => {
       if (showTotal) cells.push(`<td style="padding:10px 12px;border-bottom:1px solid #D4D0C8;text-align:right;">${formatMoney(item.line_total)}</td>`);
       return `<tr>${cells.join('')}</tr>`;
     }).join('\n');
+
+    // Totals sit side by side when both are available. Quantity is labelled
+    // "Quantity" rather than "Tyres" because a PO can mix tyres with services.
+    const totalParts = [];
+    if (showTotal) {
+      totalParts.push(`<div class="total-line">Total Amount: ${formatMoney(result.total_amount)}</div>`);
+    }
+    if (showQty) {
+      totalParts.push(`<div class="total-line">Total Quantity: ${totalQty}</div>`);
+    }
+    const totalsHtml = totalParts.length === 0
+      ? ''
+      : totalParts.length === 1
+        ? totalParts[0]
+        : `<div class="totals-row">${totalParts.join('')}</div>`;
 
     const html = `
       <!DOCTYPE html>
@@ -154,6 +170,16 @@ router.get('/po/:po_number', async (req, res) => {
             font-weight: 700;
             color: #4A8A62;
           }
+          .totals-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 36px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+          }
+          .totals-row .total-line {
+            margin-top: 0;
+          }
           .footer {
             margin-top: 30px;
             font-size: 12px;
@@ -208,7 +234,7 @@ router.get('/po/:po_number', async (req, res) => {
             </tbody>
           </table>
 
-          ${showTotal ? `<div class="total-line">Total Amount: ${formatMoney(result.total_amount)}</div>` : ''}
+          ${totalsHtml}
 
           <div class="footer">
             This is a purchase order for stock replenishment.<br>
