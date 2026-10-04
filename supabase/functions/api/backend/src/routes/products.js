@@ -58,7 +58,13 @@ router.get('/', verifyToken, async (req, res) => {
     }
     
     if (search) {
-      query += ` AND (company_name ILIKE $search OR size_spec ILIKE $search OR display_name ILIKE $search)`;
+      // `display_name` is a SELECT alias, not a column, and PostgreSQL only
+      // resolves aliases in ORDER BY / GROUP BY / HAVING - referencing it in
+      // WHERE made every search 500. Repeat the expression instead so that
+      // combined terms like "apollo 185" still match.
+      query += ` AND (company_name ILIKE $search
+                      OR size_spec ILIKE $search
+                      OR (COALESCE(company_name, '') || ' ' || COALESCE(size_spec, '')) ILIKE $search)`;
       params.search = `%${search}%`;
     }
     
