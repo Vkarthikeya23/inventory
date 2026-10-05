@@ -275,7 +275,7 @@ router.post('/', verifyToken, async (req, res) => {
         invoice_number: invoiceNumber,
         sale_date: saleDate.toISOString(),
         shop: {
-          name: process.env.SHOP_NAME ?? 'TyreShop',
+          name: process.env.SHOP_NAME ?? 'SRI MAHALAKSHMI TYRES & WASH',
           phone: process.env.SHOP_PHONE ?? '',
           address: process.env.SHOP_ADDRESS ?? '',
           gstin: process.env.SHOP_GSTIN ?? ''
