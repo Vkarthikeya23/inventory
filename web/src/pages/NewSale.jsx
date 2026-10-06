@@ -149,6 +149,21 @@ export default function NewSale() {
     }));
   };
 
+  // Sets the three GST fields for one row in a single state update.
+  // updateItem() maps over the closure's `items`, so calling it three times in
+  // one handler would drop all but the last field - this has to be one pass.
+  const toggleNinePercent = (id, checked) => {
+    setItems(items.map(item => {
+      if (item.id !== id) return item;
+      return {
+        ...item,
+        gst_rate: checked ? 18 : 0,
+        cgst_percent: checked ? 9 : 0,
+        sgst_percent: checked ? 9 : 0
+      };
+    }));
+  };
+
   const openProductSelector = (index) => {
     setSelectedItemIndex(index);
     setSearchQuery('');
@@ -712,6 +727,28 @@ export default function NewSale() {
                     </div>
                   </td>
                   <td style={{ padding: '10px', border: '1px solid #D4D0C8', textAlign: 'right' }}>
+                    <label
+                      title="Set CGST and SGST to 9% each (18% total)"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        gap: '4px',
+                        marginBottom: '3px',
+                        fontSize: '11px',
+                        color: '#6B6860',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={parseFloat(item.cgst_percent) === 9 && parseFloat(item.sgst_percent) === 9}
+                        onChange={(e) => toggleNinePercent(item.id, e.target.checked)}
+                        style={{ width: '13px', height: '13px', margin: 0, cursor: 'pointer' }}
+                      />
+                      18% (9+9)
+                    </label>
                     <div style={{ fontSize: '11px', color: '#6B6860' }}>{item.cgst_percent || 0}%</div>
                     <input
                       type="number"
