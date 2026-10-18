@@ -3,6 +3,18 @@ import { get } from '../db/db.js';
 
 const router = express.Router();
 
+// This page is served unauthenticated (verify_jwt is false on the function) and
+// the customer fields are typed by staff at sale time, so they must be escaped
+// before they reach HTML. Same helper publicPo.js already uses.
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Indian number formatting
 function formatIndianNumber(num) {
   const amount = parseFloat(num) || 0;
@@ -1108,11 +1120,12 @@ router.get('/invoice/:invoice_number', async (req, res) => {
           <div class="two-column">
             <div class="column">
               <div class="column-label">Bill To</div>
-              <div class="customer-name">${data.customer.name.toUpperCase()}</div>
-              <div class="detail-row">Contact No.: ${data.customer.phone}</div>
-              ${data.customer.vehicle_reg ? `<div class="detail-row">Vehicle No.: ${data.customer.vehicle_reg}</div>` : ''}
-              ${data.customer.vehicle_type ? `<div class="detail-row">Vehicle Type: ${data.customer.vehicle_type}</div>` : ''}
-              ${data.customer.km_reading ? `<div class="detail-row">KM Reading: ${data.customer.km_reading}</div>` : ''}
+              <div class="customer-name">${escapeHtml(String(data.customer.name ?? '').toUpperCase())}</div>
+              ${data.customer.gstin ? `<div class="detail-row">GSTIN: ${escapeHtml(data.customer.gstin)}</div>` : ''}
+              <div class="detail-row">Contact No.: ${escapeHtml(data.customer.phone)}</div>
+              ${data.customer.vehicle_reg ? `<div class="detail-row">Vehicle No.: ${escapeHtml(data.customer.vehicle_reg)}</div>` : ''}
+              ${data.customer.vehicle_type ? `<div class="detail-row">Vehicle Type: ${escapeHtml(data.customer.vehicle_type)}</div>` : ''}
+              ${data.customer.km_reading ? `<div class="detail-row">KM Reading: ${escapeHtml(data.customer.km_reading)}</div>` : ''}
             </div>
             <div class="column invoice-details">
               <div class="column-label">Invoice Details</div>
